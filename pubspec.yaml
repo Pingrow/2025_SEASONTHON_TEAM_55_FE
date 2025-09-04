@@ -1,0 +1,48 @@
+name: pin_grow
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  carousel_slider: ^5.1.1
+  flutter:
+    sdk: flutter
+  flutter_dotenv: ^6.0.0
+  flutter_hooks: ^0.21.3+1
+  flutter_screenutil: ^5.9.3
+  flutter_secure_storage: ^9.2.4
+  flutter_svg: ^2.2.0
+  go_router: ^16.2.1
+  google_fonts: ^6.3.1
+  hooks_riverpod: ^2.6.1
+  intl: ^0.20.2
+  kakao_flutter_sdk_user: ^1.9.7+3
+  linear_progress_bar: ^1.2.0
+  riverpod_annotation: ^2.6.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  riverpod_generator: ^2.6.5
+  build_runner: ^2.5.4
+  custom_lint: ^0.7.6
+  riverpod_lint: ^2.6.5
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard/PretendardVariable.ttf
+
+  assets:
+    - .env
+    - assets/logo/
+    - assets/icons/
+    - assets/characters/
+    - assets/kakao_login/ko/
