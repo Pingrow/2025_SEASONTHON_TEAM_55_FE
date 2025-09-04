@@ -65,6 +65,7 @@ class _ResearchPageStep4State extends ConsumerState<ResearchPageStep4> {
               ),
 
               Stack(
+                clipBehavior: Clip.none,
                 children: [
                   Slider(
                     divisions: 49,

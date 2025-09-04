@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/service/secure_storage.dart';
 import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
@@ -20,16 +21,21 @@ class LoadingEmotionPage extends StatefulHookConsumerWidget {
 class _LoadingEmotionPageState extends ConsumerState<LoadingEmotionPage> {
   Future loading() async {
     // 투자 성향 분석 로딩 대체 timer
-    Timer(Duration(milliseconds: 1000), () {
-      GoRouter.of(context).go('/lodaing_policy');
+    Timer(Duration(milliseconds: 3000), () {
+      GoRouter.of(context).go('/loading_policy');
     });
+
+    ref
+        .read(authViewModelProvider.notifier)
+        .fetchUserModel(UserType.conservative);
+    //성향 분류 후 데이터 캐싱 필요
   }
 
   @override
   void initState() {
     super.initState();
 
-    //loading();
+    loading();
   }
 
   @override

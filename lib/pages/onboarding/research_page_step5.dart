@@ -309,9 +309,9 @@ class _ResearchPageStep5State extends ConsumerState<ResearchPageStep5> {
                             },
 
                             onChanged: (value) {
-                              if (value.characters.length > 25) {
+                              if (value.characters.length > 24) {
                                 moneyFormCntlr.text = value.characters
-                                    .take(25)
+                                    .take(24)
                                     .toString();
                               }
 
@@ -323,6 +323,11 @@ class _ResearchPageStep5State extends ConsumerState<ResearchPageStep5> {
                             },
 
                             onSaved: (value) {
+                              if (value!.characters.length > 24) {
+                                moneyFormCntlr.text = value.characters
+                                    .take(24)
+                                    .toString();
+                              }
                               ref
                                   .read(
                                     researchResultStep5_moneyProvider.notifier,

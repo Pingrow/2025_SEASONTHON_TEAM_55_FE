@@ -6,6 +6,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/pages/main/home_page.dart';
 import 'package:pin_grow/pages/onboarding/loading_emotion.dart';
 import 'package:pin_grow/pages/onboarding/loading_policy.dart';
+import 'package:pin_grow/pages/onboarding/post_test_result.dart';
 import 'package:pin_grow/pages/onboarding/research_page_step1.dart';
 import 'package:pin_grow/pages/onboarding/research_page_step2.dart';
 import 'package:pin_grow/pages/onboarding/research_page_step3.dart';
@@ -111,6 +112,12 @@ class MainApp extends HookConsumerWidget {
         path: "/loading_policy",
         name: 'loading_policy_page',
         builder: (context, state) => const LoadingPolicyPage(),
+      ),
+
+      GoRoute(
+        path: "/post_test_result",
+        name: 'post_test_result_page',
+        builder: (context, state) => const PostTestResultPage(),
       ),
 
       GoRoute(

@@ -47,12 +47,14 @@ class _SplashPageState extends ConsumerState<SplashPage> {
      */
 
     // Debugging 용 데이터 삭제 + 로그아웃 코드
-    SecureStorageManager.deleteAllData();
-    await ref.read(authViewModelProvider.notifier).kakaoLogout();
+    //SecureStorageManager.deleteAllData();
+    //await ref.read(authViewModelProvider.notifier).kakaoLogout();
 
-    final authState = AuthState.fromRawJson(
+    AuthState? authState = AuthState.fromRawJson(
       (await SecureStorageManager.readData('AUTH_STATE')),
     );
+
+    print(authState.toJson());
 
     try {
       AccessTokenInfo tokenInfo = await UserApi.instance.accessTokenInfo();
@@ -63,9 +65,9 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       );
 
       await ref.read(authViewModelProvider.notifier).getUser();
-      final state = ref.read(authViewModelProvider);
+      var state = ref.read(authViewModelProvider);
       authState.copyWith(status: state.status, user: state.user);
-      ref
+      await ref
           .read(authViewModelProvider.notifier)
           .setAuthState(state.status, state.user);
     } catch (error) {
@@ -90,9 +92,13 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       case AuthStatus.authenticated:
         // 설문 완료 확인 : (완료) -> home으로, (미완료) -> 설문페이지(step1)로
         // 현재는 백엔드 서버랑 연결되어 있지 않아 secure storage에 저장된 정보를 사용해서 완료 확인 -> 데이터를 지우면 새로운 사람!
-        final researchComplete =
-            SecureStorageManager.readData('RESEARCH_COMPLETE_BOOL') as bool?;
+        bool? researchComplete = await SecureStorageManager.readBoolData(
+          'RESEARCH_COMPLETE_BOOL',
+        );
+
+        print(researchComplete ?? false);
         if (researchComplete ?? false) {
+          //GoRouter.of(context).go('/post_test_result');
           GoRouter.of(context).go('/home');
         } else {
           GoRouter.of(context).go('/step1');

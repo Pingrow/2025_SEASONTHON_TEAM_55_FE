@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
+import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/providers/onboarding_providers.dart';
 import 'package:pin_grow/service/secure_storage.dart';
+import 'package:pin_grow/view_model/auth_view_model.dart';
 
 class OnboardingResearchPage extends StatefulHookConsumerWidget {
   final StatefulNavigationShell navigationShell;
@@ -45,6 +47,8 @@ class _OnboardingResearchPageState
     final String? resultOfStep5_money = ref.watch(
       researchResultStep5_moneyProvider,
     );
+
+    final authState = ref.read(authViewModelProvider);
 
     void initNavigationIndex(BuildContext context) {
       final routerState = GoRouterState.of(context);

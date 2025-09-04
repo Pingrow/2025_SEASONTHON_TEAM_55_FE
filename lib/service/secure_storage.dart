@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class SecureStorageManager {
   static final _storage = new FlutterSecureStorage();
 
-  static void saveData(String key, String data) async {
+  static Future<void> saveData(String key, String data) async {
     await _storage.write(key: key, value: data);
     print('$key의 데이터 $data를 저장했습니다.');
   }
@@ -29,6 +29,17 @@ class SecureStorageManager {
     String? value = await _storage.read(key: key);
     print('$key의 데이터를 불러왔습니다.');
     return value;
+  }
+
+  static Future<bool?> readBoolData(String key) async {
+    String? value = await _storage.read(key: key);
+    final result = value == "true"
+        ? true
+        : value == "false"
+        ? false
+        : null;
+    print('$key의 데이터를 불러왔습니다.');
+    return result;
   }
 
   static Future<List<bool>?> readBoolArrayData(String key) async {

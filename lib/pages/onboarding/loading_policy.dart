@@ -20,9 +20,11 @@ class LoadingPolicyPage extends StatefulHookConsumerWidget {
 class _LoadingPolicyPageState extends ConsumerState<LoadingPolicyPage> {
   Future loading() async {
     // 투자 성향 분석 로딩 대체 timer
-    Timer(Duration(milliseconds: 1000), () {
+    Timer(Duration(milliseconds: 3000), () {
       GoRouter.of(context).go('/post_test_result');
     });
+
+    //정책 검색 완료 후 완료 신호 받으면 다음 페이지
   }
 
   @override
