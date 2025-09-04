@@ -106,3 +106,15 @@ class ResearchResultStep5_money extends _$ResearchResultStep5_money {
     state = value;
   }
 }
+
+@Riverpod(keepAlive: true)
+class CurrentSavedMoney extends _$CurrentSavedMoney {
+  @override
+  String? build() {
+    return null;
+  }
+
+  void setValue(String? value) {
+    state = value;
+  }
+}

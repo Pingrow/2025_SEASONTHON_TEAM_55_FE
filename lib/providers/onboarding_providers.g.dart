@@ -140,5 +140,21 @@ final researchResultStep5_moneyProvider =
     );
 
 typedef _$ResearchResultStep5_money = Notifier<String?>;
+String _$currentSavedMoneyHash() => r'5ed08b8ecac15f1ccbbe2f8d70029a10818b8ddf';
+
+/// See also [CurrentSavedMoney].
+@ProviderFor(CurrentSavedMoney)
+final currentSavedMoneyProvider =
+    NotifierProvider<CurrentSavedMoney, String?>.internal(
+      CurrentSavedMoney.new,
+      name: r'currentSavedMoneyProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$currentSavedMoneyHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$CurrentSavedMoney = Notifier<String?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

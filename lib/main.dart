@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:pin_grow/pages/main/goal_modifying.dart';
 import 'package:pin_grow/pages/main/home_page.dart';
 import 'package:pin_grow/pages/onboarding/loading_emotion.dart';
 import 'package:pin_grow/pages/onboarding/loading_policy.dart';
@@ -124,6 +125,14 @@ class MainApp extends HookConsumerWidget {
         path: "/home",
         name: 'home_page',
         builder: (context, state) => const HomePage(),
+        routes: [
+          GoRoute(
+            path: "goal_modify",
+            name: 'goal_modify',
+            pageBuilder: (context, state) =>
+                DialogPage(builder: (_) => GoalModifyingPage()),
+          ),
+        ],
       ),
     ],
   );
@@ -152,14 +161,13 @@ class MainApp extends HookConsumerWidget {
               thumbColor: Color(0xff0BA360),
               thumbShape: RoundSliderThumbShape(enabledThumbRadius: 9.r),
               valueIndicatorColor: Color(0x00ffffff),
-              padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+              padding: EdgeInsets.fromLTRB(10, 5, 5, 10),
               trackHeight: 8.h,
             ),
           ),
           builder: (context, child) {
             return Scaffold(
               resizeToAvoidBottomInset: false,
-
               body: Center(
                 child: SizedBox(
                   height: MediaQuery.of(context).size.height,
@@ -173,4 +181,41 @@ class MainApp extends HookConsumerWidget {
       },
     );
   }
+}
+
+class DialogPage<T> extends Page<T> {
+  final Offset? anchorPoint;
+  final Color? barrierColor;
+  final bool barrierDismissible;
+  final String? barrierLabel;
+  final bool useSafeArea;
+  final CapturedThemes? themes;
+  final WidgetBuilder builder;
+
+  const DialogPage({
+    required this.builder,
+    this.anchorPoint,
+    this.barrierColor = Colors.black54,
+    this.barrierDismissible = true,
+    this.barrierLabel,
+    this.useSafeArea = true,
+    this.themes,
+    super.key,
+    super.name,
+    super.arguments,
+    super.restorationId,
+  });
+
+  @override
+  Route<T> createRoute(BuildContext context) => DialogRoute<T>(
+    context: context,
+    settings: this,
+    builder: builder,
+    anchorPoint: anchorPoint,
+    barrierColor: barrierColor,
+    barrierDismissible: barrierDismissible,
+    barrierLabel: barrierLabel,
+    useSafeArea: useSafeArea,
+    themes: themes,
+  );
 }

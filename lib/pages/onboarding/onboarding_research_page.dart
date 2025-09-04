@@ -129,7 +129,11 @@ class _OnboardingResearchPageState
                         move(currentStep - 1);
                       }
                     },
-                    child: Image.asset('assets/icons/back.png'),
+                    child: Image.asset(
+                      'assets/icons/back.png',
+                      width: 10.w,
+                      height: 16.h,
+                    ),
                   ),
                 ),
 
@@ -232,7 +236,7 @@ class _OnboardingResearchPageState
               child: Container(
                 width: 347.w,
                 height: 52.h,
-                margin: EdgeInsets.fromLTRB(0, 30, 0, 60),
+                margin: EdgeInsets.fromLTRB(0, 20, 0, 60),
                 decoration: BoxDecoration(
                   color: Color(0xff0fa564),
                   borderRadius: BorderRadius.circular(16),

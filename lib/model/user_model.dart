@@ -13,17 +13,19 @@ class UserModel {
   final int? goal_money;
   final int? goal_period;
   final bool? research_completed;
+  final int? saved_money;
 
   UserModel({
     required this.id,
     required this.nickname,
     required this.email,
     required this.profile_url,
-    this.type,
-    this.goal,
-    this.goal_money,
-    this.goal_period,
-    this.research_completed,
+    this.type = UserType.unknown,
+    this.goal = '',
+    this.goal_money = 0,
+    this.goal_period = 0,
+    this.saved_money = 0,
+    this.research_completed = false,
   });
 
   factory UserModel.fromKakao(Map<String, dynamic> user) {
@@ -47,6 +49,7 @@ class UserModel {
       goal: user['goal'],
       goal_money: user['goal_money'],
       goal_period: user['goal_period'],
+      saved_money: user['saved_money'],
       research_completed: user['research_completed'],
     );
   }
@@ -61,6 +64,7 @@ class UserModel {
       'goal': goal,
       'goal_money': goal_money,
       'goal_period': goal_period,
+      'saved_money': saved_money,
       'research_completed': research_completed,
     };
   }
