@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/service/secure_storage.dart';
@@ -28,12 +31,17 @@ class AuthViewModel extends _$AuthViewModel {
       );
     }
 
-    /**final authState = await getUser();
-    
+    final authState = await getUser();
+
+    OAuthToken? token = await TokenManagerProvider.instance.manager.getToken();
+
     final url = Uri.http('3.27.44.246:8080/', '/api/v1/auth/kakao');
-    final body = {
-      'code' : OAuthToken.fromResponse(response)
-    } */
+    final body = {'code': '${token!.accessToken}'};
+    final response = await http.post(url, body: body);
+
+    final decodedJson = jsonDecode(response.body);
+
+    SecureStorageManager.saveData('ACCESS_TOKEN', decodedJson['accsee_token']);
     //await setAuthState(AuthStatus.authenticated, authState?.user);
   }
 
