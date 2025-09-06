@@ -21,13 +21,39 @@ class LoadingEmotionPage extends StatefulHookConsumerWidget {
 class _LoadingEmotionPageState extends ConsumerState<LoadingEmotionPage> {
   Future loading() async {
     // 투자 성향 분석 로딩 대체 timer
-    Timer(Duration(milliseconds: 3000), () {
+    Timer(Duration(milliseconds: 3000), () async {
+      UserType type = UserType.conservative;
+
+      await ref.read(authViewModelProvider.notifier).modifyUserType(type);
+
+      /**final authState = ref.watch(authViewModelProvider);
+
+      
+      final user = UserModel(
+        id: authState.user?.id,
+        nickname: authState.user?.nickname,
+        email: authState.user?.email,
+        profile_url: authState.user?.profile_url,
+        goal: authState.user?.goal,
+        goal_money: authState.user?.goal_money,
+        goal_period: authState.user?.goal_period,
+        research_completed: authState.user?.research_completed,
+        type: type,
+      );
+
+      await SecureStorageManager.saveData(
+        'AUTH_STATE',
+        AuthState(status: authState.status, user: user).toRawJson() ??
+            AuthState(
+              status: AuthStatus.unauthenticated,
+              user: null,
+              errorMessage: null,
+            ).toRawJson()!,
+      );
+ */
       GoRouter.of(context).go('/loading_policy');
     });
 
-    ref
-        .read(authViewModelProvider.notifier)
-        .fetchUserModel(UserType.conservative);
     //성향 분류 후 데이터 캐싱 필요
   }
 

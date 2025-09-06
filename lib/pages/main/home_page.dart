@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:pin_grow/providers/region_provider.dart';
 import 'package:pin_grow/service/secure_storage.dart';
 import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
@@ -20,7 +21,6 @@ class HomePage extends StatefulHookConsumerWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   double progressRate = 0.00;
-  String? region = null;
 
   @override
   void initState() {
@@ -30,6 +30,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authViewModelProvider);
+    final regions = ref.watch(regionProvider);
+
     return Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
@@ -99,10 +101,8 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                         Row(
                           children: [
-                            /// TODO:
-                            /// 진행도 관련해서 변수 설정해야함.
                             Text(
-                              '${(authState.user!.saved_money! / authState.user!.goal_money! * 100).round()}%',
+                              '${((authState.user!.saved_money ?? 0) / (authState.user!.goal_money ?? 1) * 100).round()}%',
                               style: TextStyle(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.bold,
@@ -159,11 +159,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                         children: [
                           TextSpan(
                             text: NumberFormat.decimalPattern().format(
-                              authState.user?.goal_money,
+                              authState.user?.goal_money ?? 0,
                             ),
                             style: TextStyle(
                               fontSize:
-                                  authState.user!.goal_money! <= 1000000000000
+                                  (authState.user!.goal_money ?? 0) <=
+                                      1000000000000
                                   ? 27.sp
                                   : 21.sp,
                               fontWeight: FontWeight.bold,
@@ -207,8 +208,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                               width:
                                   9.w +
                                   (288.w - 9.w) *
-                                      authState.user!.saved_money! /
-                                      authState.user!.goal_money!,
+                                      (authState.user!.saved_money ?? 0) /
+                                      (authState.user!.goal_money ?? 1),
                               height: 14.h,
                               decoration: BoxDecoration(
                                 color: Color(0xffFFD16F),
@@ -221,8 +222,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                             top: 0,
                             left:
                                 (288.w - 9.w) *
-                                    authState.user!.saved_money! /
-                                    authState.user!.goal_money! -
+                                    (authState.user!.saved_money ?? 0) /
+                                    (authState.user!.goal_money ?? 1) -
                                 20.w,
                             child: Image.asset(
                               'assets/characters/main_progress_bar.png',
@@ -269,7 +270,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                               children: [
                                 TextSpan(text: '지금 '),
                                 TextSpan(
-                                  text: region ?? '???',
+                                  text:
+                                      regions?[authState.user?.region?.split(
+                                            '-',
+                                          )[2]]
+                                          ?.alias ??
+                                      '???',
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 TextSpan(text: '에서 가장 '),
@@ -286,10 +292,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ),
                           ),
 
-                          /// TODO:
-                          /// 정책 리스트로 이동
                           GestureDetector(
-                            onTap: () {},
+                            onTap: () {
+                              GoRouter.of(context).push('/policy_list');
+                            },
                             child: Container(
                               alignment: Alignment.center,
                               width: 184.w,
@@ -338,7 +344,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                             Positioned(
                               top: 0,
                               child: Text(
-                                region ?? '???',
+                                regions?[authState.user?.region?.split('-')[2]]
+                                        ?.alias ??
+                                    '???',
                                 style: TextStyle(
                                   color: Color(0xffBBBBBB),
                                   fontSize: 50.sp,
@@ -363,177 +371,199 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              Container(
-                width: 338.w,
-                height: 398.h,
-                margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-                padding: EdgeInsets.fromLTRB(15.w, 20.h, 12.w, 15.h),
-                decoration: BoxDecoration(
-                  color: Color(0xffffffff),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 3.0,
-                      color: Colors.black38,
-                      blurStyle: BlurStyle.normal,
-                      offset: Offset(0, 2.5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  style: TextStyle(
-                                    color: Color(0xff374151),
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: authState.user?.nickname,
-                                      style: TextStyle(
-                                        color: Color(0xff0CA361),
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-
-                                    TextSpan(text: ' 님을 위한 저축/투자 조합'),
-                                  ],
-                                ),
-                              ),
-
-                              GestureDetector(
-                                onTap: () {},
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      '더 보러가가',
-                                      style: TextStyle(
-                                        fontSize: 10.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xff0CA361),
-                                      ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.fromLTRB(2, 0, 0, 0),
-                                      child: Image.asset(
-                                        'assets/icons/right_arrow.png',
-                                        width: 5.w,
-                                        height: 9.h,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                '월 35만원 · 12개월 · 적금+채권 혼합',
-                                style: TextStyle(
-                                  color: Color(0xff6B7280),
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: 4,
-                        padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          final bool tag = true;
-                          final name = 'WON플러스예금';
-                          final int period_min = 1;
-                          final int period_max = 36;
-                          final double interset_rate = 2.45;
-                          final interest_rate_p = '연';
-                          final company = '우리은행';
-
-                          return Container(
-                            height: 80.h,
-                            padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                top: BorderSide(
-                                  color: Color(0xffD0D0D0),
-                                  width: 0.5,
-                                ),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    tag
-                                        ? _suggTag()
-                                        : Container(width: 34.w, height: 17.h),
-                                    Text(
-                                      name,
-                                      style: TextStyle(
-                                        fontSize: 15.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xff374151),
-                                      ),
-                                    ),
-                                    Text(
-                                      '$period_min~$period_max개월 · 금리 최대 $interset_rate($interest_rate_p)',
-                                      style: TextStyle(
-                                        fontSize: 10.sp,
-                                        fontWeight: FontWeight.w400,
-                                        color: Color(0xff6B7280),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      company,
-                                      style: TextStyle(
-                                        fontSize: 10.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xff6B7280),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(color: Color(0xffD0D0D0), width: 0.5),
+              Flex(
+                direction: Axis.vertical,
+                children: [
+                  Container(
+                    width: 338.w,
+                    height: 398.h,
+                    margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                    padding: EdgeInsets.fromLTRB(15.w, 20.h, 12.w, 15.h),
+                    decoration: BoxDecoration(
+                      color: Color(0xffffffff),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 3.0,
+                          color: Colors.black38,
+                          blurStyle: BlurStyle.normal,
+                          offset: Offset(0, 2.5),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                    child: Column(
+                      children: [
+                        Container(
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      style: TextStyle(
+                                        color: Color(0xff374151),
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: authState.user?.nickname,
+                                          style: TextStyle(
+                                            color: Color(0xff0CA361),
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+
+                                        TextSpan(text: ' 님을 위한 저축/투자 조합'),
+                                      ],
+                                    ),
+                                  ),
+
+                                  GestureDetector(
+                                    onTap: () {},
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          '더 보러가가',
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xff0CA361),
+                                          ),
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.fromLTRB(
+                                            2,
+                                            0,
+                                            0,
+                                            0,
+                                          ),
+                                          child: Image.asset(
+                                            'assets/icons/right_arrow.png',
+                                            width: 5.w,
+                                            height: 9.h,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '월 35만원 · 12개월 · 적금+채권 혼합',
+                                    style: TextStyle(
+                                      color: Color(0xff6B7280),
+                                      fontSize: 10.sp,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: 4,
+                            padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                            physics: NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              final bool tag = true;
+                              final name = 'WON플러스예금';
+                              final int period_min = 1;
+                              final int period_max = 36;
+                              final double interset_rate = 2.45;
+                              final interest_rate_p = '연';
+                              final company = '우리은행';
+
+                              return Container(
+                                height: 80.h,
+                                padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    top: BorderSide(
+                                      color: Color(0xffD0D0D0),
+                                      width: 0.5,
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        tag
+                                            ? _suggTag()
+                                            : Container(
+                                                width: 34.w,
+                                                height: 17.h,
+                                              ),
+                                        Text(
+                                          name,
+                                          style: TextStyle(
+                                            fontSize: 15.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xff374151),
+                                          ),
+                                        ),
+                                        Text(
+                                          '$period_min~$period_max개월 · 금리 최대 $interset_rate($interest_rate_p)',
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.w400,
+                                            color: Color(0xff6B7280),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          company,
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xff6B7280),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(
+                                color: Color(0xffD0D0D0),
+                                width: 0.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

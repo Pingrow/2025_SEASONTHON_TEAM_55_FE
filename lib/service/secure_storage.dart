@@ -10,17 +10,17 @@ class SecureStorageManager {
     print('$key의 데이터 $data를 저장했습니다.');
   }
 
-  static void saveBoolArrayData(String key, List<bool> data) async {
+  static Future<void> saveBoolArrayData(String key, List<bool> data) async {
     await _storage.write(key: key, value: jsonEncode(data));
     print('$key의 데이터(배열) $data를 저장했습니다.');
   }
 
-  static void deleteData(String key) async {
+  static Future<void> deleteData(String key) async {
     await _storage.delete(key: key);
     print('$key의 데이터를 삭제했습니다.');
   }
 
-  static void deleteAllData() async {
+  static Future<void> deleteAllData() async {
     await _storage.deleteAll();
     print('데이터를 모두 삭제했습니다.');
   }
@@ -33,6 +33,7 @@ class SecureStorageManager {
 
   static Future<bool?> readBoolData(String key) async {
     String? value = await _storage.read(key: key);
+    print(value);
     final result = value == "true"
         ? true
         : value == "false"

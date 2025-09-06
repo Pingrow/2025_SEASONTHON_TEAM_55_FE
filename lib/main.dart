@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/pages/main/goal_modifying.dart';
 import 'package:pin_grow/pages/main/home_page.dart';
+import 'package:pin_grow/pages/main/policy_list.dart';
 import 'package:pin_grow/pages/onboarding/loading_emotion.dart';
 import 'package:pin_grow/pages/onboarding/loading_policy.dart';
 import 'package:pin_grow/pages/onboarding/post_test_result.dart';
@@ -133,6 +134,12 @@ class MainApp extends HookConsumerWidget {
                 DialogPage(builder: (_) => GoalModifyingPage()),
           ),
         ],
+      ),
+
+      GoRoute(
+        path: "/policy_list",
+        name: 'policy_list',
+        builder: (context, state) => const PolicyListPage(),
       ),
     ],
   );

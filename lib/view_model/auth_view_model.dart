@@ -28,8 +28,8 @@ class AuthViewModel extends _$AuthViewModel {
       );
     }
 
-    await getUser();
-    await setAuthState(AuthStatus.authenticated, state.user);
+    final authState = await getUser();
+    //await setAuthState(AuthStatus.authenticated, authState?.user);
   }
 
   Future<void> kakaoLogout() async {
@@ -40,41 +40,54 @@ class AuthViewModel extends _$AuthViewModel {
   Future<void> setAuthState(AuthStatus authStatus, UserModel? user) async {
     state = state.copyWith(status: authStatus, user: user);
 
-    SecureStorageManager.saveData('AUTH_STATE', state.toRawJson() ?? '{}');
+    await SecureStorageManager.saveData(
+      'AUTH_STATE',
+      AuthState(status: authStatus, user: user).toRawJson() ??
+          '{status: null, user: null, errormessage: null}',
+    );
 
-    SecureStorageManager.saveData('AUTH_STATUS', authStatus.toString());
+    await SecureStorageManager.saveData('AUTH_STATUS', authStatus.toString());
     if (user != null) {
-      SecureStorageManager.saveData('CURRENT_USER_ID', user.id.toString());
-      SecureStorageManager.saveData(
+      await SecureStorageManager.saveData(
+        'CURRENT_USER_ID',
+        user.id.toString(),
+      );
+      await SecureStorageManager.saveData(
         'CURRENT_USER_NAME',
         user.nickname.toString(),
       );
-      SecureStorageManager.saveData(
+      await SecureStorageManager.saveData(
         'CURRENT_USER_EMAIL',
         user.email.toString(),
       );
-      SecureStorageManager.saveData(
+      await SecureStorageManager.saveData(
         'CURRENT_USER_PROFILE_IMAGE',
         user.profile_url.toString(),
       );
-      SecureStorageManager.saveData('CURRENT_USER_TYPE', user.type.toString());
-      SecureStorageManager.saveData('CURRENT_USER_GOAL', user.goal.toString());
-      SecureStorageManager.saveData(
+      await SecureStorageManager.saveData(
+        'CURRENT_USER_TYPE',
+        user.type.toString(),
+      );
+      await SecureStorageManager.saveData(
+        'CURRENT_USER_GOAL',
+        user.goal.toString(),
+      );
+      await SecureStorageManager.saveData(
         'CURRENT_USER_GOAL_MONEY',
         user.goal_money.toString(),
       );
-      SecureStorageManager.saveData(
+      await SecureStorageManager.saveData(
         'CURRENT_USER_GOAL_PERIOD',
         user.goal_period.toString(),
       );
-      SecureStorageManager.saveData(
+      await SecureStorageManager.saveData(
         'RESEARCH_COMPLETE_BOOL',
         user.research_completed.toString(),
       );
     }
   }
 
-  Future<void> getUser() async {
+  Future<AuthState?> getUser() async {
     final kakaoUser = await UserApi.instance.me();
     // DB에 저장된 부가 정보들도 가져오기
     final user = UserModel(
@@ -90,18 +103,24 @@ class AuthViewModel extends _$AuthViewModel {
     );
 
     state = state.copyWith(status: AuthStatus.authenticated, user: user);
+    return AuthState(status: AuthStatus.authenticated, user: user);
   }
 
-  Future<void> fetchUserModel(UserType type) async {
-    final goal_period = await SecureStorageManager.readData('GOAL_PERIOD');
-
-    final goal = await SecureStorageManager.readData('GOAL_NAME');
-
-    final goal_money = await SecureStorageManager.readData('GOAL_MONEY');
-
-    final research_completed = await SecureStorageManager.readBoolData(
-      'RESEARCH_COMPLETE_BOOL',
+  Future<AuthState?> getUserFromSecureStorage() async {
+    final authState = AuthState.fromRawJson(
+      await SecureStorageManager.readData('AUTH_STATE'),
     );
+
+    state = state.copyWith(status: authState.status, user: authState.user);
+    return authState;
+  }
+
+  Future<void> modifyUserType(UserType type) async {
+    final authState = AuthState.fromRawJson(
+      await SecureStorageManager.readData('AUTH_STATE'),
+    );
+
+    print(authState.user?.goal);
 
     final user = UserModel(
       id: state.user?.id,
@@ -109,10 +128,10 @@ class AuthViewModel extends _$AuthViewModel {
       email: state.user?.email,
       profile_url: state.user?.profile_url,
       type: type,
-      goal: goal,
-      goal_money: int.parse(goal_money!.replaceAll(',', '')),
-      goal_period: int.parse(goal_period!),
-      research_completed: research_completed,
+      goal: authState.user?.goal,
+      goal_money: authState.user?.goal_money,
+      goal_period: authState.user?.goal_period,
+      research_completed: authState.user?.research_completed,
     );
 
     state = state.copyWith(status: state.status, user: user);

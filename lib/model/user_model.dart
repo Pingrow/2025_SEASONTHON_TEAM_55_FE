@@ -14,6 +14,7 @@ class UserModel {
   final int? goal_period;
   final bool? research_completed;
   final int? saved_money;
+  final String? region;
 
   UserModel({
     required this.id,
@@ -26,6 +27,7 @@ class UserModel {
     this.goal_period = 0,
     this.saved_money = 0,
     this.research_completed = false,
+    this.region = '17-0-NODATA-???',
   });
 
   factory UserModel.fromKakao(Map<String, dynamic> user) {
@@ -51,6 +53,7 @@ class UserModel {
       goal_period: user['goal_period'],
       saved_money: user['saved_money'],
       research_completed: user['research_completed'],
+      region: user['region'],
     );
   }
 
@@ -66,6 +69,7 @@ class UserModel {
       'goal_period': goal_period,
       'saved_money': saved_money,
       'research_completed': research_completed,
+      'region': region,
     };
   }
 }

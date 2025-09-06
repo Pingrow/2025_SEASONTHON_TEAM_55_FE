@@ -8,6 +8,7 @@ import 'package:linear_progress_bar/linear_progress_bar.dart';
 import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/providers/onboarding_providers.dart';
 import 'package:pin_grow/service/secure_storage.dart';
+import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
 class OnboardingResearchPage extends StatefulHookConsumerWidget {
@@ -173,7 +174,7 @@ class _OnboardingResearchPageState
           Visibility(
             visible: isSelected(currentStep),
             child: InkWell(
-              onTap: () {
+              onTap: () async {
                 if (currentStep == 1) {
                   ref.read(selectedIndexProvider.notifier).setIndex(2);
                   print('$selectedIndexStep1');
@@ -194,39 +195,65 @@ class _OnboardingResearchPageState
                   ref.read(selectedIndexProvider.notifier).setIndex(200);
                   print('$resultOfStep5_goal , $resultOfStep5_money');
 
-                  SecureStorageManager.saveData(
+                  await SecureStorageManager.saveData(
                     'MONEY_MANAGEMENT_STYLE',
                     selectedIndexStep1.toString(),
                   );
 
-                  SecureStorageManager.saveData(
+                  await SecureStorageManager.saveData(
                     'RISK_TOLERANCE',
                     selectedIndexStep2.toString(),
                   );
 
-                  SecureStorageManager.saveBoolArrayData(
+                  await SecureStorageManager.saveBoolArrayData(
                     'INVESTMENT_STYLE',
                     selectedIndexStep3,
                   );
 
-                  SecureStorageManager.saveData(
+                  await SecureStorageManager.saveData(
                     'GOAL_PERIOD',
-                    selectedIndexStep4.round().toString(),
+                    selectedIndexStep4.toString(),
                   );
 
-                  SecureStorageManager.saveData(
+                  await SecureStorageManager.saveData(
                     'GOAL_NAME',
                     resultOfStep5_goal!,
                   );
 
-                  SecureStorageManager.saveData(
+                  await SecureStorageManager.saveData(
                     'GOAL_MONEY',
                     resultOfStep5_money!,
                   );
 
-                  SecureStorageManager.saveData(
+                  await SecureStorageManager.saveData(
                     'RESEARCH_COMPLETE_BOOL',
                     true.toString(),
+                  );
+
+                  final user = UserModel(
+                    id: authState.user?.id,
+                    nickname: authState.user?.nickname,
+                    email: authState.user?.email,
+                    profile_url: authState.user?.profile_url,
+                    goal: resultOfStep5_goal,
+                    goal_money: int.tryParse(
+                      resultOfStep5_money.replaceAll(',', ''),
+                    ),
+                    goal_period: selectedIndexStep4.round(),
+                    research_completed: true,
+                  );
+
+                  await SecureStorageManager.saveData(
+                    'AUTH_STATE',
+                    AuthState(
+                          status: authState.status,
+                          user: user,
+                        ).toRawJson() ??
+                        AuthState(
+                          status: AuthStatus.unauthenticated,
+                          user: null,
+                          errorMessage: null,
+                        ).toRawJson()!,
                   );
 
                   //GoRouter.of(context).go('/home');

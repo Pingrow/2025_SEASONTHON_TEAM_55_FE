@@ -674,7 +674,7 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        '다음',
+                        '수정 완료',
                         style: TextStyle(
                           color: Color(0xfffcf7e2),
                           fontSize: 16.sp,

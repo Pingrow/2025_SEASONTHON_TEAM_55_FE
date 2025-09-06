@@ -85,6 +85,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
             bottom: 0,
             child: InkWell(
               onTap: () async {
+                print('[DEBUG:SIGNIN] ${authState.toJson()}');
                 if (authState.status == AuthStatus.unauthenticated ||
                     authState.status == AuthStatus.error) {
                   await authViewModel.kakaoLogin().then((value) async {
@@ -109,17 +110,19 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                      */
 
                     if (await AuthApi.instance.hasToken()) {
-                      ref.read(selectedIndexProvider.notifier).setIndex(1);
-                      ref
-                          .read(researchResultStep1Provider.notifier)
-                          .setIndex(-1);
+                      bool? researchComplete =
+                          authState.user?.research_completed;
 
-                      GoRouter.of(
-                        context,
-                      ).go('/step1'); //이 부분 path 변경으로 로그인 이후 어띠로 갈지 정하게 됨
-                      if (true
-                      /** 설문 조사했는지 조사*/
-                      ) {}
+                      print(researchComplete);
+                      if (researchComplete ?? false) {
+                        GoRouter.of(context).go('/policy_list');
+                      } else {
+                        ref.read(selectedIndexProvider.notifier).setIndex(1);
+                        ref
+                            .read(researchResultStep1Provider.notifier)
+                            .setIndex(-1);
+                        GoRouter.of(context).go('/step1');
+                      }
                     } else {
                       print('토큰 없음');
                     }

@@ -1,0 +1,28 @@
+{
+  "policies": [
+    {
+      "plcyNm": "청년취업사관학교 강남캠퍼스",
+      "sprvsnInstCdNm": "강남구청 일자리정책과 일자리정책팀",
+      "incCnt": 36,
+      "url": "https://www.gangnam.go.kr/board/youthgn_biz04/list.do?mid=youthgn_biz04"
+    },
+    {
+      "plcyNm": "강남구 청년 일자리 CATCH 프로젝트",
+      "sprvsnInstCdNm": "강남구청",
+      "incCnt": 15,
+      "url": "https://www.gangnam.go.kr/office/youthgn/contents/youthgn_summary02/1/view.do?mid=youthgn_summary02"
+    },
+    {
+      "plcyNm": "강남 청년의 날 행사",
+      "sprvsnInstCdNm": "서울시 강남구 일자리정책과 청년정책팀",
+      "incCnt": 13,
+      "url": "https://www.gangnam.go.kr/board/youthgn_biz04/list.do?mid=youthgn_biz04"
+    },
+    {
+      "plcyNm": "강남구 청년 네트워크 운영",
+      "sprvsnInstCdNm": "강남구청 일자리정책과",
+      "incCnt": 7,
+      "url": "https://www.gangnam.go.kr/"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/model/user_model.dart';
+import 'package:pin_grow/providers/region_provider.dart';
 //import 'package:pin_grow/repository/auth_repository.dart';
 import 'package:pin_grow/service/secure_storage.dart';
 import 'package:pin_grow/view_model/auth_state.dart';
@@ -50,11 +51,15 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     //SecureStorageManager.deleteAllData();
     //await ref.read(authViewModelProvider.notifier).kakaoLogout();
 
-    AuthState? authState = AuthState.fromRawJson(
+    /**
+     * AuthState? authState = AuthState.fromRawJson(
       (await SecureStorageManager.readData('AUTH_STATE')),
     );
 
-    print(authState.toJson());
+    print('[DEBUG #1] : ${authState.toJson()}');
+     */
+
+    await ref.read(regionProvider.notifier).getRegions();
 
     try {
       AccessTokenInfo tokenInfo = await UserApi.instance.accessTokenInfo();
@@ -63,16 +68,15 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         '\n회원정보: ${tokenInfo.id}'
         '\n만료시간: ${tokenInfo.expiresIn} 초',
       );
-
-      await ref.read(authViewModelProvider.notifier).getUser();
-      var state = ref.read(authViewModelProvider);
-      authState.copyWith(status: state.status, user: state.user);
-      await ref
-          .read(authViewModelProvider.notifier)
-          .setAuthState(state.status, state.user);
     } catch (error) {
       print('액세스 토큰 정보 조회 실패 $error');
     }
+
+    AuthState? authState = await ref
+        .read(authViewModelProvider.notifier)
+        .getUserFromSecureStorage();
+
+    print('[DEBUG:SPLASH] ${authState?.toJson()}');
 
     //print('${authState.user} ${authState.status}');
 
@@ -83,7 +87,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         .read(authViewModelProvider.notifier)
         .setAuthState(authState.status, authState.user);
  */
-    switch (authState.status) {
+    switch (authState?.status ?? AuthStatus.unauthenticated) {
       case AuthStatus.unauthenticated || AuthStatus.error:
         GoRouter.of(context).go('/signIn');
         break;
@@ -92,13 +96,12 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       case AuthStatus.authenticated:
         // 설문 완료 확인 : (완료) -> home으로, (미완료) -> 설문페이지(step1)로
         // 현재는 백엔드 서버랑 연결되어 있지 않아 secure storage에 저장된 정보를 사용해서 완료 확인 -> 데이터를 지우면 새로운 사람!
-        bool? researchComplete = await SecureStorageManager.readBoolData(
-          'RESEARCH_COMPLETE_BOOL',
-        );
+        bool? researchComplete = authState?.user?.research_completed;
 
-        print(researchComplete ?? false);
+        print(researchComplete);
         if (researchComplete ?? false) {
           //GoRouter.of(context).go('/post_test_result');
+          //GoRouter.of(context).go('/policy_list');
           GoRouter.of(context).go('/home');
         } else {
           GoRouter.of(context).go('/step1');
