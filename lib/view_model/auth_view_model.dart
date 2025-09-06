@@ -28,7 +28,12 @@ class AuthViewModel extends _$AuthViewModel {
       );
     }
 
-    final authState = await getUser();
+    /**final authState = await getUser();
+    
+    final url = Uri.http('3.27.44.246:8080/', '/api/v1/auth/kakao');
+    final body = {
+      'code' : OAuthToken.fromResponse(response)
+    } */
     //await setAuthState(AuthStatus.authenticated, authState?.user);
   }
 

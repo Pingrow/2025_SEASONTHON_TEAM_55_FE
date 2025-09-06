@@ -10,6 +10,7 @@ import 'package:pin_grow/model/region_model.dart';
 import 'package:pin_grow/model/policy_model.dart';
 import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/providers/region_provider.dart';
+import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
 import 'package:http/http.dart' as http;
@@ -86,29 +87,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
   List<String> apiLsit = [];
 
   late Future<List<PolicyModel>> _policyFuture;
-
-  // 정책 리스트 불러오기
-  Future<List<PolicyModel>> _fetchPolicyList() async {
-    final response = await rootBundle.loadString(
-      'assets/dummy/dummy_policy_list_gangnam.json',
-    ); //await http.get(Uri.parse(''));
-
-    if (true
-    // response.statusCode == 200
-    ) {
-      final Map<String, dynamic> decodedJson = json.decode(
-        response,
-        /**.body */
-      );
-      final List<dynamic> policyListJson = decodedJson["policies"];
-      final List<PolicyModel> policies = policyListJson
-          .map((jsonItem) => PolicyModel.fromJson(jsonItem))
-          .toList();
-      return policies;
-    } else {
-      throw Exception('Failed to load policy list');
-    }
-  }
+  late Future<List<PolicyModel>> _policyTop10Future;
 
   Future<void> _launchUrl(String urlString) async {
     final Uri url = Uri.parse(urlString);
@@ -132,19 +111,185 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
       tapStatus = [TapStatus.notSelected, TapStatus.load, TapStatus.load];
     }
 
-    _policyFuture = _fetchPolicyList();
+    final apiRepo = ref.read(policyViewModelProvider.notifier);
+
+    _policyFuture = apiRepo.fetchPolicyList();
+    _policyTop10Future = apiRepo.fetchTop10PolicyList();
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authViewModelProvider);
     final regions = ref.watch(regionProvider);
+    final apiRepo = ref.read(policyViewModelProvider.notifier);
 
     final Map<int, Map<TapStatus, Widget>> policiesForRegion = {
       0: {
         TapStatus.notSelected: Container(),
         TapStatus.selected: Container(),
-        TapStatus.load: Container(),
+        TapStatus.load: FutureBuilder<List<PolicyModel>>(
+          future: _policyTop10Future,
+          builder: (context, snapshot) {
+            // 1. 로딩 중 상태 처리
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            // 2. 에러 발생 상태 처리
+            if (snapshot.hasError) {
+              return Center(child: Text('에러: ${snapshot.error}'));
+            }
+
+            // 3. 데이터가 없거나 비어있는 경우 처리
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('데이터가 없습니다.'));
+            }
+
+            // 4. 데이터 수신 성공 시 UI 구성
+            final policies = snapshot.data!;
+
+            // 전체를 스크롤 가능하게 만듦
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                ), // 좌우 여백을 여기에 추가
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- 인기 정책 섹션 ---
+                    Container(
+                      margin: EdgeInsets.only(top: 25.h, bottom: 25.h),
+                      child: RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: Color(0xff374151),
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: '전국',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const TextSpan(text: ' 의 '),
+                            const TextSpan(
+                              text: '인기 정책',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    ListView.builder(
+                      padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
+                      physics:
+                          const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
+                      shrinkWrap: true, // ⭐ 핵심: 자식 높이만큼만 차지
+                      itemCount: policies.length,
+                      itemBuilder: (context, index) {
+                        final policy = policies[index];
+                        // 재사용 가능한 메소드 호출
+                        return Container(
+                          margin: EdgeInsets.only(bottom: 25.h),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 56.r,
+                                height: 56.r,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xffABABAB),
+                                  border: Border.all(
+                                    color: const Color(0xff0CA361),
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
+                              ),
+                              SizedBox(width: 10.w), // 간격 조정
+                              Expanded(
+                                // 텍스트가 화면을 넘어갈 경우를 대비해 Expanded로 감싸줌
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        _popTag(),
+                                        SizedBox(width: 4.w),
+                                        Expanded(
+                                          child: Text(
+                                            policy.sprvsnInstCdNm ?? '기관 정보 없음',
+                                            style: TextStyle(
+                                              fontSize: 10.sp,
+                                              fontWeight: FontWeight.w400,
+                                              color: const Color(0xff6B7280),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      policy.plcyNm ?? '정책명 없음',
+                                      style: TextStyle(
+                                        color: const Color(0xff374151),
+                                        fontSize: 20.sp,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Row(
+                                      children: [
+                                        Image.asset(
+                                          'assets/icons/eye.png',
+                                          width: 7.r,
+                                          height: 7.r,
+                                        ),
+                                        SizedBox(width: 3.w),
+                                        Text(
+                                          '${policy.incCnt ?? 0}',
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.w400,
+                                            color: const Color(0xff6B7280),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  if (policy.url != null &&
+                                      policy.url!.isNotEmpty) {
+                                    _launchUrl(policy.url!);
+                                  }
+                                },
+                                child: Image.asset(
+                                  policy.url != null && policy.url!.isNotEmpty
+                                      ? 'assets/icons/external_link_enabled.png'
+                                      : 'assets/icons/external_link_disabled.png',
+                                  width: 21.r,
+                                  height: 21.r,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       },
       1: {
         TapStatus.notSelected: Container(),
@@ -234,7 +379,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                   area_idx = index;
 
                   Timer(Duration(milliseconds: 200), () {
-                    setState(() async {
+                    setState(() {
                       tapStatus[1] = TapStatus.load;
                       tapStatus[2] = TapStatus.load;
 
@@ -258,10 +403,10 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                   "$region_idx-$area_idx-${regions!.keys.elementAt(region_idx)}-${regions![regions.keys.elementAt(region_idx)]?.areas[area_idx]}", // 00-00-region-area {시도 인덱스}-{시군구 인덱스}-{시도 이름}-{시군구 이름}
                             ),
                           );
-
-                      _policyFuture = _fetchPolicyList();
                     });
                   });
+
+                  _policyFuture = apiRepo.fetchPolicyList();
                 });
               },
               child: Container(
@@ -303,12 +448,14 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
 
                 // 2. 에러 발생 상태 처리
                 if (snapshot.hasError) {
-                  return Center(child: Text('에러: ${snapshot.error}'));
+                  print('에러: ${snapshot.error}');
+                  return _noPolicy();
+                  //Center(child: Text('에러: ${snapshot.error}'));
                 }
 
                 // 3. 데이터가 없거나 비어있는 경우 처리
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('데이터가 없습니다.'));
+                  return _noPolicy();
                 }
 
                 // 4. 데이터 수신 성공 시 UI 구성
@@ -720,6 +867,14 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                           region_idx = -1;
                           area_idx = -1;
                         });
+
+                        Timer(Duration(microseconds: 200), () {
+                          setState(() {
+                            tapStatus[0] = TapStatus.load;
+                          });
+                        });
+
+                        _policyTop10Future = apiRepo.fetchTop10PolicyList();
                       }
                     },
                     child: Container(
@@ -763,7 +918,9 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                         boxShadow: tapConfig[tapStatus[1]]!["SHADOW"],
                       ),
                       child: Text(
-                        '시/도',
+                        tapStatus[1] != TapStatus.load
+                            ? '시/도'
+                            : '${regions[authState.user?.region?.split('-')[2]]!.alias}',
                         style: TextStyle(
                           color: Color(tapConfig[tapStatus[1]]!["FONT_COLOR"]),
                           fontSize: 13.sp,
@@ -805,7 +962,9 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                         boxShadow: tapConfig[tapStatus[2]]!["SHADOW"],
                       ),
                       child: Text(
-                        '시/구/군',
+                        tapStatus[2] != TapStatus.load
+                            ? '시/구/군'
+                            : '${authState.user?.region?.split('-')[3]}',
                         style: TextStyle(
                           color: Color(tapConfig[tapStatus[2]]!["FONT_COLOR"]),
                           fontSize: 13.sp,
@@ -852,6 +1011,50 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
               fontWeight: FontWeight.bold,
               color: Color(0xff374151),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _noPolicy() {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Image.asset(
+            'assets/icons/no_policy.png',
+            width: 203.r,
+            height: 203.r,
+          ),
+
+          Text(
+            '선택하신 지역에는',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w400,
+              color: Color(0xff374151),
+            ),
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '현재 등록된 청년 정책이 없어요',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xff374151),
+                ),
+              ),
+              Image.asset(
+                'assets/icons/crying_face.png',
+                width: 21.r,
+                height: 21.r,
+              ),
+            ],
           ),
         ],
       ),

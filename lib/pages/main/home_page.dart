@@ -7,8 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:pin_grow/model/recommend_product_model.dart';
 import 'package:pin_grow/providers/region_provider.dart';
 import 'package:pin_grow/service/secure_storage.dart';
+import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
@@ -22,15 +24,26 @@ class HomePage extends StatefulHookConsumerWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   double progressRate = 0.00;
 
+  late Future<RecommendProductModel> _recommendProduct;
+
   @override
   void initState() {
     super.initState();
+    final apiRepo = ref.read(productViewModelProvider.notifier);
+    _recommendProduct = apiRepo.fetchRecommendation(
+      ref.read(authViewModelProvider).user!,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authViewModelProvider);
     final regions = ref.watch(regionProvider);
+    final apiRepo = ref.read(productViewModelProvider.notifier);
+
+    _recommendProduct = apiRepo.fetchRecommendation(
+      ref.read(authViewModelProvider).user!,
+    );
 
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -467,87 +480,102 @@ class _HomePageState extends ConsumerState<HomePage> {
                           ),
                         ),
 
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: 4,
-                            padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
-                            physics: NeverScrollableScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              final bool tag = true;
-                              final name = 'WON플러스예금';
-                              final int period_min = 1;
-                              final int period_max = 36;
-                              final double interset_rate = 2.45;
-                              final interest_rate_p = '연';
-                              final company = '우리은행';
-
-                              return Container(
-                                height: 80.h,
-                                padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    top: BorderSide(
-                                      color: Color(0xffD0D0D0),
-                                      width: 0.5,
-                                    ),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        tag
-                                            ? _suggTag()
-                                            : Container(
-                                                width: 34.w,
-                                                height: 17.h,
-                                              ),
-                                        Text(
-                                          name,
-                                          style: TextStyle(
-                                            fontSize: 15.sp,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xff374151),
-                                          ),
-                                        ),
-                                        Text(
-                                          '$period_min~$period_max개월 · 금리 최대 $interset_rate($interest_rate_p)',
-                                          style: TextStyle(
-                                            fontSize: 10.sp,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color(0xff6B7280),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                          company,
-                                          style: TextStyle(
-                                            fontSize: 10.sp,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xff6B7280),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                        FutureBuilder(
+                          future: _recommendProduct,
+                          builder: (context, snapshot) {
+                            // 1. 로딩 중 상태 처리
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
                               );
-                            },
-                          ),
+                            }
+
+                            // 2. 에러 발생 상태 처리
+                            if (snapshot.hasError) {
+                              return Center(
+                                child: Text('에러: ${snapshot.error}'),
+                              );
+                            }
+
+                            // 3. 데이터가 없거나 비어있는 경우 처리
+                            if (!snapshot.hasData || snapshot.data == null) {
+                              return const Center(child: Text('데이터가 없습니다.'));
+                            }
+
+                            final products = snapshot.data!.products;
+
+                            return Expanded(
+                              child: ListView.builder(
+                                itemCount: products!.length,
+                                padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                                physics: NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  return Container(
+                                    height: 80.h,
+                                    padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        top: BorderSide(
+                                          color: Color(0xffD0D0D0),
+                                          width: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            _suggTag(),
+                                            Text(
+                                              products[index].productName!,
+                                              style: TextStyle(
+                                                fontSize: 15.sp,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xff374151),
+                                              ),
+                                            ),
+                                            Text(
+                                              '${products[index].term}개월 · 금리 최대 ${products[index].monthlyAmount}(월)',
+                                              style: TextStyle(
+                                                fontSize: 10.sp,
+                                                fontWeight: FontWeight.w400,
+                                                color: Color(0xff6B7280),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              products[index].bankName!,
+                                              style: TextStyle(
+                                                fontSize: 10.sp,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xff6B7280),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
                         ),
 
                         Container(
