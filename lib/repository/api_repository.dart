@@ -23,6 +23,8 @@ class ApiRepository {
     String? region,
     String? area,
   ) async {
+    OAuthToken? token = await TokenManagerProvider.instance.manager.getToken();
+
     final params = type != 'top10'
         ? {
             'address':
@@ -55,13 +57,20 @@ class ApiRepository {
     String productType,
     String? keyword,
   ) async {
+    OAuthToken? token = await TokenManagerProvider.instance.manager.getToken();
     final params = keyword != null ? {"keyword": keyword} : null;
     final url = Uri.http(
       '3.27.44.246:8080',
       '/api/financial/$productType',
       params,
     );
-    final response = await http.get(url, headers: {'accept': '*/*'});
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer ${token!.accessToken}',
+        'accept': '*/*',
+      },
+    );
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> decodedJson = json.decode(response.body);
@@ -78,6 +87,7 @@ class ApiRepository {
     int? currentAmount,
     int? riskPreference,
   }) async {
+    OAuthToken? token = await TokenManagerProvider.instance.manager.getToken();
     //final String riskPreferenceList =
 
     final body = {
@@ -90,7 +100,10 @@ class ApiRepository {
     final response = await http.post(
       url,
       body: body,
-      headers: {'Authorization': 'Bearer ', 'accept': '*/*'},
+      headers: {
+        'Authorization': 'Bearer ${token!.accessToken}',
+        'accept': '*/*',
+      },
     );
 
     if (response.statusCode == 200) {
