@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/model/policy_model.dart';
+import 'package:pin_grow/service/secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../view_model/auth_view_model.dart';
@@ -23,7 +24,7 @@ class ApiRepository {
     String? region,
     String? area,
   ) async {
-    OAuthToken? token = await TokenManagerProvider.instance.manager.getToken();
+    final token = SecureStorageManager.readData('AACCESS_TOKEN');
 
     final params = type != 'top10'
         ? {
@@ -57,7 +58,7 @@ class ApiRepository {
     String productType,
     String? keyword,
   ) async {
-    OAuthToken? token = await TokenManagerProvider.instance.manager.getToken();
+    final token = SecureStorageManager.readData('AACCESS_TOKEN');
     final params = keyword != null ? {"keyword": keyword} : null;
     final url = Uri.http(
       '3.27.44.246:8080',
@@ -66,10 +67,7 @@ class ApiRepository {
     );
     final response = await http.get(
       url,
-      headers: {
-        'Authorization': 'Bearer ${token!.accessToken}',
-        'accept': '*/*',
-      },
+      headers: {'Authorization': 'Bearer ${token}', 'accept': '*/*'},
     );
 
     if (response.statusCode == 200) {
@@ -87,7 +85,7 @@ class ApiRepository {
     int? currentAmount,
     int? riskPreference,
   }) async {
-    OAuthToken? token = await TokenManagerProvider.instance.manager.getToken();
+    final token = SecureStorageManager.readData('AACCESS_TOKEN');
     //final String riskPreferenceList =
 
     final body = {
@@ -100,10 +98,7 @@ class ApiRepository {
     final response = await http.post(
       url,
       body: body,
-      headers: {
-        'Authorization': 'Bearer ${token!.accessToken}',
-        'accept': '*/*',
-      },
+      headers: {'Authorization': 'Bearer ${token}', 'accept': '*/*'},
     );
 
     if (response.statusCode == 200) {
