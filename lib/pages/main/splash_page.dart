@@ -89,8 +89,8 @@ class _SplashPageState extends ConsumerState<SplashPage> {
  */
     switch (authState?.status ?? AuthStatus.unauthenticated) {
       case AuthStatus.unauthenticated || AuthStatus.error:
-        GoRouter.of(context).go('/product_list');
-        //GoRouter.of(context).go('/signIn');
+        //GoRouter.of(context).go('/product_list');
+        GoRouter.of(context).go('/signIn');
         break;
       case AuthStatus.loading:
         break;

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:pin_grow/model/bond_product_model.dart';
 import 'package:pin_grow/model/product_model.dart';
 import 'package:pin_grow/model/region_model.dart';
 import 'package:pin_grow/model/policy_model.dart';
@@ -44,12 +45,12 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
   TextEditingController _controller = TextEditingController();
 
+  int tap_idx = 0;
   int idx = 0;
   String hintValue = '';
 
-  late Future<List<ProductModel>> _depositsFuture;
-  late Future<List<ProductModel>> _savingsFuture;
-  late Future<List<ProductModel>> _searchFuture;
+  late Future<List<ProductModel>> _productsFuture;
+  late Future<(List<BondProductModel>, List<BondProductModel>)> _bondsFuture;
 
   @override
   void initState() {
@@ -57,14 +58,13 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
     final apiRepo = ref.read(productViewModelProvider.notifier);
 
-    _depositsFuture = apiRepo.fetchDepositList();
-    _savingsFuture = apiRepo.fetchSavingsList();
-    _searchFuture = apiRepo.fetchSearchList(null);
+    _productsFuture = apiRepo.fetchDepositList();
+    _bondsFuture = apiRepo.fetchBondsList();
   }
 
   Map<int, Widget> get _products => {
     0: FutureBuilder<List<ProductModel>>(
-      future: _depositsFuture,
+      future: _productsFuture,
       builder: (context, snapshot) {
         // 1. 로딩 중 상태 처리
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -90,20 +90,169 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
         return Scrollbar(
           controller: scrollController,
           child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              (MediaQuery.of(context).size.width - 348.w) / 2,
+              0,
+              (MediaQuery.of(context).size.width - 348.w) / 2,
+              0,
+            ),
+            controller: scrollController,
+            child: Container(
+              //width: 338.w,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListView.builder(
+                    padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
+                    physics:
+                        const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
+                    shrinkWrap: true,
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      // 재사용 가능한 메소드 호출
+                      return Container(
+                        width: 338.w,
+                        margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  products[index].bankName!,
+                                  style: TextStyle(
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff6B7280),
+                                  ),
+                                ),
+                                Container(
+                                  width: 220,
+                                  child: Text(
+                                    products[index].productName!,
+                                    style: TextStyle(
+                                      fontSize: 20.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xff374151),
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '1~${products[index].bestTerm}개월 · 금리 최대 ${products[index].bestRate}(연)',
+                                  style: TextStyle(
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xff6B7280),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '추천기간: ${products[index].bestTerm}개월',
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff6B7280),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    ),
+    1: FutureBuilder<(List<BondProductModel>, List<BondProductModel>)>(
+      future: _bondsFuture,
+      builder: (context, snapshot) {
+        // 1. 로딩 중 상태 처리
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        // 2. 에러 발생 상태 처리
+        if (snapshot.hasError) {
+          return Center(child: Text('에러: ${snapshot.error}'));
+        }
+
+        // 3. 데이터가 없거나 비어있는 경우 처리
+        if (!snapshot.hasData ||
+            snapshot.data!.$1.isEmpty ||
+            snapshot.data!.$2.isEmpty) {
+          return const Center(child: Text('데이터가 없습니다.'));
+        }
+
+        // 4. 데이터 수신 성공 시 UI 구성
+        final sortByInterest = snapshot.data!.$1;
+        final sortByMaturity = snapshot.data!.$2;
+
+        ScrollController scrollController = ScrollController();
+
+        // 전체를 스크롤 가능하게 만듦
+        return Scrollbar(
+          controller: scrollController,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              (MediaQuery.of(context).size.width - 348.w) / 2,
+              0,
+              (MediaQuery.of(context).size.width - 348.w) / 2,
+              0,
+            ),
             controller: scrollController,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  width: MediaQuery.of(context).size.width - 20.w,
+                  padding: EdgeInsets.fromLTRB(0, 0, 0, 5.h),
+                  margin: EdgeInsets.only(top: 25.h, bottom: 5.h),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xffD0D0D0), width: 1),
+                    ),
+                  ),
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        color: Color(0xff374151),
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      children: [
+                        const TextSpan(text: '금융채 '),
+                        const TextSpan(
+                          text: 'Top 5',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const TextSpan(text: ' (금리순)'),
+                      ],
+                    ),
+                  ),
+                ),
                 ListView.builder(
                   padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
                   physics:
                       const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
                   shrinkWrap: true,
-                  itemCount: products.length,
+                  itemCount: sortByInterest.length,
                   itemBuilder: (context, index) {
                     // 재사용 가능한 메소드 호출
                     return Container(
-                      height: 48.h,
                       margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
 
                       child: Row(
@@ -115,23 +264,26 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                products[index].bankName!,
+                                sortByInterest[index].bondIsurNm!,
                                 style: TextStyle(
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xff6B7280),
                                 ),
                               ),
-                              Text(
-                                products[index].productName!,
-                                style: TextStyle(
-                                  fontSize: 20.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff374151),
+                              Container(
+                                width: 220,
+                                child: Text(
+                                  sortByInterest[index].isinCdNm!,
+                                  style: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff374151),
+                                  ),
                                 ),
                               ),
                               Text(
-                                '1~${products[index].bestTerm}개월 · 금리 최대 ${products[index].bestRate}(연)',
+                                '만기일 ${sortByInterest[index].bondExprDt} · 금리 최대 ${sortByInterest[index].bondSrfcInrt}%(연)',
                                 style: TextStyle(
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.w400,
@@ -145,7 +297,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                '추천기간: ${products[index].bestTerm}개월',
+                                '추천기간: -개월',
                                 style: TextStyle(
                                   fontSize: 12.sp,
                                   fontWeight: FontWeight.bold,
@@ -159,156 +311,42 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     );
                   },
                 ),
-              ],
-            ),
-          ),
-        );
-      },
-    ),
-    1: FutureBuilder<List<ProductModel>>(
-      future: _savingsFuture,
-      builder: (context, snapshot) {
-        // 1. 로딩 중 상태 처리
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        // 2. 에러 발생 상태 처리
-        if (snapshot.hasError) {
-          return Center(child: Text('에러: ${snapshot.error}'));
-        }
-
-        // 3. 데이터가 없거나 비어있는 경우 처리
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('데이터가 없습니다.'));
-        }
-
-        // 4. 데이터 수신 성공 시 UI 구성
-        final products = snapshot.data!;
-
-        ScrollController scrollController = ScrollController();
-
-        // 전체를 스크롤 가능하게 만듦
-        return Scrollbar(
-          controller: scrollController,
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ListView.builder(
-                  padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
-                  physics:
-                      const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
-                  shrinkWrap: true,
-                  itemCount: products.length,
-                  itemBuilder: (context, index) {
-                    // 재사용 가능한 메소드 호출
-                    return Container(
-                      height: 48.h,
-                      margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
-
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                products[index].bankName!,
-                                style: TextStyle(
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff6B7280),
-                                ),
-                              ),
-                              Text(
-                                products[index].productName!,
-                                style: TextStyle(
-                                  fontSize: 20.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff374151),
-                                ),
-                              ),
-                              Text(
-                                '1~${products[index].bestTerm}개월 · 금리 최대 ${products[index].bestRate}(연)',
-                                style: TextStyle(
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xff6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                '추천기간: ${products[index].bestTerm}개월',
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                Container(
+                  width: MediaQuery.of(context).size.width - 20.w,
+                  padding: EdgeInsets.fromLTRB(0, 0, 0, 5.h),
+                  margin: EdgeInsets.only(top: 25.h, bottom: 5.h),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xffD0D0D0), width: 1),
+                    ),
+                  ),
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        color: Color(0xff374151),
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w400,
                       ),
-                    );
-                  },
+                      children: [
+                        const TextSpan(text: '금융채 '),
+                        const TextSpan(
+                          text: 'Top 5',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const TextSpan(text: ' (만기순)'),
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-            ),
-          ),
-        );
-      },
-    ),
-    2: Container(),
-    3: FutureBuilder<List<ProductModel>>(
-      future: _searchFuture,
-      builder: (context, snapshot) {
-        // 1. 로딩 중 상태 처리
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        // 2. 에러 발생 상태 처리
-        if (snapshot.hasError) {
-          return Center(child: Text('에러: ${snapshot.error}'));
-        }
-
-        // 3. 데이터가 없거나 비어있는 경우 처리
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('데이터가 없습니다.'));
-        }
-
-        // 4. 데이터 수신 성공 시 UI 구성
-        final products = snapshot.data!;
-
-        ScrollController scrollController = ScrollController();
-
-        // 전체를 스크롤 가능하게 만듦
-        return Scrollbar(
-          controller: scrollController,
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
                 ListView.builder(
                   padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
                   physics:
                       const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
                   shrinkWrap: true,
-                  itemCount: products.length,
+                  itemCount: sortByMaturity.length,
                   itemBuilder: (context, index) {
                     // 재사용 가능한 메소드 호출
                     return Container(
-                      height: 48.h,
                       margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
 
                       child: Row(
@@ -320,23 +358,26 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                products[index].bankName!,
+                                sortByMaturity[index].bondIsurNm!,
                                 style: TextStyle(
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xff6B7280),
                                 ),
                               ),
-                              Text(
-                                products[index].productName!,
-                                style: TextStyle(
-                                  fontSize: 20.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff374151),
+                              Container(
+                                width: 220,
+                                child: Text(
+                                  sortByMaturity[index].isinCdNm!,
+                                  style: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff374151),
+                                  ),
                                 ),
                               ),
                               Text(
-                                '1~${products[index].bestTerm}개월 · 금리 최대 ${products[index].bestRate}(연)',
+                                '만기일 ${sortByMaturity[index].bondExprDt} · 금리 최대 ${sortByMaturity[index].bondSrfcInrt}%(연)',
                                 style: TextStyle(
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.w400,
@@ -350,7 +391,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                '추천기간: ${products[index].bestTerm}개월',
+                                '추천기간: -개월',
                                 style: TextStyle(
                                   fontSize: 12.sp,
                                   fontWeight: FontWeight.bold,
@@ -472,8 +513,9 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                           child: GestureDetector(
                             onTap: () {
                               setState(() {
-                                idx = 3;
-                                _searchFuture = apiRepo.fetchSearchList(
+                                tap_idx = 4;
+                                idx = 0;
+                                _productsFuture = apiRepo.fetchSearchList(
                                   '우리은행',
                                   /**_controller.text*/
                                 );
@@ -510,12 +552,13 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                 children: [
                   GestureDetector(
                     onTap: () async {
-                      if (idx != 0) {
+                      if (tap_idx != 0) {
                         setState(() {
+                          tap_idx = 0;
                           idx = 0;
                           hintValue = '';
                           _controller.text = '';
-                          _depositsFuture = apiRepo.fetchDepositList();
+                          _productsFuture = apiRepo.fetchDepositList();
                         });
                       }
                     },
@@ -525,16 +568,20 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                       margin: EdgeInsets.fromLTRB(0, 0, 12.w, 0),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: Color(selectConfig[idx == 0]!["COLOR"]),
+                        color: Color(selectConfig[tap_idx == 0]!["COLOR"]),
                         border: Border.all(
-                          color: Color(selectConfig[idx == 0]!["STROKE_COLOR"]),
+                          color: Color(
+                            selectConfig[tap_idx == 0]!["STROKE_COLOR"],
+                          ),
                         ),
                         borderRadius: BorderRadius.circular(13),
                       ),
                       child: Text(
                         '정기예금',
                         style: TextStyle(
-                          color: Color(selectConfig[idx == 0]!["FONT_COLOR"]),
+                          color: Color(
+                            selectConfig[tap_idx == 0]!["FONT_COLOR"],
+                          ),
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -544,12 +591,13 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
                   GestureDetector(
                     onTap: () async {
-                      if (idx != 1) {
+                      if (tap_idx != 1) {
                         setState(() {
-                          idx = 1;
+                          tap_idx = 1;
+                          idx = 0;
                           hintValue = '';
                           _controller.text = '';
-                          _savingsFuture = apiRepo.fetchSavingsList();
+                          _productsFuture = apiRepo.fetchSavingsList();
                         });
                       }
                     },
@@ -559,16 +607,20 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                       margin: EdgeInsets.fromLTRB(0, 0, 12.w, 0),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: Color(selectConfig[idx == 1]!["COLOR"]),
+                        color: Color(selectConfig[tap_idx == 1]!["COLOR"]),
                         border: Border.all(
-                          color: Color(selectConfig[idx == 1]!["STROKE_COLOR"]),
+                          color: Color(
+                            selectConfig[tap_idx == 1]!["STROKE_COLOR"],
+                          ),
                         ),
                         borderRadius: BorderRadius.circular(13),
                       ),
                       child: Text(
                         '적금',
                         style: TextStyle(
-                          color: Color(selectConfig[idx == 1]!["FONT_COLOR"]),
+                          color: Color(
+                            selectConfig[tap_idx == 1]!["FONT_COLOR"],
+                          ),
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -578,12 +630,13 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
                   GestureDetector(
                     onTap: () async {
-                      if (idx != 2) {
+                      if (tap_idx != 2) {
                         setState(() {
-                          idx = 2;
+                          tap_idx = 2;
+                          idx = 1;
                           hintValue = '';
                           _controller.text = '';
-                          //TODO: 채권 api
+                          _bondsFuture = apiRepo.fetchBondsList();
                         });
                       }
                     },
@@ -593,16 +646,20 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                       margin: EdgeInsets.fromLTRB(0, 0, 12.w, 0),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: Color(selectConfig[idx == 2]!["COLOR"]),
+                        color: Color(selectConfig[tap_idx == 2]!["COLOR"]),
                         border: Border.all(
-                          color: Color(selectConfig[idx == 2]!["STROKE_COLOR"]),
+                          color: Color(
+                            selectConfig[tap_idx == 2]!["STROKE_COLOR"],
+                          ),
                         ),
                         borderRadius: BorderRadius.circular(13),
                       ),
                       child: Text(
                         '채권',
                         style: TextStyle(
-                          color: Color(selectConfig[idx == 2]!["FONT_COLOR"]),
+                          color: Color(
+                            selectConfig[tap_idx == 2]!["FONT_COLOR"],
+                          ),
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -614,9 +671,125 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
             ),
           ),
 
-          Expanded(child: Container(child: _products[idx])),
+          Expanded(
+            child: Container(
+              width: MediaQuery.of(context).size.width - 20.w,
+              child: _products[idx],
+            ),
+          ),
         ],
       ),
     );
   }
 }
+
+/**
+ * FutureBuilder<List<ProductModel>>(
+                future: _productsFuture,
+                builder: (context, snapshot) {
+                  // 1. 로딩 중 상태 처리
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  // 2. 에러 발생 상태 처리
+                  if (snapshot.hasError) {
+                    return Center(child: Text('에러: ${snapshot.error}'));
+                  }
+
+                  // 3. 데이터가 없거나 비어있는 경우 처리
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('데이터가 없습니다.'));
+                  }
+
+                  // 4. 데이터 수신 성공 시 UI 구성
+                  final products = snapshot.data!;
+
+                  ScrollController scrollController = ScrollController();
+
+                  // 전체를 스크롤 가능하게 만듦
+                  return Scrollbar(
+                    controller: scrollController,
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ListView.builder(
+                            padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
+                            physics:
+                                const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
+                            shrinkWrap: true,
+                            itemCount: products.length,
+                            itemBuilder: (context, index) {
+                              // 재사용 가능한 메소드 호출
+                              return Container(
+                                height: 48.h,
+                                margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          products[index].bankName!,
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xff6B7280),
+                                          ),
+                                        ),
+                                        Text(
+                                          products[index].productName!,
+                                          style: TextStyle(
+                                            fontSize: 20.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xff374151),
+                                          ),
+                                        ),
+                                        Text(
+                                          '1~${products[index].bestTerm}개월 · 금리 최대 ${products[index].bestRate}(연)',
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.w400,
+                                            color: Color(0xff6B7280),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          '추천기간: ${products[index].bestTerm}개월',
+                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xff6B7280),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+           
+ */

@@ -1,0 +1,70 @@
+{
+    "success": true,
+  "message": "10개의 금융채 상품을 조회했습니다.",
+  "data": {
+    "sortByInterest": [
+      {
+        "bondIsurNm": "상상인증권",
+        "isinCdNm": "상상인증권 3-1(사모/후)",
+        "bondSrfcInrt": 8.9,
+        "bondExprDt": "2030-09-30"
+      },
+      {
+        "bondIsurNm": "SK증권",
+        "isinCdNm": "SK증권 33(사모/후)",
+        "bondSrfcInrt": 8.0,
+        "bondExprDt": "2030-12-17"
+      },
+      {
+        "bondIsurNm": "SK증권",
+        "isinCdNm": "SK증권 34(사모/후)",
+        "bondSrfcInrt": 8.0,
+        "bondExprDt": "2031-01-21"
+      },
+      {
+        "bondIsurNm": "우리은행",
+        "isinCdNm": "우리은행12-06이(신)30간-20(콜/후)",
+        "bondSrfcInrt": 7.73,
+        "bondExprDt": "2038-06-20"
+      },
+      {
+        "bondIsurNm": "SK증권",
+        "isinCdNm": "SK증권 31(사모/후)",
+        "bondSrfcInrt": 7.7,
+        "bondExprDt": "2030-07-26"
+      }
+    ],
+    "sortByMaturity": [
+      {
+        "bondIsurNm": "한국증권금융",
+        "isinCdNm": "증권금융채권 2023-3",
+        "bondSrfcInrt": 4.258,
+        "bondExprDt": "2025-09-15"
+      },
+      {
+        "bondIsurNm": "한화투자증권",
+        "isinCdNm": "한화투자증권 27-2",
+        "bondSrfcInrt": 5.407,
+        "bondExprDt": "2025-09-16"
+      },
+      {
+        "bondIsurNm": "NH투자증권",
+        "isinCdNm": "엔에이치투자증권 68-1",
+        "bondSrfcInrt": 4.576,
+        "bondExprDt": "2025-09-19"
+      },
+      {
+        "bondIsurNm": "메리츠증권",
+        "isinCdNm": "메리츠증권 2309-1",
+        "bondSrfcInrt": 4.786,
+        "bondExprDt": "2025-09-19"
+      },
+      {
+        "bondIsurNm": "우리은행",
+        "isinCdNm": "우리은행 28-09-할인01-갑-20",
+        "bondSrfcInrt": 3.13,
+        "bondExprDt": "2025-09-20"
+      }
+    ]
+  }
+}

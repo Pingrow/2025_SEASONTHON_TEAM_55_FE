@@ -431,7 +431,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   ),
 
                                   GestureDetector(
-                                    onTap: () {},
+                                    onTap: () {
+                                      GoRouter.of(
+                                        context,
+                                      ).push('/product_list');
+                                    },
                                     child: Row(
                                       children: [
                                         Text(

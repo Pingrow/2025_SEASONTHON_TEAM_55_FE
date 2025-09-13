@@ -99,6 +99,21 @@ class ApiRepository {
         : decodedJson['data']['products'];
   }
 
+  /// TODO:
+  /// fetcBondProduct필요
+
+  Future<List<List<dynamic>>> fetchBondProductDummy() async {
+    String jsonString = await rootBundle.loadString(
+      'assets/dummy/dummy_bonds_list.json',
+    );
+
+    final Map<String, dynamic> decodedJson = json.decode(jsonString);
+
+    final Map<String, dynamic> data = decodedJson['data'];
+
+    return [data['sortByInterest'], data['sortByMaturity']];
+  }
+
   Future<Map<String, dynamic>> fetchRecommendProduct({
     required int targetAmount,
     required int targetMonths,

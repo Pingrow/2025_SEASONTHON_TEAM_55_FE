@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:pin_grow/model/bond_product_model.dart';
 import 'package:pin_grow/model/policy_model.dart';
 import 'package:pin_grow/model/product_model.dart';
 import 'package:pin_grow/model/recommend_product_model.dart';
@@ -65,6 +66,23 @@ class ProductViewModel extends _$ProductViewModel {
         .toList();
 
     return products;
+  }
+
+  Future<(List<BondProductModel>, List<BondProductModel>)>
+  fetchBondsList() async {
+    final List<List<dynamic>> productListJson = await _repository
+        .fetchBondProductDummy(
+          //await _repository.fetchBondProduct(
+        );
+    final List<BondProductModel> sortByInterest = productListJson[0]
+        .map((jsonItem) => BondProductModel.fromJson(jsonItem))
+        .toList();
+
+    final List<BondProductModel> sortByMaturity = productListJson[1]
+        .map((jsonItem) => BondProductModel.fromJson(jsonItem))
+        .toList();
+
+    return (sortByInterest, sortByMaturity);
   }
 
   Future<RecommendProductModel> fetchRecommendation(UserModel user) async {
