@@ -1,0 +1,41 @@
+{
+  "success": true,
+  "message": "'우리은행'로 5개 상품을 찾았습니다.",
+  "data": {
+    "keyword": "우리은행",
+    "products": [
+      {
+        "id": 1,
+        "bankName": "우리은행",
+        "productName": "WON플러스예금",
+        "productType": "예금",
+        "bestRate": 2.45,
+        "bestTerm": 12
+      },
+      {
+        "id": 1,
+        "bankName": "우리은행",
+        "productName": "WON플러스예금",
+        "productType": "예금",
+        "bestRate": 2.45,
+        "bestTerm": 12
+      },
+      {
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    },{
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    }
+    ],
+    "totalCount": 5
+  }
+}

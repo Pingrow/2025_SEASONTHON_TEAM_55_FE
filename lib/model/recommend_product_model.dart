@@ -32,15 +32,15 @@ class OptimalProductModel {
       productType: json['productType'],
       bankName: json['bankName'],
       productName: json['productName'],
-      term: int.parse(json['term']),
-      interestRate: double.parse(json['interestRate']),
+      term: json['term'],
+      interestRate: json['interestRate'],
       specialCondition: json['specialCondition'],
-      depositAmount: int.parse(json['depositAmount']),
-      maturityAmount: int.parse(json['maturityAmount']),
-      monthlyAmount: int.parse(json['monthlyAmount']),
-      totalSavingAmount: int.parse(json['totalSavingAmount']),
-      savingMaturityAmount: int.parse(json['savingMaturityAmount']),
-      expectedReturn: double.parse(json['expectedReturn']),
+      depositAmount: json['depositAmount'],
+      maturityAmount: json['maturityAmount'],
+      monthlyAmount: json['monthlyAmount'],
+      totalSavingAmount: json['totalSavingAmount'],
+      savingMaturityAmount: json['savingMaturityAmount'],
+      expectedReturn: json['expectedReturn'],
     );
   }
 }
@@ -67,8 +67,8 @@ class RecommendProductModel {
       combinationSummary: json['combinationSummary'] as String?,
 
       // JSON의 숫자 값(int 또는 double)을 안전하게 double? 타입으로 변환합니다.
-      totalExpectedReturn: (json['totalExpectedReturn'] as num?)?.toDouble(),
-      expectedTotalAmount: (json['expectedTotalAmount'] as num?)?.toDouble(),
+      totalExpectedReturn: json['totalExpectedReturn'],
+      expectedTotalAmount: json['expectedTotalAmount'],
 
       riskLevel: json['riskLevel'] as String?,
       description: json['description'] as String?,

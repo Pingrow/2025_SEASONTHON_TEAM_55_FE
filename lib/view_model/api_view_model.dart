@@ -28,8 +28,9 @@ class ProductViewModel extends _$ProductViewModel {
   }
 
   Future<List<ProductModel>> fetchDepositList() async {
-    final List<dynamic> productListJson = await _repository.fetchProduct(
-      'deposit',
+    final List<dynamic> productListJson = await _repository.fetchProductDummy(
+      //await _repository.fetchProduct(
+      'deposits',
       null,
     );
     final List<ProductModel> products = productListJson
@@ -40,10 +41,12 @@ class ProductViewModel extends _$ProductViewModel {
   }
 
   Future<List<ProductModel>> fetchSavingsList() async {
-    final List<dynamic> productListJson = await _repository.fetchProduct(
+    final List<dynamic> productListJson = await _repository.fetchProductDummy(
+      //await _repository.fetchProduct(
       'savings',
       null,
     );
+
     final List<ProductModel> products = productListJson
         .map((jsonItem) => ProductModel.fromJson(jsonItem))
         .toList();
@@ -51,8 +54,9 @@ class ProductViewModel extends _$ProductViewModel {
     return products;
   }
 
-  Future<List<ProductModel>> fetcSearchList(String keyword) async {
-    final List<dynamic> productListJson = await _repository.fetchProduct(
+  Future<List<ProductModel>> fetchSearchList(String? keyword) async {
+    final List<dynamic> productListJson = await _repository.fetchProductDummy(
+      //await _repository.fetchProduct(
       'search',
       keyword,
     );

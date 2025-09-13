@@ -24,7 +24,7 @@ class ApiRepository {
     String? region,
     String? area,
   ) async {
-    final token = SecureStorageManager.readData('AACCESS_TOKEN');
+    final token = await SecureStorageManager.readData('ACCESS_TOKEN');
 
     final params = type != 'top10'
         ? {
@@ -53,12 +53,16 @@ class ApiRepository {
     }
   }
 
-  // productType은 saving, deposit
+  // productType은 saving, deposit, search
   Future<List<dynamic>> fetchProduct(
     String productType,
     String? keyword,
   ) async {
-    final token = SecureStorageManager.readData('AACCESS_TOKEN');
+    if (productType == 'search' && keyword == null) {
+      return fetchProductDummy(productType, keyword);
+    }
+
+    final token = SecureStorageManager.readData('ACCESS_TOKEN');
     final params = keyword != null ? {"keyword": keyword} : null;
     final url = Uri.http(
       '3.27.44.246:8080',
@@ -67,7 +71,7 @@ class ApiRepository {
     );
     final response = await http.get(
       url,
-      headers: {'Authorization': 'Bearer ${token}', 'accept': '*/*'},
+      headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
     );
 
     if (response.statusCode == 200) {
@@ -79,20 +83,36 @@ class ApiRepository {
     }
   }
 
+  // productType은 savings, deposits, search
+  Future<List<dynamic>> fetchProductDummy(
+    String productType,
+    String? keyword,
+  ) async {
+    String jsonString = await rootBundle.loadString(
+      'assets/dummy/dummy_${productType}${keyword ?? ''}_list.json',
+    );
+
+    final Map<String, dynamic> decodedJson = json.decode(jsonString);
+
+    return productType != 'search'
+        ? decodedJson['data']
+        : decodedJson['data']['products'];
+  }
+
   Future<Map<String, dynamic>> fetchRecommendProduct({
     required int targetAmount,
     required int targetMonths,
     int? currentAmount,
     int? riskPreference,
   }) async {
-    final token = SecureStorageManager.readData('AACCESS_TOKEN');
+    final token = SecureStorageManager.readData('ACCESS_TOKEN');
     //final String riskPreferenceList =
 
     final body = {
       "targetAmount": targetAmount,
       "targetMonths": targetMonths,
-      "currentAmount": currentAmount,
-      "riskPreference": riskPreference,
+      //"currentAmount": currentAmount,
+      //"riskPreference": riskPreference,
     };
     final url = Uri.http('3.27.44.246:8080', '/api/financial/recoommend');
     final response = await http.post(

@@ -41,10 +41,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     final regions = ref.watch(regionProvider);
     final apiRepo = ref.read(productViewModelProvider.notifier);
 
-    _recommendProduct = apiRepo.fetchRecommendation(
-      ref.read(authViewModelProvider).user!,
-    );
-
     return Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,

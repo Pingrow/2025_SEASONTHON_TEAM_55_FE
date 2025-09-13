@@ -632,14 +632,6 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
                       );
                       final savedMoney = ref.read(currentSavedMoneyProvider);
 
-                      SecureStorageManager.saveData('GOAL_PERIOD', goal_period);
-
-                      SecureStorageManager.saveData('GOAL_NAME', goal!);
-
-                      SecureStorageManager.saveData('GOAL_MONEY', goalMoney!);
-
-                      SecureStorageManager.saveData('SAVED_MONEY', savedMoney!);
-
                       final authState = ref.read(
                         authViewModelProvider.notifier,
                       );
@@ -653,10 +645,10 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
                           profile_url: state.user?.profile_url,
                           type: state.user?.type,
                           goal: goal,
-                          goal_money: int.parse(goalMoney.replaceAll(',', '')),
+                          goal_money: int.parse(goalMoney!.replaceAll(',', '')),
                           goal_period: int.parse(goal_period),
                           saved_money: int.parse(
-                            savedMoney.replaceAll(',', ''),
+                            savedMoney!.replaceAll(',', ''),
                           ),
                           research_completed: state.user?.research_completed,
                         ),

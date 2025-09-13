@@ -195,41 +195,6 @@ class _OnboardingResearchPageState
                   ref.read(selectedIndexProvider.notifier).setIndex(200);
                   print('$resultOfStep5_goal , $resultOfStep5_money');
 
-                  await SecureStorageManager.saveData(
-                    'MONEY_MANAGEMENT_STYLE',
-                    selectedIndexStep1.toString(),
-                  );
-
-                  await SecureStorageManager.saveData(
-                    'RISK_TOLERANCE',
-                    selectedIndexStep2.toString(),
-                  );
-
-                  await SecureStorageManager.saveBoolArrayData(
-                    'INVESTMENT_STYLE',
-                    selectedIndexStep3,
-                  );
-
-                  await SecureStorageManager.saveData(
-                    'GOAL_PERIOD',
-                    selectedIndexStep4.toString(),
-                  );
-
-                  await SecureStorageManager.saveData(
-                    'GOAL_NAME',
-                    resultOfStep5_goal!,
-                  );
-
-                  await SecureStorageManager.saveData(
-                    'GOAL_MONEY',
-                    resultOfStep5_money!,
-                  );
-
-                  await SecureStorageManager.saveData(
-                    'RESEARCH_COMPLETE_BOOL',
-                    true.toString(),
-                  );
-
                   final user = UserModel(
                     id: authState.user?.id,
                     nickname: authState.user?.nickname,
@@ -237,7 +202,7 @@ class _OnboardingResearchPageState
                     profile_url: authState.user?.profile_url,
                     goal: resultOfStep5_goal,
                     goal_money: int.tryParse(
-                      resultOfStep5_money.replaceAll(',', ''),
+                      resultOfStep5_money!.replaceAll(',', ''),
                     ),
                     goal_period: selectedIndexStep4.round(),
                     research_completed: true,

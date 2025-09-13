@@ -1,0 +1,86 @@
+{
+  "success": true,
+  "message": "10개의 적금 상품을 조회했습니다.",
+  "data": [
+    {
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    },
+    {
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    },
+    {
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    },
+    {
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    },
+    {
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    },
+    {
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    },
+    {
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    },
+    {
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    },
+    {
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    },
+    {
+      "id": 1,
+      "bankName": "우리은행",
+      "productName": "WON적금",
+      "productType": "적금",
+      "bestRate": 3.2,
+      "bestTerm": 24
+    }
+  ]
+}

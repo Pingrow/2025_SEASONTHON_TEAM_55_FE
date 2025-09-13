@@ -1,6 +1,7 @@
 {
     "서울특별시": {
         "ALIAS": "서울",
+        "LOGO": "assets/region_logo/seoul.png",
         "AREAS": [
             "종로구",
             "중구",
@@ -30,6 +31,7 @@
     ]},
     "경기도": {
         "ALIAS": "경기",
+        "LOGO": "assets/region_logo/gyeonggi.png",
         "AREAS": [
             "수원시",
             "용인시",
@@ -66,6 +68,7 @@
     },
     "인천광역시": {
         "ALIAS": "인천",
+        "LOGO": "assets/region_logo/incheon.png",
         "AREAS": [
             "강화군",
             "옹진군",
@@ -81,6 +84,7 @@
     },
     "부산광역시": {
         "ALIAS": "부산",
+        "LOGO": "assets/region_logo/busan.png",
         "AREAS": [
             "중구",
             "서구",
@@ -102,6 +106,7 @@
     },
     "경상남도": {
         "ALIAS": "경남",
+        "LOGO": "assets/region_logo/gyeongnam.png",
         "AREAS": [
             "창원시",
             "진주시",
@@ -125,6 +130,7 @@
     },
     "경상북도": {
         "ALIAS": "경북",
+        "LOGO": "assets/region_logo/gyeongbuk.png",
         "AREAS": [
             "포항시",
             "경주시",
@@ -152,6 +158,7 @@
     },
     "대구광역시": {
         "ALIAS": "대구",
+        "LOGO": "assets/region_logo/daegu.png",
         "AREAS": [
             "중구",
             "동구",
@@ -166,6 +173,7 @@
     },
     "울산광역시": {
         "ALIAS": "울산",
+        "LOGO": "assets/region_logo/ulsan.png",
         "AREAS": [
             "중구",
             "남구",
@@ -176,6 +184,7 @@
     },
     "대전광역시": {
         "ALIAS": "대전",
+        "LOGO": "assets/region_logo/daejeon.png",
         "AREAS": [
             "동구",
             "중구",
@@ -186,6 +195,7 @@
     },
     "충청남도": {
         "ALIAS": "충남",
+        "LOGO": "assets/region_logo/chungnam.png",
         "AREAS": [
             "천안시",
             "공주시",
@@ -206,6 +216,7 @@
     },
     "충청북도": {
         "ALIAS": "충북",
+        "LOGO": "assets/region_logo/chungbuk.png",
         "AREAS": [
             "청주시",
             "충주시",
@@ -222,12 +233,14 @@
     },    
     "세종특별자치시": {
         "ALIAS": "세종",
+        "LOGO": "assets/region_logo/sejong.png",
         "AREAS": [
             "세종특별자치시"
         ]
     },
     "광주광역시": {
         "ALIAS": "광주",
+        "LOGO": "assets/region_logo/gwangju.png",
         "AREAS": [
             "동구",
             "서구",
@@ -238,6 +251,7 @@
     },
     "전라남도": {
         "ALIAS": "전남",
+        "LOGO": "assets/region_logo/jeonnam.png",
         "AREAS": [
             "목포시",
             "여수시",
@@ -265,6 +279,7 @@
     },
     "전북특별자치도": {
         "ALIAS": "전북",
+        "LOGO": "assets/region_logo/jeonbuk.png",
         "AREAS": [
             "전주시",
             "군산시",
@@ -284,6 +299,7 @@
     },
     "강원특별자치도": {
         "ALIAS": "강원",
+        "LOGO": "assets/region_logo/gangwon.png",
         "AREAS": [
             "춘천시",
             "원주시",
@@ -307,6 +323,7 @@
     },
     "제주특별자치도": {
         "ALIAS": "제주",
+        "LOGO": "assets/region_logo/jeju.png",
         "AREAS": [
             "제주시",
             "서귀포시"
@@ -314,6 +331,7 @@
     },
      "NODATA" : {
         "ALIAS" : "???",
+        "LOGO": "",
         "AREAS" : ["???"]
     }
 }

@@ -17,12 +17,12 @@ class ProductModel {
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      id: int.parse(json['id']),
+      id: json['id'],
       bankName: json['bankName'],
       productName: json['productName'],
       productType: json['productType'],
-      bestRate: double.parse(json['bestRate']),
-      bestTerm: int.parse(json['bestTerm']),
+      bestRate: json['bestRate'],
+      bestTerm: json['bestTerm'],
     );
   }
 }

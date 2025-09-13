@@ -187,7 +187,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                       padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
                       physics:
                           const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
-                      shrinkWrap: true, // ⭐ 핵심: 자식 높이만큼만 차지
+                      shrinkWrap: true,
                       itemCount: policies.length,
                       itemBuilder: (context, index) {
                         final policy = policies[index];
@@ -207,6 +207,15 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
+                                child: authState.user?.region == null
+                                    ? Image.asset(
+                                        regions![authState.user?.region?.split(
+                                                  '-',
+                                                )[2] ??
+                                                'NODATA']!
+                                            .logo,
+                                      )
+                                    : Container(),
                               ),
                               SizedBox(width: 10.w), // 간격 조정
                               Expanded(
@@ -506,7 +515,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                           padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
                           physics:
                               const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
-                          shrinkWrap: true, // ⭐ 핵심: 자식 높이만큼만 차지
+                          shrinkWrap: true,
                           itemCount: popularPolicies.length,
                           itemBuilder: (context, index) {
                             final policy = popularPolicies[index];
@@ -526,6 +535,14 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
+                                    child: authState.user?.region == null
+                                        ? Image.asset(
+                                            regions![authState.user?.region
+                                                        ?.split('-')[2] ??
+                                                    'NODATA']!
+                                                .logo,
+                                          )
+                                        : Container(),
                                   ),
                                   SizedBox(width: 10.w), // 간격 조정
                                   Expanded(
@@ -665,6 +682,16 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                             ),
                                           ),
                                           // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
+                                          child: authState.user?.region == null
+                                              ? Image.asset(
+                                                  regions![authState
+                                                              .user
+                                                              ?.region
+                                                              ?.split('-')[2] ??
+                                                          'NODATA']!
+                                                      .logo,
+                                                )
+                                              : Container(),
                                         ),
                                         SizedBox(width: 10.w), // 간격 조정
                                         Expanded(
