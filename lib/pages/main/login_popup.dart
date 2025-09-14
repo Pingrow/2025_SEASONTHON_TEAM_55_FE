@@ -61,8 +61,9 @@ class _PolicyLoinPopupState extends ConsumerState<PolicyLoinPopup> {
                   Container(
                     width: 310.w,
                     padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 0),
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: RichText(
+                      textAlign: TextAlign.center,
                       text: TextSpan(
                         style: TextStyle(
                           color: Color(0xff374151),
@@ -70,16 +71,12 @@ class _PolicyLoinPopupState extends ConsumerState<PolicyLoinPopup> {
                           fontWeight: FontWeight.bold,
                         ),
                         children: [
+                          TextSpan(text: '나만을 위한 '),
                           TextSpan(
-                            text: '로그인',
+                            text: '청년정책',
                             style: TextStyle(color: Color(0xff0CA361)),
                           ),
-                          TextSpan(text: '하면 원하는 지역의\n'),
-                          TextSpan(
-                            text: '청년 정책',
-                            style: TextStyle(color: Color(0xff0CA361)),
-                          ),
-                          TextSpan(text: '을 볼 수 있어요'),
+                          TextSpan(text: ',\n 로그인하면 볼 수 있어요!'),
                         ],
                       ),
                     ),
@@ -87,12 +84,12 @@ class _PolicyLoinPopupState extends ConsumerState<PolicyLoinPopup> {
                   Expanded(
                     child: Container(
                       width: 310.w,
-                      padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 0),
-                      alignment: Alignment.topLeft,
+                      margin: EdgeInsets.fromLTRB(12.w, 30.h, 12.w, 0),
+                      alignment: Alignment.topCenter,
                       child: Image.asset(
                         'assets/dummy/policy_example.png',
                         width: 255.w,
-                        height: 251.h,
+                        height: 221.h,
                       ),
                     ),
                   ),
@@ -180,8 +177,9 @@ class _ProductLoinPopupState extends ConsumerState<ProductLoinPopup> {
                   Container(
                     width: 310.w,
                     padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 0),
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: RichText(
+                      textAlign: TextAlign.center,
                       text: TextSpan(
                         style: TextStyle(
                           color: Color(0xff374151),
@@ -189,16 +187,12 @@ class _ProductLoinPopupState extends ConsumerState<ProductLoinPopup> {
                           fontWeight: FontWeight.bold,
                         ),
                         children: [
-                          TextSpan(
-                            text: '로그인',
-                            style: TextStyle(color: Color(0xff0CA361)),
-                          ),
-                          TextSpan(text: '하고 나를 위한\n'),
+                          TextSpan(text: '나만을 위한 '),
                           TextSpan(
                             text: '금융 상품',
                             style: TextStyle(color: Color(0xff0CA361)),
                           ),
-                          TextSpan(text: '을 확인하세요!'),
+                          TextSpan(text: ',\n 로그인하면 볼 수 있어요!'),
                         ],
                       ),
                     ),
@@ -206,12 +200,12 @@ class _ProductLoinPopupState extends ConsumerState<ProductLoinPopup> {
                   Expanded(
                     child: Container(
                       width: 310.w,
-                      padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 0),
-                      alignment: Alignment.center,
+                      margin: EdgeInsets.fromLTRB(12.w, 30.h, 12.w, 0),
+                      alignment: Alignment.topCenter,
                       child: Image.asset(
                         'assets/dummy/product_example.png',
-                        width: 255.w,
-                        height: 251.h,
+                        width: 233.w,
+                        height: 277.h,
                       ),
                     ),
                   ),
@@ -299,8 +293,9 @@ class _HomeLoinPopupState extends ConsumerState<HomeLoinPopup> {
                   Container(
                     width: 310.w,
                     padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 0),
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: RichText(
+                      textAlign: TextAlign.center,
                       text: TextSpan(
                         style: TextStyle(
                           color: Color(0xff374151),
