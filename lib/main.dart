@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:pin_grow/pages/main/chat_bot.dart';
 import 'package:pin_grow/pages/main/goal_modifying.dart';
 import 'package:pin_grow/pages/main/home_page.dart';
 import 'package:pin_grow/pages/main/login_popup.dart';
@@ -179,6 +180,13 @@ class MainApp extends HookConsumerWidget {
                 DialogPage(builder: (_) => ProductLoinPopup()),
           ),
         ],
+      ),
+
+      GoRoute(
+        path: "/chat_bot",
+        name: 'chat_bot',
+        pageBuilder: (context, state) =>
+            DialogPage(builder: (_) => ChatBotPage()),
       ),
     ],
   );

@@ -615,7 +615,9 @@ class _HomePageState extends ConsumerState<HomePage> {
             right: 15.w,
             bottom: 15.h,
             child: GestureDetector(
-              onTap: () {},
+              onTap: () {
+                GoRouter.of(context).push('/chat_bot');
+              },
               child: Image.asset(
                 'assets/icons/chat_bot_icon.png',
                 width: 60.r,
