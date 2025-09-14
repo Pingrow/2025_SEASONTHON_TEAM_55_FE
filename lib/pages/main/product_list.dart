@@ -57,7 +57,17 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
   void initState() {
     super.initState();
 
+    final authState = ref.read(authViewModelProvider);
     final apiRepo = ref.read(productViewModelProvider.notifier);
+
+    if (authState.user == null) {
+      tap_idx = -1;
+      idx = 3;
+
+      Timer(Duration(milliseconds: 200), () {
+        GoRouter.of(context).push('/product_list/product_login_popup');
+      });
+    }
 
     _productsFuture = apiRepo.fetchDepositList();
     _bondsFuture = apiRepo.fetchBondsList();
@@ -385,6 +395,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
       },
     ),
     2: notReady(),
+    3: Container(),
   };
 
   @override
@@ -409,46 +420,63 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: 338.w,
-                  height: 39.h,
-                  margin: EdgeInsets.fromLTRB(0, 20.h, 0, 10.h),
+                  //width: 338.w,
+                  //height: 39.h,
+                  margin: EdgeInsets.fromLTRB(
+                    (MediaQuery.of(context).size.width - 338.w) / 2 - 10.w,
+                    20.h,
+                    (MediaQuery.of(context).size.width - 338.w) / 2 - 10.w,
+                    10.h,
+                  ),
+
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      InkWell(
+                      GestureDetector(
                         onTap: () {
                           GoRouter.of(context).go('/home');
                         },
-                        child: Image.asset(
-                          'assets/icons/back.png',
-                          width: 10.w,
-                          height: 16.h,
+                        child: Padding(
+                          padding: EdgeInsetsGeometry.fromLTRB(
+                            10.w,
+                            10.h,
+                            10.w,
+                            10.h,
+                          ),
+                          child: Image.asset(
+                            'assets/icons/back.png',
+                            width: 10.w,
+                            height: 16.h,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          fontSize: 25.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xff374151),
-                        ),
-                        children: [
-                          TextSpan(
-                            text: authState.user?.nickname ?? '핀그로우',
-                            style: TextStyle(color: Color(0xff0CA361)),
+                Container(
+                  width: 338.w,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            fontSize: 25.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xff374151),
                           ),
+                          children: [
+                            TextSpan(
+                              text: authState.user?.nickname ?? '???', //'핀그로우',
+                              style: TextStyle(color: Color(0xff0CA361)),
+                            ),
 
-                          TextSpan(text: ' 님, 이런 상품은 어떠세요?'),
-                        ],
+                            TextSpan(text: ' 님, 이런 상품은 어떠세요?'),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
 
                 Container(
@@ -486,14 +514,27 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                           padding: EdgeInsetsGeometry.fromLTRB(0, 0, 14.r, 0),
                           child: GestureDetector(
                             onTap: () {
-                              setState(() {
-                                tap_idx = 4;
-                                idx = 0;
-                                _productsFuture = apiRepo.fetchSearchList(
-                                  '우리은행',
-                                  /**_controller.text*/
-                                );
-                              });
+                              if (authState.user == null) {
+                                setState(() {
+                                  tap_idx = -1;
+                                  idx = 3;
+                                });
+
+                                Timer(Duration(milliseconds: 200), () {
+                                  GoRouter.of(
+                                    context,
+                                  ).push('/product_list/product_login_popup');
+                                });
+                              } else {
+                                setState(() {
+                                  tap_idx = 4;
+                                  idx = 0;
+                                  _productsFuture = apiRepo.fetchSearchList(
+                                    '우리은행',
+                                    /**_controller.text*/
+                                  );
+                                });
+                              }
                             },
                             child: Image.asset(
                               'assets/icons/search_button.png',
@@ -526,13 +567,26 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                   GestureDetector(
                     onTap: () async {
                       if (tap_idx != 0) {
-                        setState(() {
-                          tap_idx = 0;
-                          idx = 0;
-                          hintValue = '';
-                          _controller.text = '';
-                          _productsFuture = apiRepo.fetchDepositList();
-                        });
+                        if (authState.user == null) {
+                          setState(() {
+                            tap_idx = -1;
+                            idx = 3;
+                          });
+
+                          Timer(Duration(milliseconds: 200), () {
+                            GoRouter.of(
+                              context,
+                            ).push('/product_list/product_login_popup');
+                          });
+                        } else {
+                          setState(() {
+                            tap_idx = 0;
+                            idx = 0;
+                            hintValue = '';
+                            _controller.text = '';
+                            _productsFuture = apiRepo.fetchDepositList();
+                          });
+                        }
                       }
                     },
                     child: Container(
@@ -565,13 +619,26 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                   GestureDetector(
                     onTap: () async {
                       if (tap_idx != 1) {
-                        setState(() {
-                          tap_idx = 1;
-                          idx = 0;
-                          hintValue = '';
-                          _controller.text = '';
-                          _productsFuture = apiRepo.fetchSavingsList();
-                        });
+                        if (authState.user == null) {
+                          setState(() {
+                            tap_idx = -1;
+                            idx = 3;
+                          });
+
+                          Timer(Duration(milliseconds: 200), () {
+                            GoRouter.of(
+                              context,
+                            ).push('/product_list/product_login_popup');
+                          });
+                        } else {
+                          setState(() {
+                            tap_idx = 1;
+                            idx = 0;
+                            hintValue = '';
+                            _controller.text = '';
+                            _productsFuture = apiRepo.fetchSavingsList();
+                          });
+                        }
                       }
                     },
                     child: Container(
@@ -604,13 +671,26 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                   GestureDetector(
                     onTap: () async {
                       if (tap_idx != 2) {
-                        setState(() {
-                          tap_idx = 2;
-                          idx = 1;
-                          hintValue = '';
-                          _controller.text = '';
-                          _bondsFuture = apiRepo.fetchBondsList();
-                        });
+                        if (authState.user == null) {
+                          setState(() {
+                            tap_idx = -1;
+                            idx = 3;
+                          });
+
+                          Timer(Duration(milliseconds: 200), () {
+                            GoRouter.of(
+                              context,
+                            ).push('/product_list/product_login_popup');
+                          });
+                        } else {
+                          setState(() {
+                            tap_idx = 2;
+                            idx = 1;
+                            hintValue = '';
+                            _controller.text = '';
+                            _bondsFuture = apiRepo.fetchBondsList();
+                          });
+                        }
                       }
                     },
                     child: Container(
@@ -643,13 +723,26 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                   GestureDetector(
                     onTap: () async {
                       if (tap_idx != 3) {
-                        setState(() {
-                          tap_idx = 3;
-                          idx = 2;
-                          hintValue = '';
-                          _controller.text = '';
-                          //_productsFuture = apiRepo.fetchDepositList();
-                        });
+                        if (authState.user == null) {
+                          setState(() {
+                            tap_idx = -1;
+                            idx = 3;
+                          });
+
+                          Timer(Duration(milliseconds: 200), () {
+                            GoRouter.of(
+                              context,
+                            ).push('/product_list/product_login_popup');
+                          });
+                        } else {
+                          setState(() {
+                            tap_idx = 3;
+                            idx = 2;
+                            hintValue = '';
+                            _controller.text = '';
+                            //_productsFuture = apiRepo.fetchDepositList();
+                          });
+                        }
                       }
                     },
                     child: Container(

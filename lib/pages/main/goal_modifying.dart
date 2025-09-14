@@ -1,19 +1,12 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
-import 'package:linear_progress_bar/ui/dots_indicator.dart';
 import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/pages/onboarding/research_page_step5.dart';
 import 'package:pin_grow/providers/onboarding_providers.dart';
-import 'package:pin_grow/service/secure_storage.dart';
-import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
 class GoalModifyingPage extends StatefulHookConsumerWidget {
@@ -37,6 +30,19 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
   @override
   void initState() {
     super.initState();
+
+    final authState = ref.read(authViewModelProvider);
+    if (authState.user?.research_completed ?? false) {
+      ref.read(researchResultStep4Provider.notifier).setValue(0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    goalFormCntlr.dispose();
+    moneyFormCntlr.dispose();
+    currentMoneyFormCntlr.dispose();
+    super.dispose();
   }
 
   @override
@@ -61,11 +67,7 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
               onTap: () {
                 GoRouter.of(context).pop();
               },
-              child: Expanded(
-                child: Container(
-                  decoration: BoxDecoration(color: Color(0x70999999)),
-                ),
-              ),
+              child: Container(color: Colors.transparent),
             ),
 
             Container(
@@ -177,7 +179,7 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
                                       ),
                                     ),
 
-                                    hintText: authState.user?.goal,
+                                    hintText: authState.user?.goal ?? '',
                                     hintStyle: TextStyle(
                                       fontSize: 20.sp,
                                       fontWeight: FontWeight.bold,
@@ -319,7 +321,9 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
                                             ),
 
                                         hintText: NumberFormat.decimalPattern()
-                                            .format(authState.user?.goal_money),
+                                            .format(
+                                              authState.user?.goal_money ?? 0,
+                                            ),
                                         hintStyle: TextStyle(
                                           fontSize: 20.sp,
                                           fontWeight: FontWeight.bold,
@@ -452,7 +456,7 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
                               padding: EdgeInsetsGeometry.fromLTRB(0, 15, 0, 5),
                               child: Slider(
                                 divisions: 49,
-                                min: 1,
+                                min: 0,
                                 max: 49,
                                 value: sliderValue,
                                 onChanged: (value) {
@@ -547,7 +551,7 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
                                   ),
 
                                   hintText: NumberFormat.decimalPattern()
-                                      .format(authState.user?.saved_money),
+                                      .format(authState.user?.saved_money ?? 0),
                                   hintStyle: TextStyle(
                                     fontSize: 20.sp,
                                     fontWeight: FontWeight.bold,
@@ -621,16 +625,26 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
 
                   GestureDetector(
                     onTap: () {
-                      final goal_period = ref
-                          .read(researchResultStep4Provider)
-                          .round()
-                          .toString();
+                      final goal_period = sliderValue.round();
+                      print(sliderValue);
+                      ref
+                          .read(researchResultStep4Provider.notifier)
+                          .setValue(sliderValue);
 
-                      final goal = ref.read(researchResultStep5_goalProvider);
-                      final goalMoney = ref.read(
-                        researchResultStep5_moneyProvider,
-                      );
-                      final savedMoney = ref.read(currentSavedMoneyProvider);
+                      final goal = goalFormCntlr.text;
+                      ref
+                          .read(researchResultStep5_goalProvider.notifier)
+                          .setValue(goal);
+
+                      final goalMoney = moneyFormCntlr.text.replaceAll(',', '');
+                      ref
+                          .read(researchResultStep5_moneyProvider.notifier)
+                          .setValue(goalMoney);
+
+                      final savedMoney = currentMoneyFormCntlr.text;
+                      ref
+                          .read(currentSavedMoneyProvider.notifier)
+                          .setValue(savedMoney);
 
                       final authState = ref.read(
                         authViewModelProvider.notifier,
@@ -644,13 +658,18 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
                           email: state.user?.email,
                           profile_url: state.user?.profile_url,
                           type: state.user?.type,
-                          goal: goal,
-                          goal_money: int.parse(goalMoney!.replaceAll(',', '')),
-                          goal_period: int.parse(goal_period),
-                          saved_money: int.parse(
-                            savedMoney!.replaceAll(',', ''),
-                          ),
-                          research_completed: state.user?.research_completed,
+                          goal: goal.isEmpty ? state.user?.goal : goal,
+                          goal_money: goalMoney.isEmpty
+                              ? state.user?.goal_money
+                              : int.tryParse(goalMoney.replaceAll(',', '')),
+                          goal_period: goal_period == 0
+                              ? state.user?.goal_period
+                              : goal_period,
+                          saved_money: savedMoney.isEmpty
+                              ? state.user?.saved_money
+                              : int.tryParse(savedMoney.replaceAll(',', '')),
+                          research_completed:
+                              state.user?.research_completed ?? false,
                         ),
                       );
 

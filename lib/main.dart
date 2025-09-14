@@ -8,6 +8,7 @@ import 'package:pin_grow/pages/main/home_page.dart';
 import 'package:pin_grow/pages/main/login_popup.dart';
 import 'package:pin_grow/pages/main/policy_list.dart';
 import 'package:pin_grow/pages/main/product_list.dart';
+import 'package:pin_grow/pages/main/profile.dart';
 import 'package:pin_grow/pages/onboarding/loading_emotion.dart';
 import 'package:pin_grow/pages/onboarding/loading_policy.dart';
 import 'package:pin_grow/pages/onboarding/post_test_result.dart';
@@ -130,6 +131,20 @@ class MainApp extends HookConsumerWidget {
         builder: (context, state) => const HomePage(),
         routes: [
           GoRoute(
+            path: "home_login_popup",
+            name: 'home_login_popup',
+            pageBuilder: (context, state) =>
+                DialogPage(builder: (_) => HomeLoinPopup()),
+          ),
+        ],
+      ),
+
+      GoRoute(
+        path: "/profile",
+        name: 'profile_page',
+        builder: (context, state) => const ProfilePage(),
+        routes: [
+          GoRoute(
             path: "goal_modify",
             name: 'goal_modify',
             pageBuilder: (context, state) =>
@@ -156,6 +171,14 @@ class MainApp extends HookConsumerWidget {
         path: "/product_list",
         name: 'product_list',
         builder: (context, state) => const ProductListPage(),
+        routes: [
+          GoRoute(
+            path: "product_login_popup",
+            name: 'product_login_popup',
+            pageBuilder: (context, state) =>
+                DialogPage(builder: (_) => ProductLoinPopup()),
+          ),
+        ],
       ),
     ],
   );

@@ -20,29 +20,11 @@ class AuthViewModel extends _$AuthViewModel {
     return AuthState();
   }
 
-  Future<void> kakaoLogin() async {
+  Future<void> login() async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
       await _repository.loginWithKakao();
-
-      OAuthToken? token = await TokenManagerProvider.instance.manager
-          .getToken();
-
-      final url = Uri.http('52.64.10.16:8080', '/api/v1/auth/kakao');
-      print("[DEBUG] KAKAO Access Token : ${token!.accessToken}");
-      final body = {'code': token.accessToken};
-      final response = await http.post(url, body: body);
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> decodedJson = jsonDecode(response.body);
-
-        SecureStorageManager.saveData(
-          'ACCESS_TOKEN',
-          decodedJson['access_token'],
-        );
-      } else {
-        print('[DEBUG] 로그인 실패');
-      }
+      await _repository.login();
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
@@ -55,9 +37,9 @@ class AuthViewModel extends _$AuthViewModel {
     //await setAuthState(AuthStatus.authenticated, authState?.user);
   }
 
-  Future<void> kakaoLogout() async {
+  Future<void> logout() async {
+    await _repository.kakaoLogout();
     await _repository.logout();
-    await SecureStorageManager.deleteAllData();
     state = state.copyWith(status: AuthStatus.unauthenticated, user: null);
   }
 

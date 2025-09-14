@@ -369,7 +369,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
           padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
           itemCount: region_idx != -1
               ? regions != null
-                    ? regions[regions?.keys.elementAt(region_idx)]?.areas.length
+                    ? regions[regions.keys.elementAt(region_idx)]?.areas.length
                     : 0
               : 0,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -809,62 +809,85 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
       child: Column(
         children: [
           Container(
-            width: 338.w,
+            //width: 338.w,
             child: Column(
               children: [
                 Container(
-                  width: 338.w,
-                  height: 39.h,
-                  margin: EdgeInsets.fromLTRB(0, 20, 0, 10),
+                  //width: 338.w,
+                  //height: 39.h,
+                  margin: EdgeInsets.fromLTRB(
+                    (MediaQuery.of(context).size.width - 338.w) / 2 - 10.w,
+                    20.h,
+                    (MediaQuery.of(context).size.width - 338.w) / 2 - 10.w,
+                    10.h,
+                  ),
+
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      InkWell(
+                      GestureDetector(
                         onTap: () {
                           GoRouter.of(context).go('/home');
                         },
-                        child: Image.asset(
-                          'assets/icons/back.png',
-                          width: 10.w,
-                          height: 16.h,
+                        child: Padding(
+                          padding: EdgeInsetsGeometry.fromLTRB(
+                            10.w,
+                            10.h,
+                            10.w,
+                            10.h,
+                          ),
+                          child: Image.asset(
+                            'assets/icons/back.png',
+                            width: 10.w,
+                            height: 16.h,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          fontSize: 25.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xff374151),
-                        ),
+                Container(
+                  width: 338.w,
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          TextSpan(
-                            text: authState.user?.nickname ?? '???', //'핀그로우'
-                            style: TextStyle(color: Color(0xff0CA361)),
-                          ),
+                          RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontSize: 25.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xff374151),
+                              ),
+                              children: [
+                                TextSpan(
+                                  text:
+                                      authState.user?.nickname ??
+                                      '???', //'핀그로우'
+                                  style: TextStyle(color: Color(0xff0CA361)),
+                                ),
 
-                          TextSpan(text: ' 님을 응원하는 청년 정책'),
+                                TextSpan(text: ' 님을 응원하는 청년 정책'),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Text(
-                      '지역을 선택하면, 딱 맞는 청년정책을 추천해드려요!',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xff6B7280),
+                      Row(
+                        children: [
+                          Text(
+                            '지역을 선택하면, 딱 맞는 청년정책을 추천해드려요!',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xff6B7280),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

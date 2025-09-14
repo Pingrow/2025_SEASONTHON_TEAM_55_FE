@@ -88,7 +88,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                 print('[DEBUG:SIGNIN] ${authState.toJson()}');
                 if (authState.status == AuthStatus.unauthenticated ||
                     authState.status == AuthStatus.error) {
-                  await authViewModel.kakaoLogin().then((value) async {
+                  await authViewModel.login().then((value) async {
                     //await authViewModel.getUser();
 
                     print(

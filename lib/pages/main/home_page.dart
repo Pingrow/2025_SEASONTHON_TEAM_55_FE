@@ -60,19 +60,45 @@ class _HomePageState extends ConsumerState<HomePage> {
           Column(
             children: [
               Container(
+                width: 338.w,
                 margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Image.asset(
-                      'assets/logo/home_top_logo.png',
-                      width: 79.w,
-                      height: 29.h,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/logo/home_top_logo.png',
+                          width: 79.w,
+                          height: 29.h,
+                        ),
+                        Image.asset(
+                          'assets/logo/home_top_logo_heart.png',
+                          width: 23.r,
+                          height: 23.r,
+                        ),
+                      ],
                     ),
-                    Image.asset(
-                      'assets/logo/home_top_logo_heart.png',
-                      width: 23.r,
-                      height: 23.r,
+                    GestureDetector(
+                      onTap: () {
+                        if (authState.status == AuthStatus.authenticated) {
+                          GoRouter.of(context).go('/profile');
+                        } else {
+                          GoRouter.of(context).push('/home/home_login_popup');
+                        }
+                      },
+                      child: Padding(
+                        padding: EdgeInsetsGeometry.all(10.r),
+                        child: Text(
+                          'MY',
+                          style: TextStyle(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xff0FA564),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -128,25 +154,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xffffffff),
-                              ),
-                            ),
-
-                            GestureDetector(
-                              onTap: () {
-                                GoRouter.of(context).push('/home/goal_modify');
-                              },
-                              child: Padding(
-                                padding: EdgeInsetsGeometry.fromLTRB(
-                                  10,
-                                  0,
-                                  0,
-                                  0,
-                                ),
-                                child: Image.asset(
-                                  'assets/icons/setting.png',
-                                  width: 16.r,
-                                  height: 16.r,
-                                ),
                               ),
                             ),
                           ],
@@ -417,7 +424,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   ),
                                   children: [
                                     TextSpan(
-                                      text: authState.user?.nickname,
+                                      text: authState.user?.nickname ?? '???',
                                       style: TextStyle(
                                         color: Color(0xff0CA361),
                                         fontWeight: FontWeight.w800,
