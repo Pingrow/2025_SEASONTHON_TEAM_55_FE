@@ -12,6 +12,7 @@ import 'package:pin_grow/model/region_model.dart';
 import 'package:pin_grow/model/policy_model.dart';
 import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/providers/region_provider.dart';
+import 'package:pin_grow/repository/error.dart';
 import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
@@ -73,12 +74,12 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
         // 2. 에러 발생 상태 처리
         if (snapshot.hasError) {
-          return Center(child: Text('에러: ${snapshot.error}'));
+          return error();
         }
 
         // 3. 데이터가 없거나 비어있는 경우 처리
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('데이터가 없습니다.'));
+          return noProduct();
         }
 
         // 4. 데이터 수신 성공 시 UI 구성
@@ -187,14 +188,14 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
         // 2. 에러 발생 상태 처리
         if (snapshot.hasError) {
-          return Center(child: Text('에러: ${snapshot.error}'));
+          return error();
         }
 
         // 3. 데이터가 없거나 비어있는 경우 처리
         if (!snapshot.hasData ||
             snapshot.data!.$1.isEmpty ||
             snapshot.data!.$2.isEmpty) {
-          return const Center(child: Text('데이터가 없습니다.'));
+          return noProduct();
         }
 
         // 4. 데이터 수신 성공 시 UI 구성
@@ -292,20 +293,6 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                               ),
                             ],
                           ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                '추천기간: -개월',
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     );
@@ -386,20 +373,6 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                               ),
                             ],
                           ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                '추천기간: -개월',
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     );
@@ -411,6 +384,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
         );
       },
     ),
+    2: notReady(),
   };
 
   @override
@@ -443,7 +417,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     children: [
                       InkWell(
                         onTap: () {
-                          GoRouter.of(context).pop();
+                          GoRouter.of(context).go('/home');
                         },
                         child: Image.asset(
                           'assets/icons/back.png',
@@ -545,7 +519,6 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
             child: Container(
               width: 338.w,
               height: 47.h,
-              margin: EdgeInsets.fromLTRB(0, 6.h, 0, 6.h),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -565,7 +538,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     child: Container(
                       width: 77.w,
                       height: 36.h,
-                      margin: EdgeInsets.fromLTRB(0, 0, 12.w, 0),
+                      margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: Color(selectConfig[tap_idx == 0]!["COLOR"]),
@@ -604,7 +577,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     child: Container(
                       width: 77.w,
                       height: 36.h,
-                      margin: EdgeInsets.fromLTRB(0, 0, 12.w, 0),
+                      margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: Color(selectConfig[tap_idx == 1]!["COLOR"]),
@@ -643,7 +616,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     child: Container(
                       width: 77.w,
                       height: 36.h,
-                      margin: EdgeInsets.fromLTRB(0, 0, 12.w, 0),
+                      margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: Color(selectConfig[tap_idx == 2]!["COLOR"]),
@@ -659,6 +632,45 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                         style: TextStyle(
                           color: Color(
                             selectConfig[tap_idx == 2]!["FONT_COLOR"],
+                          ),
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  GestureDetector(
+                    onTap: () async {
+                      if (tap_idx != 3) {
+                        setState(() {
+                          tap_idx = 3;
+                          idx = 2;
+                          hintValue = '';
+                          _controller.text = '';
+                          //_productsFuture = apiRepo.fetchDepositList();
+                        });
+                      }
+                    },
+                    child: Container(
+                      width: 77.w,
+                      height: 36.h,
+                      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Color(selectConfig[tap_idx == 3]!["COLOR"]),
+                        border: Border.all(
+                          color: Color(
+                            selectConfig[tap_idx == 3]!["STROKE_COLOR"],
+                          ),
+                        ),
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: Text(
+                        'ETF',
+                        style: TextStyle(
+                          color: Color(
+                            selectConfig[tap_idx == 3]!["FONT_COLOR"],
                           ),
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w600,
@@ -694,12 +706,12 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
                   // 2. 에러 발생 상태 처리
                   if (snapshot.hasError) {
-                    return Center(child: Text('에러: ${snapshot.error}'));
+                    return error();
                   }
 
                   // 3. 데이터가 없거나 비어있는 경우 처리
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('데이터가 없습니다.'));
+                    return noProduct();
                   }
 
                   // 4. 데이터 수신 성공 시 UI 구성

@@ -115,7 +115,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
 
                       print(researchComplete);
                       if (researchComplete ?? false) {
-                        GoRouter.of(context).go('/policy_list');
+                        GoRouter.of(context).go('/home');
                       } else {
                         ref.read(selectedIndexProvider.notifier).setIndex(1);
                         ref

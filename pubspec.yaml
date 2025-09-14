@@ -51,4 +51,5 @@ flutter:
     - assets/characters/
     - assets/kakao_login/ko/
     - assets/region/
+    - assets/region_logo/
     - assets/dummy/

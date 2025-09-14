@@ -30,7 +30,7 @@ class AuthViewModel extends _$AuthViewModel {
 
       final url = Uri.http('52.64.10.16:8080', '/api/v1/auth/kakao');
       print("[DEBUG] KAKAO Access Token : ${token!.accessToken}");
-      final body = {'code': '${token!.accessToken}'};
+      final body = {'code': token.accessToken};
       final response = await http.post(url, body: body);
 
       if (response.statusCode == 200) {
@@ -71,6 +71,8 @@ class AuthViewModel extends _$AuthViewModel {
     );
   }
 
+  /// TODO:
+  /// 사용자 정보를 가지고 오는 부분 재 정의 필요
   Future<AuthState?> getUser() async {
     final kakaoUser = await UserApi.instance.me();
     // DB에 저장된 부가 정보들도 가져오기

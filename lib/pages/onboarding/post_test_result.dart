@@ -284,40 +284,37 @@ class _PostTestResultPageState extends ConsumerState<PostTestResultPage> {
                           Container(
                             width: 180.w,
                             height: 75.h,
-                            child: Expanded(
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${authState.user?.goal}',
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    style: TextStyle(
-                                      color: Color(0xff252525),
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w400,
-                                    ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${authState.user?.goal}',
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    color: Color(0xff252525),
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w400,
                                   ),
-                                  Text(
-                                    '${NumberFormat.decimalPattern().format(authState.user?.goal_money)} 원',
-                                    style: TextStyle(
-                                      color: Color(0xff252525),
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w400,
-                                    ),
+                                ),
+                                Text(
+                                  '${NumberFormat.decimalPattern().format(authState.user?.goal_money)} 원',
+                                  style: TextStyle(
+                                    color: Color(0xff252525),
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w400,
                                   ),
-                                  Text(
-                                    '${authState.user?.goal_period == 49 ? '5년 이상' : '${authState.user?.goal_period} 개월'}',
-                                    style: TextStyle(
-                                      color: Color(0xff252525),
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w400,
-                                    ),
+                                ),
+                                Text(
+                                  '${authState.user?.goal_period == 49 ? '5년 이상' : '${authState.user?.goal_period} 개월'}',
+                                  style: TextStyle(
+                                    color: Color(0xff252525),
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w400,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ],

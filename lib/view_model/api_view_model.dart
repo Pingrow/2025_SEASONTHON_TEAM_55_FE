@@ -85,15 +85,14 @@ class ProductViewModel extends _$ProductViewModel {
     return (sortByInterest, sortByMaturity);
   }
 
-  Future<RecommendProductModel> fetchRecommendation(UserModel user) async {
-    final Map<String, dynamic> productMapJson = await _repository
-        .fetchRecommendProduct(
+  Future<List<OptimalProductModel>> fetchRecommendation(UserModel user) async {
+    final RecommendProductModel recommendProductModel = await _repository
+        .fetchRecommendProductDummy(
+          //.fetchRecommendProduct(
           targetAmount: user.goal_money!,
           targetMonths: user.goal_period!,
         );
-    final RecommendProductModel products = RecommendProductModel.fromJson(
-      productMapJson,
-    );
+    final List<OptimalProductModel> products = recommendProductModel.products!;
 
     return products;
   }
@@ -116,7 +115,8 @@ class PolicyViewModel extends _$PolicyViewModel {
 
     print('$region $area');
 
-    final List<dynamic> policyListJson = await _repository.fetchPolicy(
+    final List<dynamic> policyListJson = await _repository.fetchPolicyDummy(
+      //await _repository.fetchPolicy(
       'policies',
       region,
       area,
@@ -134,7 +134,8 @@ class PolicyViewModel extends _$PolicyViewModel {
     final region = authState.user?.region?.split('-')[2] ?? 'NODATA';
     final area = authState.user?.region?.split('-')[3] ?? '???';
 
-    final List<dynamic> policyListJson = await _repository.fetchPolicy(
+    final List<dynamic> policyListJson = await _repository.fetchPolicyDummy(
+      //await _repository.fetchPolicy(
       'top10',
       region,
       area,

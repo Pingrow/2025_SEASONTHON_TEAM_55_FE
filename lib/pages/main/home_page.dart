@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/model/recommend_product_model.dart';
 import 'package:pin_grow/providers/region_provider.dart';
+import 'package:pin_grow/repository/error.dart';
 import 'package:pin_grow/service/secure_storage.dart';
 import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_state.dart';
@@ -24,15 +25,17 @@ class HomePage extends StatefulHookConsumerWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   double progressRate = 0.00;
 
-  late Future<RecommendProductModel> _recommendProduct;
+  late Future<List<OptimalProductModel>?> _recommendProduct;
 
   @override
   void initState() {
     super.initState();
+
+    final authState = ref.read(authViewModelProvider);
     final apiRepo = ref.read(productViewModelProvider.notifier);
-    _recommendProduct = apiRepo.fetchRecommendation(
-      ref.read(authViewModelProvider).user!,
-    );
+    _recommendProduct = authState.user != null
+        ? apiRepo.fetchRecommendation(authState.user!)
+        : Future(List<OptimalProductModel>.empty);
   }
 
   @override
@@ -111,7 +114,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         Row(
                           children: [
                             Text(
-                              '${((authState.user!.saved_money ?? 0) / (authState.user!.goal_money ?? 1) * 100).round()}%',
+                              '${((authState.user?.saved_money ?? 0) / (authState.user?.goal_money ?? 1) * 100).round()}%',
                               style: TextStyle(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.bold,
@@ -172,7 +175,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ),
                             style: TextStyle(
                               fontSize:
-                                  (authState.user!.goal_money ?? 0) <=
+                                  (authState.user?.goal_money ?? 0) <=
                                       1000000000000
                                   ? 27.sp
                                   : 21.sp,
@@ -217,8 +220,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                               width:
                                   9.w +
                                   (288.w - 9.w) *
-                                      (authState.user!.saved_money ?? 0) /
-                                      (authState.user!.goal_money ?? 1),
+                                      (authState.user?.saved_money ?? 0) /
+                                      (authState.user?.goal_money ?? 1),
                               height: 14.h,
                               decoration: BoxDecoration(
                                 color: Color(0xffFFD16F),
@@ -231,8 +234,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                             top: 0,
                             left:
                                 (288.w - 9.w) *
-                                    (authState.user!.saved_money ?? 0) /
-                                    (authState.user!.goal_money ?? 1) -
+                                    (authState.user?.saved_money ?? 0) /
+                                    (authState.user?.goal_money ?? 1) -
                                 20.w,
                             child: Image.asset(
                               'assets/characters/main_progress_bar.png',
@@ -303,7 +306,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                           GestureDetector(
                             onTap: () {
-                              GoRouter.of(context).push('/policy_list');
+                              GoRouter.of(context).go('/policy_list');
                             },
                             child: Container(
                               alignment: Alignment.center,
@@ -380,185 +383,153 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              Flex(
-                direction: Axis.vertical,
-                children: [
-                  Container(
-                    width: 338.w,
-                    height: 398.h,
-                    margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-                    padding: EdgeInsets.fromLTRB(15.w, 20.h, 12.w, 15.h),
-                    decoration: BoxDecoration(
-                      color: Color(0xffffffff),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 3.0,
-                          color: Colors.black38,
-                          blurStyle: BlurStyle.normal,
-                          offset: Offset(0, 2.5),
-                        ),
-                      ],
+              Container(
+                width: 338.w,
+                height: 398.h,
+                margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
+                padding: EdgeInsets.fromLTRB(15.w, 20.h, 12.w, 15.h),
+                decoration: BoxDecoration(
+                  color: Color(0xffffffff),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 3.0,
+                      color: Colors.black38,
+                      blurStyle: BlurStyle.normal,
+                      offset: Offset(0, 2.5),
                     ),
-                    child: Column(
-                      children: [
-                        Container(
-                          child: Column(
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  RichText(
-                                    text: TextSpan(
+                              RichText(
+                                text: TextSpan(
+                                  style: TextStyle(
+                                    color: Color(0xff374151),
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: authState.user?.nickname,
                                       style: TextStyle(
-                                        color: Color(0xff374151),
-                                        fontSize: 16.sp,
-                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xff0CA361),
+                                        fontWeight: FontWeight.w800,
                                       ),
-                                      children: [
-                                        TextSpan(
-                                          text: authState.user?.nickname,
-                                          style: TextStyle(
-                                            color: Color(0xff0CA361),
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-
-                                        TextSpan(text: ' 님을 위한 저축/투자 조합'),
-                                      ],
                                     ),
-                                  ),
 
-                                  GestureDetector(
-                                    onTap: () {
-                                      GoRouter.of(
-                                        context,
-                                      ).push('/product_list');
-                                    },
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          '더 보러가가',
-                                          style: TextStyle(
-                                            fontSize: 10.sp,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xff0CA361),
-                                          ),
-                                        ),
-                                        Container(
-                                          margin: EdgeInsets.fromLTRB(
-                                            2,
-                                            0,
-                                            0,
-                                            0,
-                                          ),
-                                          child: Image.asset(
-                                            'assets/icons/right_arrow.png',
-                                            width: 5.w,
-                                            height: 9.h,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                                    TextSpan(text: ' 님을 위한 저축/투자 조합'),
+                                  ],
+                                ),
                               ),
-                              Row(
-                                children: [
-                                  Text(
-                                    '월 35만원 · 12개월 · 적금+채권 혼합',
-                                    style: TextStyle(
-                                      color: Color(0xff6B7280),
-                                      fontSize: 10.sp,
-                                      fontWeight: FontWeight.w400,
+
+                              GestureDetector(
+                                onTap: () {
+                                  GoRouter.of(context).go('/product_list');
+                                },
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      '더 보러가가',
+                                      style: TextStyle(
+                                        fontSize: 10.sp,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xff0CA361),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    Container(
+                                      margin: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                                      child: Image.asset(
+                                        'assets/icons/right_arrow.png',
+                                        width: 5.w,
+                                        height: 9.h,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
-                        ),
+                          Row(
+                            children: [
+                              Text(
+                                '목표 금액: ${NumberFormat.decimalPattern().format(authState.user?.goal_money ?? 0)}원',
+                                style: TextStyle(
+                                  color: Color(0xff6B7280),
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
 
-                        FutureBuilder(
-                          future: _recommendProduct,
-                          builder: (context, snapshot) {
-                            // 1. 로딩 중 상태 처리
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
+                    FutureBuilder(
+                      future: _recommendProduct,
+                      builder: (context, snapshot) {
+                        // 1. 로딩 중 상태 처리
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
 
-                            // 2. 에러 발생 상태 처리
-                            if (snapshot.hasError) {
-                              return Center(
-                                child: Text('에러: ${snapshot.error}'),
-                              );
-                            }
+                        // 2. 에러 발생 상태 처리
+                        if (snapshot.hasError) {
+                          return error();
+                        }
 
-                            // 3. 데이터가 없거나 비어있는 경우 처리
-                            if (!snapshot.hasData || snapshot.data == null) {
-                              return const Center(child: Text('데이터가 없습니다.'));
-                            }
+                        // 3. 데이터가 없거나 비어있는 경우 처리
+                        if (!snapshot.hasData ||
+                            snapshot.data == null ||
+                            snapshot.data!.isEmpty) {
+                          return noProduct();
+                        }
 
-                            final products = snapshot.data!.products;
+                        final products = snapshot.data!;
 
-                            return Expanded(
-                              child: ListView.builder(
-                                itemCount: products!.length,
-                                padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
-                                physics: NeverScrollableScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  return Container(
-                                    height: 80.h,
-                                    padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
-                                    decoration: BoxDecoration(
-                                      border: Border(
-                                        top: BorderSide(
-                                          color: Color(0xffD0D0D0),
-                                          width: 0.5,
-                                        ),
-                                      ),
+                        return Expanded(
+                          child: ListView.builder(
+                            itemCount: products.length,
+                            padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                            physics: NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              return Container(
+                                height: 80.h,
+                                padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    top: BorderSide(
+                                      color: Color(0xffD0D0D0),
+                                      width: 0.5,
                                     ),
-                                    child: Row(
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Column(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                          MainAxisAlignment.center,
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.center,
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Column(
+                                        Row(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                              MainAxisAlignment.start,
                                           children: [
                                             _suggTag(),
-                                            Text(
-                                              products[index].productName!,
-                                              style: TextStyle(
-                                                fontSize: 15.sp,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xff374151),
-                                              ),
-                                            ),
-                                            Text(
-                                              '${products[index].term}개월 · 금리 최대 ${products[index].monthlyAmount}(월)',
-                                              style: TextStyle(
-                                                fontSize: 10.sp,
-                                                fontWeight: FontWeight.w400,
-                                                color: Color(0xff6B7280),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
                                             Text(
                                               products[index].bankName!,
                                               style: TextStyle(
@@ -569,29 +540,66 @@ class _HomePageState extends ConsumerState<HomePage> {
                                             ),
                                           ],
                                         ),
+                                        Text(
+                                          products[index].productName!,
+                                          style: TextStyle(
+                                            fontSize: 15.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xff374151),
+                                          ),
+                                        ),
+                                        Text(
+                                          '${products[index].term}개월 · 금리 최대 ${products[index].monthlyAmount}(월)',
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.w400,
+                                            color: Color(0xff6B7280),
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
-
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              top: BorderSide(
-                                color: Color(0xffD0D0D0),
-                                width: 0.5,
-                              ),
-                            ),
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          '투입급액: ${NumberFormat.decimalPattern().format(products[index].depositAmount)}원',
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.w400,
+                                            color: Color(0xff6B7280),
+                                          ),
+                                        ),
+                                        Text(
+                                          '만기급액: ${NumberFormat.decimalPattern().format(products[index].maturityAmount)}원',
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xff6B7280),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  ),
-                ],
+
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(color: Color(0xffD0D0D0), width: 0.5),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -617,6 +625,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     return Container(
       width: 34.w,
       height: 17.h,
+      margin: EdgeInsets.fromLTRB(0, 0, 6.w, 0),
       decoration: BoxDecoration(
         color: Color(0xffffeadb),
         borderRadius: BorderRadius.circular(17),

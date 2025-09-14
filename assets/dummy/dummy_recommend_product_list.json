@@ -1,0 +1,56 @@
+{
+  "success": true,
+  "message": "6개의 상품을 추천합니다.",
+  "data": {
+    "targetAmount": 5000000,
+    "targetMonths": 12,
+    "recommendations": [
+      {
+        "productType": "예금",
+        "bankName": "우리은행",
+        "productName": "WON플러스예금",
+        "interestRate": 2.45,
+        "term": 12,
+        "expectedReturn": 125000.0,
+        "inputAmount": 5000000,
+        "maturityAmount": 5125000,
+        "monthlyAmount": null
+      },
+      {
+        "productType": "적금",
+        "bankName": "신한은행",
+        "productName": "쌓이는적금",
+        "interestRate": 3.2,
+        "term": 12,
+        "expectedReturn": 85000.0,
+        "inputAmount": null,
+        "maturityAmount": 4085000,
+        "monthlyAmount": 333333
+      }
+    ],
+    "optimalCombination": {
+      "products": [
+        {
+          "productType": "예금",
+          "bankName": "우리은행",
+          "productName": "WON플러스예금",
+          "term": 12,
+          "interestRate": 2.45,
+          "specialCondition": "신규가입",
+          "depositAmount": 2500000,
+          "maturityAmount": 2580000,
+          "monthlyAmount": null,
+          "totalSavingAmount": null,
+          "savingMaturityAmount": null,
+          "expectedReturn": 80000.0
+        }
+      ],
+      "combinationSummary": "월 20.8만원 · 12개월 · 예금+적금 혼합",
+      "totalExpectedReturn": 150000.0,
+      "expectedTotalAmount": 5150000.0,
+      "riskLevel": "낮음",
+      "description": "최고 금리 예금과 적금의 최적 조합"
+    },
+    "totalProducts": 6
+  }
+}

@@ -64,14 +64,14 @@ class RecommendProductModel {
 
   factory RecommendProductModel.fromJson(Map<String, dynamic> json) {
     return RecommendProductModel(
-      combinationSummary: json['combinationSummary'] as String?,
+      combinationSummary: json['combinationSummary'],
 
       // JSON의 숫자 값(int 또는 double)을 안전하게 double? 타입으로 변환합니다.
       totalExpectedReturn: json['totalExpectedReturn'],
       expectedTotalAmount: json['expectedTotalAmount'],
 
-      riskLevel: json['riskLevel'] as String?,
-      description: json['description'] as String?,
+      riskLevel: json['riskLevel'],
+      description: json['description'],
 
       // 'products' 키가 null이 아니면, 리스트의 각 항목에 대해
       // OptimalProductModel.fromJson을 호출하여 객체 리스트를 생성합니다.

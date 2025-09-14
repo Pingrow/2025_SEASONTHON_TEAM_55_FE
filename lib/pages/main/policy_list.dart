@@ -10,6 +10,7 @@ import 'package:pin_grow/model/region_model.dart';
 import 'package:pin_grow/model/policy_model.dart';
 import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/providers/region_provider.dart';
+import 'package:pin_grow/repository/error.dart';
 import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
@@ -103,7 +104,8 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
     //await ref.read(regionProvider.notifier).getRegions();
 
     final authState = ref.read(authViewModelProvider);
-    if (authState.user?.region?.split('-')[2] != 'NODATA') {
+    if (authState.user?.region?.split('-')[2] != 'NODATA' &&
+        authState.user?.region?.split('-')[2] != null) {
       idx = 2;
       region_idx = int.parse(authState.user?.region?.split('-')[0] ?? '-1');
       area_idx = int.parse(authState.user?.region?.split('-')[1] ?? '-1');
@@ -137,12 +139,12 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
 
             // 2. 에러 발생 상태 처리
             if (snapshot.hasError) {
-              return Center(child: Text('에러: ${snapshot.error}'));
+              return error();
             }
 
             // 3. 데이터가 없거나 비어있는 경우 처리
             if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('데이터가 없습니다.'));
+              return noPolicy();
             }
 
             // 4. 데이터 수신 성공 시 UI 구성
@@ -200,7 +202,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                 width: 56.r,
                                 height: 56.r,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xffABABAB),
+                                  color: const Color(0xffffffff),
                                   border: Border.all(
                                     color: const Color(0xff0CA361),
                                   ),
@@ -212,7 +214,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                         regions![authState.user?.region?.split(
                                                   '-',
                                                 )[2] ??
-                                                'NODATA']!
+                                                '서울특별시']!
                                             .logo,
                                       )
                                     : Container(),
@@ -458,13 +460,13 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                 // 2. 에러 발생 상태 처리
                 if (snapshot.hasError) {
                   print('에러: ${snapshot.error}');
-                  return _noPolicy();
-                  //Center(child: Text('에러: ${snapshot.error}'));
+                  return error();
+                  //error();
                 }
 
                 // 3. 데이터가 없거나 비어있는 경우 처리
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return _noPolicy();
+                  return noPolicy();
                 }
 
                 // 4. 데이터 수신 성공 시 UI 구성
@@ -819,7 +821,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                     children: [
                       InkWell(
                         onTap: () {
-                          GoRouter.of(context).pop();
+                          GoRouter.of(context).go('/home');
                         },
                         child: Image.asset(
                           'assets/icons/back.png',
@@ -842,7 +844,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                         ),
                         children: [
                           TextSpan(
-                            text: authState.user?.nickname ?? '핀그로우',
+                            text: authState.user?.nickname ?? '???', //'핀그로우'
                             style: TextStyle(color: Color(0xff0CA361)),
                           ),
 
@@ -926,13 +928,19 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
 
                   GestureDetector(
                     onTap: () {
-                      if (tapStatus[1] == TapStatus.notSelected) {
-                        setState(() {
-                          idx = 1;
-                          tapStatus[0] = TapStatus.notSelected;
-                          tapStatus[1] = TapStatus.selected;
-                          tapStatus[2] = TapStatus.notSelected;
-                        });
+                      if (authState.user == null) {
+                        GoRouter.of(
+                          context,
+                        ).push('/policy_list/policy_login_popup');
+                      } else {
+                        if (tapStatus[1] == TapStatus.notSelected) {
+                          setState(() {
+                            idx = 1;
+                            tapStatus[0] = TapStatus.notSelected;
+                            tapStatus[1] = TapStatus.selected;
+                            tapStatus[2] = TapStatus.notSelected;
+                          });
+                        }
                       }
                     },
                     child: Container(
@@ -947,7 +955,9 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                       child: Text(
                         tapStatus[1] != TapStatus.load
                             ? '시/도'
-                            : '${regions[authState.user?.region?.split('-')[2]]!.alias}',
+                            : regions[authState.user?.region?.split('-')[2]]
+                                      ?.alias ??
+                                  'null',
                         style: TextStyle(
                           color: Color(tapConfig[tapStatus[1]]!["FONT_COLOR"]),
                           fontSize: 13.sp,
@@ -1038,50 +1048,6 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
               fontWeight: FontWeight.bold,
               color: Color(0xff374151),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _noPolicy() {
-    return Expanded(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Image.asset(
-            'assets/icons/no_policy.png',
-            width: 203.r,
-            height: 203.r,
-          ),
-
-          Text(
-            '선택하신 지역에는',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w400,
-              color: Color(0xff374151),
-            ),
-          ),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '현재 등록된 청년 정책이 없어요',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xff374151),
-                ),
-              ),
-              Image.asset(
-                'assets/icons/crying_face.png',
-                width: 21.r,
-                height: 21.r,
-              ),
-            ],
           ),
         ],
       ),

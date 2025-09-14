@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/model/policy_model.dart';
+import 'package:pin_grow/model/recommend_product_model.dart';
 import 'package:pin_grow/service/secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -41,6 +42,29 @@ class ApiRepository {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> decodedJson = json.decode(response.body);
+      /**
+       * final List<dynamic> policyListJson = decodedJson["policies"];
+      final List<PolicyModel> policies = policyListJson
+          .map((jsonItem) => PolicyModel.fromJson(jsonItem))
+          .toList();
+       */
+      return decodedJson['policies'];
+    } else {
+      throw Exception('Failed to load policy list');
+    }
+  }
+
+  Future<List<dynamic>> fetchPolicyDummy(
+    String type,
+    String? region,
+    String? area,
+  ) async {
+    final response = await rootBundle.loadString(
+      'assets/dummy/dummy_policy_list_gangnam.json',
+    );
+
+    if (response.isNotEmpty) {
+      final Map<String, dynamic> decodedJson = json.decode(response);
       /**
        * final List<dynamic> policyListJson = decodedJson["policies"];
       final List<PolicyModel> policies = policyListJson
@@ -92,29 +116,36 @@ class ApiRepository {
       'assets/dummy/dummy_${productType}${keyword ?? ''}_list.json',
     );
 
-    final Map<String, dynamic> decodedJson = json.decode(jsonString);
+    if (jsonString.isNotEmpty) {
+      final Map<String, dynamic> decodedJson = json.decode(jsonString);
 
-    return productType != 'search'
-        ? decodedJson['data']
-        : decodedJson['data']['products'];
+      return productType != 'search'
+          ? decodedJson['data']
+          : decodedJson['data']['products'];
+    } else {
+      throw Exception('Fail to load product($productType) list');
+    }
   }
 
   /// TODO:
-  /// fetcBondProduct필요
+  /// fetchBondProduct필요
 
   Future<List<List<dynamic>>> fetchBondProductDummy() async {
     String jsonString = await rootBundle.loadString(
       'assets/dummy/dummy_bonds_list.json',
     );
 
-    final Map<String, dynamic> decodedJson = json.decode(jsonString);
+    if (jsonString.isNotEmpty) {
+      final Map<String, dynamic> decodedJson = json.decode(jsonString);
+      final Map<String, dynamic> data = decodedJson['data'];
 
-    final Map<String, dynamic> data = decodedJson['data'];
-
-    return [data['sortByInterest'], data['sortByMaturity']];
+      return [data['sortByInterest'], data['sortByMaturity']];
+    } else {
+      throw Exception('Fail to load bond product list');
+    }
   }
 
-  Future<Map<String, dynamic>> fetchRecommendProduct({
+  Future<RecommendProductModel /*Map<String, dynamic>*/> fetchRecommendProduct({
     required int targetAmount,
     required int targetMonths,
     int? currentAmount,
@@ -138,14 +169,43 @@ class ApiRepository {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> decodedJson = json.decode(response.body);
-      final Map<String, dynamic> selectedJson = {
+
+      final RecommendProductModel selectedJson = RecommendProductModel.fromJson(
+        decodedJson['data']['optimalCombination'],
+      );
+      /**final Map<String, dynamic> selectedJson = {
         'combinationSummary': decodedJson['combinationSummary'],
         'totalExpectedReturn': decodedJson['totalExpectedReturn'],
         'expectedTotalAmount': decodedJson['expectedTotalAmount'],
         'riskLevel': decodedJson['riskLevel'],
         'description': decodedJson['description'],
         'products': decodedJson['products'],
-      };
+      }; */
+
+      return selectedJson;
+    } else {
+      throw Exception('Failed to load recommendation product list');
+    }
+  }
+
+  Future<RecommendProductModel> fetchRecommendProductDummy({
+    required int targetAmount,
+    required int targetMonths,
+    int? currentAmount,
+    int? riskPreference,
+  }) async {
+    String jsonString = await rootBundle.loadString(
+      'assets/dummy/dummy_recommend_product_list.json',
+    );
+
+    final Map<String, dynamic> decodedJson = json.decode(jsonString);
+    if (decodedJson.isNotEmpty || decodedJson['success'] == true) {
+      final RecommendProductModel selectedJson = RecommendProductModel.fromJson(
+        decodedJson['data']['optimalCombination'],
+      );
+
+      //print("[DEBUG] ${decodedJson}");
+      //print("[DEBUG] ${selectedJson.products?.first.productName}");
       return selectedJson;
     } else {
       throw Exception('Failed to load recommendation product list');

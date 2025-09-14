@@ -6,7 +6,7 @@ part of 'api_view_model.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$productViewModelHash() => r'4ac8106523234ca5b1fdf04ea36bc69c727fe0c4';
+String _$productViewModelHash() => r'7c93fb0c0e71a01b7d7bae0fb92d0d229aebde57';
 
 /// See also [ProductViewModel].
 @ProviderFor(ProductViewModel)
@@ -22,7 +22,7 @@ final productViewModelProvider =
     );
 
 typedef _$ProductViewModel = Notifier<ProductModel>;
-String _$policyViewModelHash() => r'a6066bf0204a7ae3cf82bcbb710b02a704ed4d8d';
+String _$policyViewModelHash() => r'790f49936d00a5ffc1edf321199e940ead06c9a6';
 
 /// See also [PolicyViewModel].
 @ProviderFor(PolicyViewModel)
