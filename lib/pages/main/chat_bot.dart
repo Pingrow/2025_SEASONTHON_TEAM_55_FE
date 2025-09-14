@@ -165,34 +165,39 @@ class _ChatBotPageState extends ConsumerState<ChatBotPage> {
                               keyboardType: TextInputType.multiline,
                             ),
                           ),
-                          Padding(
-                            padding: EdgeInsetsGeometry.fromLTRB(
-                              6.w,
-                              5.h,
-                              6.w,
-                              5.h,
-                            ),
-                            child: Container(
-                              constraints: BoxConstraints(
-                                minWidth: 58.w,
-                                minHeight: 42.h,
-                                maxWidth: 58.w,
+                          GestureDetector(
+                            onTap: () {
+                              print('[DEBUG]\n입력: ${_controller.text}');
+                            },
+                            child: Padding(
+                              padding: EdgeInsetsGeometry.fromLTRB(
+                                6.w,
+                                5.h,
+                                6.w,
+                                5.h,
                               ),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  width: 0.5,
-                                  color: Color(0xffC1C1C1),
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  minWidth: 58.w,
+                                  minHeight: 42.h,
+                                  maxWidth: 58.w,
                                 ),
-                                borderRadius: BorderRadius.circular(12),
-                                color: Color(0xffF7F7F7),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                '입력',
-                                style: TextStyle(
-                                  fontSize: 13.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xffABABAB),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    width: 0.5,
+                                    color: Color(0xffC1C1C1),
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: Color(0xffF7F7F7),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '입력',
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xffABABAB),
+                                  ),
                                 ),
                               ),
                             ),
