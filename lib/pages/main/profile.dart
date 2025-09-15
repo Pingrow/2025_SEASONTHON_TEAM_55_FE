@@ -96,6 +96,28 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
               Container(
                 width: 338.w,
+                alignment: Alignment.centerLeft,
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      color: Color(0xff374151),
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: authState.user?.nickname ?? '???',
+                        style: TextStyle(color: Color(0xff0CA361)),
+                      ),
+
+                      TextSpan(text: ' 님의 마이페이지'),
+                    ],
+                  ),
+                ),
+              ),
+
+              Container(
+                width: 338.w,
                 height: 192.h,
                 margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
                 padding: EdgeInsets.fromLTRB(25.w, 22.h, 25.w, 22.h),
@@ -265,6 +287,29 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       ),
                     ),
                   ],
+                ),
+              ),
+
+              Container(
+                width: 338.w,
+                padding: EdgeInsets.fromLTRB(0, 16, 0, 0),
+                alignment: Alignment.centerLeft,
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      color: Color(0xff374151),
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: authState.user?.nickname ?? '???',
+                        style: TextStyle(color: Color(0xff0CA361)),
+                      ),
+
+                      TextSpan(text: ' 님을 위해 준비했어요'),
+                    ],
+                  ),
                 ),
               ),
             ],
