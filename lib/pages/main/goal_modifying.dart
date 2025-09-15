@@ -31,10 +31,14 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
   void initState() {
     super.initState();
 
-    final authState = ref.read(authViewModelProvider);
-    if (authState.user?.research_completed ?? false) {
-      ref.read(researchResultStep4Provider.notifier).setValue(0.0);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final authState = ref.read(authViewModelProvider);
+        if (authState.user?.research_completed ?? false) {
+          ref.read(researchResultStep4Provider.notifier).setValue(0.0);
+        }
+      }
+    });
   }
 
   @override
@@ -439,7 +443,9 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
                             Positioned(
                               top: 0,
                               left:
-                                  (350.w - 25.w) * (sliderValue / 49.0) - 22.w,
+                                  (385.w - 2 * 26.w) *
+                                      ((sliderValue + 1) / 50.0) -
+                                  (30.w) * (sliderValue / 49.0),
                               child: Text(
                                 sliderValue == 49
                                     ? '5년이상'
@@ -455,7 +461,7 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
                             Padding(
                               padding: EdgeInsetsGeometry.fromLTRB(0, 15, 0, 5),
                               child: Slider(
-                                divisions: 49,
+                                divisions: 50,
                                 min: 0,
                                 max: 49,
                                 value: sliderValue,
@@ -471,14 +477,17 @@ class _GoalModifyingPageState extends ConsumerState<GoalModifyingPage> {
 
                             Positioned(
                               right: 0,
-                              bottom: 10,
-                              child: Container(
-                                margin: EdgeInsets.all(5),
-                                width: 18.r,
-                                height: 18.r,
-                                decoration: BoxDecoration(
-                                  color: Color(0xff0fa564),
-                                  shape: BoxShape.circle,
+                              bottom: 10.h,
+                              child: IgnorePointer(
+                                ignoring: true,
+                                child: Container(
+                                  margin: EdgeInsets.fromLTRB(0, 5.h, 0.w, 5.h),
+                                  width: 18.r,
+                                  height: 18.r,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xff0fa564),
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
                               ),
                             ),

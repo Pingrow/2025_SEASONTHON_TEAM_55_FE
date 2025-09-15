@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -24,8 +25,15 @@ class HomePage extends StatefulHookConsumerWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   double progressRate = 0.00;
+  int touchedIndex = -1;
 
-  late Future<List<OptimalProductModel>?> _recommendProduct;
+  late List<Map<String, dynamic>> _portfolio;
+  List<int> _portfolio_colors = [
+    0xff0FA564,
+    0xff3CBA92,
+    0xffFCF7E2,
+    0xffFFD16F,
+  ];
 
   @override
   void initState() {
@@ -33,9 +41,23 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     final authState = ref.read(authViewModelProvider);
     final apiRepo = ref.read(productViewModelProvider.notifier);
-    _recommendProduct = authState.user != null
-        ? apiRepo.fetchRecommendation(authState.user!)
-        : Future(List<OptimalProductModel>.empty);
+
+    _portfolio = authState.user != null
+        ? [
+            {'value': 45.0, 'title': '정기예금'},
+            {'value': 25.0, 'title': '적금'},
+            {'value': 20.0, 'title': '채권'},
+            {'value': 10.0, 'title': 'ETF'},
+          ]
+        : [
+            {'value': 45.0, 'title': '???'},
+            {'value': 25.0, 'title': '???'},
+            {'value': 20.0, 'title': '???'},
+            {'value': 10.0, 'title': '???'},
+          ];
+    /**authState.user != null
+        ? Future(List.empty) //apiRepo.fetchRecommendation(authState.user!)
+        : Future(List.empty); */
   }
 
   @override
@@ -63,7 +85,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 width: 338.w,
                 margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -80,7 +102,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ),
                       ],
                     ),
-                    GestureDetector(
+                    /**GestureDetector(
                       onTap: () {
                         if (authState.status == AuthStatus.authenticated) {
                           GoRouter.of(context).go('/profile');
@@ -100,162 +122,330 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ),
                       ),
                     ),
+                   */
                   ],
                 ),
               ),
 
-              Container(
-                width: 338.w,
-                height: 192.h,
-                margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
-                padding: EdgeInsets.fromLTRB(25.w, 22.h, 25.w, 22.h),
-                decoration: BoxDecoration(
-                  color: Color(0xff0ca361),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 3.0,
-                      color: Colors.black45,
-                      blurStyle: BlurStyle.normal,
-                      offset: Offset(0, 2.5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'D-${authState.user?.goal_period ?? '??'}개월',
-                          style: TextStyle(
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xffffffff),
+              ((authState.user != null || authState.user?.goal != null)
+                  ? Container(
+                      width: 338.w,
+                      height: 192.h,
+                      margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
+                      padding: EdgeInsets.fromLTRB(25.w, 22.h, 25.w, 22.h),
+                      decoration: BoxDecoration(
+                        color: Color(0xff0ca361),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 3.0,
+                            color: Colors.black45,
+                            blurStyle: BlurStyle.normal,
+                            offset: Offset(0, 2.5),
                           ),
-                        ),
-
-                        Row(
-                          children: [
-                            Text(
-                              '${((authState.user?.saved_money ?? 0) / (authState.user?.goal_money ?? 1) * 100).round()}%',
-                              style: TextStyle(
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xffFFD16F),
-                              ),
-                            ),
-
-                            Text(
-                              '진행중',
-                              style: TextStyle(
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xffffffff),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    Text(
-                      authState.user?.goal ?? '???',
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      textAlign: TextAlign.start,
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xffffffff),
-                      ),
-                    ),
-
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: NumberFormat.decimalPattern().format(
-                              authState.user?.goal_money ?? 0,
-                            ),
-                            style: TextStyle(
-                              fontSize:
-                                  (authState.user?.goal_money ?? 0) <=
-                                      1000000000000
-                                  ? 27.sp
-                                  : 21.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          TextSpan(text: ' 원'),
                         ],
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xffFDF8E3),
-                        ),
                       ),
-                      overflow: TextOverflow.visible,
-                      maxLines: 1,
-                      textAlign: TextAlign.start,
-                    ),
-
-                    Container(
-                      height: 65.h,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.bottomCenter,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 288.w,
-                            height: 14.h,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(13),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'D-${authState.user?.goal_period ?? '??'}개월',
+                                style: TextStyle(
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xffffffff),
+                                ),
+                              ),
+
+                              Row(
+                                children: [
+                                  Text(
+                                    '${authState.user == null ? '-' : ((authState.user?.saved_money ?? 0) / (authState.user?.goal_money ?? 1) * 100).round()}%',
+                                    style: TextStyle(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xffFFD16F),
+                                    ),
+                                  ),
+
+                                  Text(
+                                    '진행중',
+                                    style: TextStyle(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xffffffff),
+                                    ),
+                                  ),
+
+                                  GestureDetector(
+                                    onTap: () {
+                                      GoRouter.of(
+                                        context,
+                                      ).push('/profile/goal_modify');
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsetsGeometry.fromLTRB(
+                                        10,
+                                        0,
+                                        0,
+                                        0,
+                                      ),
+                                      child: Image.asset(
+                                        'assets/icons/setting.png',
+                                        width: 16.r,
+                                        height: 16.r,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          Text(
+                            authState.user?.goal ?? '???',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            textAlign: TextAlign.start,
+                            style: TextStyle(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w500,
                               color: Color(0xffffffff),
                             ),
                           ),
 
-                          Positioned(
-                            ///TODO:
-                            ///진행도에 따른 길이변화
-                            bottom: 0,
-                            left: 0,
-                            child: Container(
-                              width:
-                                  9.w +
-                                  (288.w - 9.w) *
-                                      (authState.user?.saved_money ?? 0) /
-                                      (authState.user?.goal_money ?? 1),
-                              height: 14.h,
-                              decoration: BoxDecoration(
-                                color: Color(0xffFFD16F),
-                                borderRadius: BorderRadius.circular(9),
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: NumberFormat.decimalPattern().format(
+                                    authState.user?.goal_money ?? 0,
+                                  ),
+                                  style: TextStyle(
+                                    fontSize:
+                                        (authState.user?.goal_money ?? 0) <=
+                                            1000000000000
+                                        ? 27.sp
+                                        : 21.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+
+                                TextSpan(text: ' 원'),
+                              ],
+                              style: TextStyle(
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xffFDF8E3),
                               ),
                             ),
+                            overflow: TextOverflow.visible,
+                            maxLines: 1,
+                            textAlign: TextAlign.start,
                           ),
 
-                          Positioned(
-                            top: 0,
-                            left:
-                                (288.w - 9.w) *
-                                    (authState.user?.saved_money ?? 0) /
-                                    (authState.user?.goal_money ?? 1) -
-                                20.w,
-                            child: Image.asset(
-                              'assets/characters/main_progress_bar.png',
-                              width: 48.r,
-                              height: 48.r,
+                          Container(
+                            height: 65.h,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              alignment: Alignment.bottomCenter,
+                              children: [
+                                Container(
+                                  width: 288.w,
+                                  height: 14.h,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(13),
+                                    color: Color(0xffffffff),
+                                  ),
+                                ),
+
+                                Positioned(
+                                  ///TODO:
+                                  ///진행도에 따른 길이변화
+                                  bottom: 0,
+                                  left: 0,
+                                  child: Container(
+                                    width:
+                                        9.w +
+                                        (288.w - 9.w) *
+                                            (authState.user?.saved_money ?? 0) /
+                                            (authState.user?.goal_money ?? 1),
+                                    height: 14.h,
+                                    decoration: BoxDecoration(
+                                      color: Color(0xffFFD16F),
+                                      borderRadius: BorderRadius.circular(9),
+                                    ),
+                                  ),
+                                ),
+
+                                Positioned(
+                                  top: 0,
+                                  left:
+                                      (288.w - 9.w) *
+                                          (authState.user?.saved_money ?? 0) /
+                                          (authState.user?.goal_money ?? 1) -
+                                      20.w,
+                                  child: Image.asset(
+                                    'assets/characters/main_progress_bar.png',
+                                    width: 48.r,
+                                    height: 48.r,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                    )
+                  : Container(
+                      width: 338.w,
+                      height: 192.h,
+                      margin: EdgeInsets.fromLTRB(0, 10, 0, 5),
+                      padding: EdgeInsets.fromLTRB(25.w, 22.h, 25.w, 22.h),
+                      decoration: BoxDecoration(
+                        color: Color(0xff0ca361),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 3.0,
+                            color: Colors.black45,
+                            blurStyle: BlurStyle.normal,
+                            offset: Offset(0, 2.5),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'D-?개월',
+                                style: TextStyle(
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xffffffff),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  GoRouter.of(
+                                    context,
+                                  ).push('/profile/goal_modify');
+                                },
+                                child: Padding(
+                                  padding: EdgeInsetsGeometry.fromLTRB(
+                                    10,
+                                    0,
+                                    0,
+                                    0,
+                                  ),
+                                  child: Image.asset(
+                                    'assets/icons/disabled_setting.png',
+                                    width: 21.r,
+                                    height: 21.r,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: '설정',
+                                  style: TextStyle(
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xffFAD44B),
+                                  ),
+                                ),
+
+                                TextSpan(text: '을 눌러 목표를 입력해주세요'),
+                              ],
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xffffffff),
+                              ),
+                            ),
+                          ),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(text: '?,???,???'),
+                                    TextSpan(
+                                      text: ' 원',
+                                      style: TextStyle(
+                                        fontSize: 20.sp,
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xffFDF8E3),
+                                      ),
+                                    ),
+                                  ],
+                                  style: TextStyle(
+                                    fontSize: 27.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xffFDF8E3),
+                                  ),
+                                ),
+                              ),
+
+                              Image.asset(
+                                'assets/characters/zoom.png',
+                                width: 87.w,
+                                height: 87.h,
+                              ),
+                            ],
+                          ),
+                          Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.bottomCenter,
+                            children: [
+                              Container(
+                                width: 288.w,
+                                height: 14.h,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(13),
+                                  color: Color(0xffffffff),
+                                ),
+                              ),
+
+                              Positioned(
+                                ///TODO:
+                                ///진행도에 따른 길이변화
+                                bottom: 0,
+                                left: 0,
+                                child: Container(
+                                  width:
+                                      9.w +
+                                      (288.w - 9.w) *
+                                          (authState.user?.saved_money ?? 0) /
+                                          (authState.user?.goal_money ?? 1),
+                                  height: 14.h,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xffFFD16F),
+                                    borderRadius: BorderRadius.circular(9),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    )),
 
               SizedBox(
                 width: 338.w,
@@ -391,6 +581,245 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
 
               Container(
+                width: 338.w,
+                //height: 251.h,
+                margin: EdgeInsets.fromLTRB(0, 5, 0, 9),
+                padding: EdgeInsets.fromLTRB(15.w, 20.h, 15.w, 15.h),
+                decoration: BoxDecoration(
+                  color: Color(0xffffffff),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 3.0,
+                      color: Colors.black38,
+                      blurStyle: BlurStyle.normal,
+                      offset: Offset(0, 2.5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              color: Color(0xff374151),
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: authState.user?.nickname ?? '???',
+                                style: TextStyle(
+                                  color: Color(0xff0CA361),
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+
+                              TextSpan(text: ' 님을 위한 저축/투자 조합'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          width: 177.w,
+                          height: 162.h,
+                          margin: EdgeInsets.fromLTRB(6.w, 10.h, 6.w, 0),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/characters/portfolio.png',
+                                width: 99.w,
+                                height: 99.h,
+                              ),
+                              PieChart(
+                                PieChartData(
+                                  borderData: FlBorderData(show: false),
+                                  sectionsSpace: 0,
+                                  centerSpaceRadius: (75 / 2).r,
+                                  startDegreeOffset: -90,
+
+                                  sections: List.generate(_portfolio.length, (
+                                    i,
+                                  ) {
+                                    return PieChartSectionData(
+                                      color: Color(_portfolio_colors[i]),
+                                      value: _portfolio[i]['value'],
+                                      title: '',
+                                      radius: (75 / 2).r,
+                                      badgePositionPercentageOffset: 1.0,
+                                      badgeWidget: Container(
+                                        constraints: BoxConstraints(
+                                          minWidth: 38.w,
+                                          maxWidth: 50.w,
+                                          minHeight: 24.h,
+                                          maxHeight: 24.h,
+                                        ),
+                                        padding: EdgeInsets.fromLTRB(
+                                          5.w,
+                                          0,
+                                          5.w,
+                                          0,
+                                        ),
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          color: Color(0xfff5f5f5),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              blurRadius: 2.0,
+                                              color: Colors.black38,
+                                              blurStyle: BlurStyle.normal,
+                                              offset: Offset(0, 1),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Text(
+                                          _portfolio[i]['title'],
+                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xff737373),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Container(
+                          width: 94.w,
+                          margin: EdgeInsets.fromLTRB(6.w, 0.h, 6.w, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: List.generate(_portfolio.length, (i) {
+                              return Container(
+                                margin: EdgeInsetsGeometry.fromLTRB(
+                                  0,
+                                  4.h,
+                                  0,
+                                  4.h,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      width: 11.r,
+                                      height: 11.r,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Color(_portfolio_colors[i]),
+                                      ),
+                                    ),
+
+                                    Container(
+                                      width: 40.w,
+                                      child: Text(
+                                        _portfolio[i]['title'],
+                                        style: TextStyle(
+                                          fontSize: 11.sp,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xff757575),
+                                        ),
+                                      ),
+                                    ),
+
+                                    Text(
+                                      '${authState.user != null ? _portfolio[i]['value'].round() : '??'}%',
+                                      style: TextStyle(
+                                        fontSize: 11.sp,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xff757575),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            GoRouter.of(context).go('/product_list');
+                          },
+                          child: Row(
+                            children: [
+                              Text(
+                                '상품 보러가가',
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xff0CA361),
+                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                                child: Image.asset(
+                                  'assets/icons/right_arrow.png',
+                                  width: 5.w,
+                                  height: 9.h,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    /**FutureBuilder(
+                      future: _portfolio,
+                      builder: (context, snapshot) {
+                        // 1. 로딩 중 상태 처리
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        // 2. 에러 발생 상태 처리
+                        if (snapshot.hasError) {
+                          return error();
+                        }
+
+                        // 3. 데이터가 없거나 비어있는 경우 처리
+                        if (!snapshot.hasData ||
+                            snapshot.data == null ||
+                            snapshot.data!.isEmpty) {
+                          return noProduct();
+                        }
+
+                        final portfolio = snapshot.data!;
+
+                        return },
+                    ),
+                */
+                  ],
+                ),
+              ),
+
+              /**Container(
                 width: 338.w,
                 height: 398.h,
                 margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
@@ -606,6 +1035,124 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     ),
                   ],
+                ),
+              ),
+             */
+              GestureDetector(
+                onTap: () {},
+                child: Container(
+                  width: 338.w,
+                  height: 69.h,
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 9.h),
+                  padding: EdgeInsets.fromLTRB(17.w, 13.h, 17.w, 13.h),
+                  decoration: BoxDecoration(
+                    color: Color(0xffFCF7E2),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 3.0,
+                        color: Colors.black38,
+                        blurStyle: BlurStyle.normal,
+                        offset: Offset(0, 2.5),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '은행별 혜택',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xff374151),
+                            ),
+                          ),
+                          Text(
+                            '전국 농·축협 특판',
+                            style: TextStyle(
+                              fontSize: 17.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff374151),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: EdgeInsets.fromLTRB(6.w, 3.h, 6.w, 3.h),
+                        child: Image.asset(
+                          'assets/icons/right_arrow.png',
+                          width: 10.w,
+                          height: 16.h,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              GestureDetector(
+                onTap: () {
+                  if (authState.user != null) {}
+                },
+                child: Container(
+                  width: 338.w,
+                  height: 69.h,
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 9.h),
+                  padding: EdgeInsets.fromLTRB(17.w, 13.h, 17.w, 13.h),
+                  decoration: BoxDecoration(
+                    color: Color(
+                      authState.user != null ? 0xffFCF7E2 : 0xffEFEFEF,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 3.0,
+                        color: Colors.black38,
+                        blurStyle: BlurStyle.normal,
+                        offset: Offset(0, 2.5),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '쇼핑 혜택',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xff374151),
+                            ),
+                          ),
+                          Text(
+                            '핀그로우에서 쇼핑하고 적립받기',
+                            style: TextStyle(
+                              fontSize: 17.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff374151),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: EdgeInsets.fromLTRB(6.w, 3.h, 6.w, 3.h),
+                        child: Image.asset(
+                          'assets/icons/right_arrow.png',
+                          width: 10.w,
+                          height: 16.h,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

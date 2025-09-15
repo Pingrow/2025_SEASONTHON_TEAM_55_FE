@@ -5,6 +5,23 @@ String HOST = '0.0.0.0'; // 서버 호스트
 int PORT = 4001; // 서버 포트
 List<dynamic> clients = []; // 클라이언트 목록
 
+const String BOT_USERNAME = "Bot";
+
+void broadcastBotMessage(String message) {
+  final botMessage = jsonEncode({
+    'type': 'all|message',
+    'username': BOT_USERNAME,
+    'message': message,
+  });
+
+  print("봇 메시지 발송: $message");
+
+  // 접속 중인 모든 클라이언트에게 메시지를 보냅니다.
+  for (var client in clients) {
+    client[0].add(botMessage);
+  }
+}
+
 void main() async {
   // 서버 설정
   HttpServer server = await createServer();
@@ -38,6 +55,8 @@ clientConnections(HttpServer server) async {
 addClient(client, username) {
   print("클라이언트 접속 정보 : username($username)");
   clients.add([client, username]);
+
+  broadcastBotMessage('안녕하세요! 핀그로우 챗봇입니다. 어떤 금융 경제 용어가 궁금하신가요?');
 }
 
 // 클라이언트 연결 종료 시 서버 목록에서 제거
@@ -45,6 +64,8 @@ removeClient(WebSocket websocket) {
   for (var i = 0; i < clients.length; i++) {
     var client = clients[i];
     if (client[0] == websocket) {
+      print("클라이언트 대화목록 : ${client[0].toString()}");
+
       print("클라이언트 접속 종료 : ${client[1]}");
       clients.removeAt(i); // 해당 클라이언트 목록에서 제거
       print("접속중인 클라이언트 목록 : $clients");
@@ -65,6 +86,8 @@ webSocketActions(WebSocket websocket) {
       // 초기 접속 시 클라이언트 접속 정보 저장
       if (messageType == "init") {
         addClient(websocket, dataInfo['username']);
+
+        webSocketListen(websocket, jsonEncode(data));
       }
       // 연결되어 있는 클라이언트에게 보낼 데이터 송신 처리
       else {
@@ -84,8 +107,24 @@ webSocketActions(WebSocket websocket) {
 
 // JSON 데이터 파싱 함수
 convertToJson(data) {
-  Map<String, dynamic> converData = jsonDecode(data);
-  return converData;
+  if (data is! String) {
+    print("경고: 파싱할 데이터가 문자열이 아닙니다. (타입: ${data.runtimeType})");
+    return null;
+  }
+
+  try {
+    var decoded = jsonDecode(data);
+    // 디코딩 결과가 Map 형태인지 확인
+    if (decoded is Map<String, dynamic>) {
+      return decoded;
+    } else {
+      print("경고: JSON 파싱 결과가 Map이 아닙니다. (타입: ${decoded.runtimeType})");
+      return null;
+    }
+  } catch (e) {
+    print("에러: JSON 파싱 중 예외 발생. 데이터: $data, 에러: $e");
+    return null;
+  }
 }
 
 // 클라이언트로 받은 데이터 메시지 처리
@@ -93,19 +132,15 @@ webSocketListen(WebSocket websocket, data) {
   // JSON 데이터 파싱
   print("클라이언트로부터의 메시지 : $data");
   var dataInfo = convertToJson(data);
+  if (dataInfo == null) {
+    return;
+  }
+
   String messageType = dataInfo['type'].split("|")[0];
 
   for (var client in clients) {
-    // 전체 사용자에게 메시지 보내기
     if (messageType == "all") {
       client[0].add(data);
-    }
-    // 귓속말 대상과 자신에게만 메시지를 보내기
-    else if (messageType == "whisper") {
-      String whisper = dataInfo['type'].split("|")[1];
-      if (client[1] == whisper || client[1] == dataInfo['username']) {
-        client[0].add(data);
-      }
     }
   }
 }

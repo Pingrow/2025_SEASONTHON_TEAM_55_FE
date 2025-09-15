@@ -806,193 +806,201 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
         MediaQuery.of(context).padding.bottom,
       ),
       decoration: BoxDecoration(color: Color(0xffffffff)),
-      child: Column(
+      child: Stack(
         children: [
-          Container(
-            //width: 338.w,
-            child: Column(
-              children: [
-                Container(
-                  //width: 338.w,
-                  //height: 39.h,
-                  margin: EdgeInsets.fromLTRB(
-                    (MediaQuery.of(context).size.width - 338.w) / 2 - 10.w,
-                    20.h,
-                    (MediaQuery.of(context).size.width - 338.w) / 2 - 10.w,
-                    10.h,
-                  ),
+          Column(
+            children: [
+              Container(
+                //width: 338.w,
+                child: Column(
+                  children: [
+                    Container(
+                      //width: 338.w,
+                      //height: 39.h,
+                      margin: EdgeInsets.fromLTRB(
+                        (MediaQuery.of(context).size.width - 338.w) / 2 - 10.w,
+                        20.h,
+                        (MediaQuery.of(context).size.width - 338.w) / 2 - 10.w,
+                        10.h,
+                      ),
 
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              GoRouter.of(context).go('/home');
+                            },
+                            child: Padding(
+                              padding: EdgeInsetsGeometry.fromLTRB(
+                                10.w,
+                                10.h,
+                                10.w,
+                                10.h,
+                              ),
+                              child: Image.asset(
+                                'assets/icons/back.png',
+                                width: 10.w,
+                                height: 16.h,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 338.w,
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  style: TextStyle(
+                                    fontSize: 25.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff374151),
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text:
+                                          authState.user?.nickname ??
+                                          '???', //'핀그로우'
+                                      style: TextStyle(
+                                        color: Color(0xff0CA361),
+                                      ),
+                                    ),
+
+                                    TextSpan(text: ' 님을 응원하는 청년 정책'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                '지역을 선택하면, 딱 맞는 청년정책을 추천해드려요!',
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xff6B7280),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              FittedBox(
+                fit: BoxFit.fill,
+                child: Container(
+                  width: 338.w,
+                  height: 47.h,
+                  margin: EdgeInsets.fromLTRB(0, 16.h, 0, 1.h),
+                  decoration: BoxDecoration(
+                    color: Color(0xffF1F4F6),
+                    borderRadius: BorderRadius.circular(32),
+                  ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       GestureDetector(
                         onTap: () {
-                          GoRouter.of(context).go('/home');
+                          if (tapStatus[0] == TapStatus.notSelected) {
+                            setState(() {
+                              idx = 0;
+                              tapStatus[0] = TapStatus.selected;
+                              tapStatus[1] = TapStatus.notSelected;
+                              tapStatus[2] = TapStatus.notSelected;
+
+                              region_idx = -1;
+                              area_idx = -1;
+                            });
+
+                            Timer(Duration(microseconds: 200), () {
+                              setState(() {
+                                tapStatus[0] = TapStatus.load;
+                              });
+                            });
+
+                            _policyTop10Future = apiRepo.fetchTop10PolicyList();
+                          }
                         },
-                        child: Padding(
-                          padding: EdgeInsetsGeometry.fromLTRB(
-                            10.w,
-                            10.h,
-                            10.w,
-                            10.h,
+                        child: Container(
+                          width: 100.w,
+                          height: 36.h,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Color(tapConfig[tapStatus[0]]!["COLOR"]),
+                            borderRadius: BorderRadius.circular(32),
+                            boxShadow: tapConfig[tapStatus[0]]!["SHADOW"],
                           ),
-                          child: Image.asset(
-                            'assets/icons/back.png',
-                            width: 10.w,
-                            height: 16.h,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 338.w,
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          RichText(
-                            text: TextSpan(
-                              style: TextStyle(
-                                fontSize: 25.sp,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xff374151),
-                              ),
-                              children: [
-                                TextSpan(
-                                  text:
-                                      authState.user?.nickname ??
-                                      '???', //'핀그로우'
-                                  style: TextStyle(color: Color(0xff0CA361)),
-                                ),
-
-                                TextSpan(text: ' 님을 응원하는 청년 정책'),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Text(
-                            '지역을 선택하면, 딱 맞는 청년정책을 추천해드려요!',
+                          child: Text(
+                            '전국',
                             style: TextStyle(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xff6B7280),
+                              color: Color(
+                                tapConfig[tapStatus[0]]!["FONT_COLOR"],
+                              ),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          FittedBox(
-            fit: BoxFit.fill,
-            child: Container(
-              width: 338.w,
-              height: 47.h,
-              margin: EdgeInsets.fromLTRB(0, 16.h, 0, 1.h),
-              decoration: BoxDecoration(
-                color: Color(0xffF1F4F6),
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      if (tapStatus[0] == TapStatus.notSelected) {
-                        setState(() {
-                          idx = 0;
-                          tapStatus[0] = TapStatus.selected;
-                          tapStatus[1] = TapStatus.notSelected;
-                          tapStatus[2] = TapStatus.notSelected;
-
-                          region_idx = -1;
-                          area_idx = -1;
-                        });
-
-                        Timer(Duration(microseconds: 200), () {
-                          setState(() {
-                            tapStatus[0] = TapStatus.load;
-                          });
-                        });
-
-                        _policyTop10Future = apiRepo.fetchTop10PolicyList();
-                      }
-                    },
-                    child: Container(
-                      width: 100.w,
-                      height: 36.h,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Color(tapConfig[tapStatus[0]]!["COLOR"]),
-                        borderRadius: BorderRadius.circular(32),
-                        boxShadow: tapConfig[tapStatus[0]]!["SHADOW"],
-                      ),
-                      child: Text(
-                        '전국',
-                        style: TextStyle(
-                          color: Color(tapConfig[tapStatus[0]]!["FONT_COLOR"]),
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                  ),
 
-                  GestureDetector(
-                    onTap: () {
-                      if (authState.user == null) {
-                        GoRouter.of(
-                          context,
-                        ).push('/policy_list/policy_login_popup');
-                      } else {
-                        if (tapStatus[1] == TapStatus.notSelected) {
-                          setState(() {
-                            idx = 1;
-                            tapStatus[0] = TapStatus.notSelected;
-                            tapStatus[1] = TapStatus.selected;
-                            tapStatus[2] = TapStatus.notSelected;
-                          });
-                        }
-                      }
-                    },
-                    child: Container(
-                      width: 100.w,
-                      height: 36.h,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Color(tapConfig[tapStatus[1]]!["COLOR"]),
-                        borderRadius: BorderRadius.circular(32),
-                        boxShadow: tapConfig[tapStatus[1]]!["SHADOW"],
-                      ),
-                      child: Text(
-                        tapStatus[1] != TapStatus.load
-                            ? '시/도'
-                            : regions[authState.user?.region?.split('-')[2]]
-                                      ?.alias ??
-                                  'null',
-                        style: TextStyle(
-                          color: Color(tapConfig[tapStatus[1]]!["FONT_COLOR"]),
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
+                      GestureDetector(
+                        onTap: () {
+                          if (authState.user == null) {
+                            GoRouter.of(
+                              context,
+                            ).push('/policy_list/policy_login_popup');
+                          } else {
+                            if (tapStatus[1] == TapStatus.notSelected) {
+                              setState(() {
+                                idx = 1;
+                                tapStatus[0] = TapStatus.notSelected;
+                                tapStatus[1] = TapStatus.selected;
+                                tapStatus[2] = TapStatus.notSelected;
+                              });
+                            }
+                          }
+                        },
+                        child: Container(
+                          width: 100.w,
+                          height: 36.h,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Color(tapConfig[tapStatus[1]]!["COLOR"]),
+                            borderRadius: BorderRadius.circular(32),
+                            boxShadow: tapConfig[tapStatus[1]]!["SHADOW"],
+                          ),
+                          child: Text(
+                            tapStatus[1] != TapStatus.load
+                                ? '시/도'
+                                : regions[authState.user?.region?.split('-')[2]]
+                                          ?.alias ??
+                                      'null',
+                            style: TextStyle(
+                              color: Color(
+                                tapConfig[tapStatus[1]]!["FONT_COLOR"],
+                              ),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
 
-                  GestureDetector(
-                    onTap: () {
-                      /**
+                      GestureDetector(
+                        onTap: () {
+                          /**
                        * if (tapStatus[2] == TapStatus.notSelected) {
                         if (tapStatus[1] == TapStatus.notSelected) {
                           setState(() {
@@ -1011,39 +1019,58 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                         }
                       }
                        */
-                    },
-                    child: Container(
-                      width: 100.w,
-                      height: 36.h,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Color(tapConfig[tapStatus[2]]!["COLOR"]),
-                        borderRadius: BorderRadius.circular(32),
-                        boxShadow: tapConfig[tapStatus[2]]!["SHADOW"],
-                      ),
-                      child: Text(
-                        tapStatus[2] != TapStatus.load
-                            ? '시/구/군'
-                            : '${authState.user?.region?.split('-')[3]}',
-                        style: TextStyle(
-                          color: Color(tapConfig[tapStatus[2]]!["FONT_COLOR"]),
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
+                        },
+                        child: Container(
+                          width: 100.w,
+                          height: 36.h,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Color(tapConfig[tapStatus[2]]!["COLOR"]),
+                            borderRadius: BorderRadius.circular(32),
+                            boxShadow: tapConfig[tapStatus[2]]!["SHADOW"],
+                          ),
+                          child: Text(
+                            tapStatus[2] != TapStatus.load
+                                ? '시/구/군'
+                                : '${authState.user?.region?.split('-')[3]}',
+                            style: TextStyle(
+                              color: Color(
+                                tapConfig[tapStatus[2]]!["FONT_COLOR"],
+                              ),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+
+              Expanded(
+                child: Container(
+                  width: 338.w,
+                  child: idx == -1
+                      ? Container()
+                      : policiesForRegion[idx]![tapStatus[idx]],
+                ),
+              ),
+            ],
           ),
 
-          Expanded(
-            child: Container(
-              width: 338.w,
-              child: idx == -1
-                  ? Container()
-                  : policiesForRegion[idx]![tapStatus[idx]],
+          Positioned(
+            right: 15.w,
+            bottom: 15.h,
+            child: GestureDetector(
+              onTap: () {
+                GoRouter.of(context).push('/chat_bot');
+              },
+              child: Image.asset(
+                'assets/icons/chat_bot_icon.png',
+                width: 60.r,
+                height: 60.r,
+              ),
             ),
           ),
         ],

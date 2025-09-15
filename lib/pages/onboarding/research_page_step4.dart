@@ -67,27 +67,62 @@ class _ResearchPageStep4State extends ConsumerState<ResearchPageStep4> {
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Slider(
-                    divisions: 49,
-                    min: 1,
-                    max: 49,
-                    value: sliderValue,
-                    onChanged: (value) {
-                      ref
-                          .read(researchResultStep4Provider.notifier)
-                          .setValue(value);
-                    },
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Text(
+                      '5년이상',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xff374151),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    left:
+                        (MediaQuery.of(context).size.width - 2 * 20.w) *
+                            ((sliderValue + 1) / 50.0) -
+                        (41.w) * (sliderValue / 49.0),
+                    child: Text(
+                      sliderValue == 49 ? '5년이상' : '${sliderValue.round()}개월',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xff374151),
+                      ),
+                    ),
+                  ),
+
+                  Padding(
+                    padding: EdgeInsetsGeometry.fromLTRB(0, 15, 0, 5),
+                    child: Slider(
+                      divisions: 50,
+                      min: 0,
+                      max: 49,
+                      value: sliderValue,
+                      onChanged: (value) {
+                        ref
+                            .read(researchResultStep4Provider.notifier)
+                            .setValue(value);
+                      },
+                    ),
                   ),
 
                   Positioned(
                     right: 0,
-                    child: Container(
-                      margin: EdgeInsets.all(5),
-                      width: 18.r,
-                      height: 18.r,
-                      decoration: BoxDecoration(
-                        color: Color(0xff0fa564),
-                        shape: BoxShape.circle,
+                    bottom: 10.h,
+                    child: IgnorePointer(
+                      ignoring: true,
+                      child: Container(
+                        margin: EdgeInsets.fromLTRB(0, 5.h, 0.w, 5.h),
+                        width: 18.r,
+                        height: 18.r,
+                        decoration: BoxDecoration(
+                          color: Color(0xff0fa564),
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
                   ),

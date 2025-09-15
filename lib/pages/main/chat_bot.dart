@@ -37,10 +37,17 @@ class _ChatBotPageState extends ConsumerState<ChatBotPage> {
 
   void createSocket() async {
     try {
+      final authState = ref.read(authViewModelProvider);
+
       socket = await flutterWebSocket.getSocket();
 
       // 클라이언트 초기 설정 (서버측 클라이언트 정보 알림용 메시지 전송)
-      flutterWebSocket.addMessage(socket, 'user', "", "init");
+      flutterWebSocket.addMessage(
+        socket,
+        authState.user?.nickname ?? 'user',
+        "",
+        "init",
+      );
 
       socket?.listen((data) {
         print("[DEBUG] (createSocket) 서버로부터 받은 값 : $data");
@@ -55,16 +62,27 @@ class _ChatBotPageState extends ConsumerState<ChatBotPage> {
 
   void sendMessage() {
     if (_controller.text.trim().isNotEmpty) {
+      final authState = ref.read(authViewModelProvider);
+
       String message = _controller.text; // 메시지 내용
       String messageType = ""; // 메시지 타입
 
       messageType = "all";
 
       // 웹소켓 서버에 메시지 내용 전송
-      flutterWebSocket.addMessage(socket, 'user', message, messageType);
+      flutterWebSocket.addMessage(
+        socket,
+        authState.user?.nickname ?? 'user',
+        message,
+        messageType,
+      );
 
       _controller.clear();
     }
+  }
+
+  bool _isBot(dynamic username) {
+    return username == 'bot';
   }
 
   @override
@@ -77,6 +95,7 @@ class _ChatBotPageState extends ConsumerState<ChatBotPage> {
   @override
   void dispose() {
     //_channel.sink.close();
+    socket!.close();
     super.dispose();
   }
 
@@ -182,17 +201,28 @@ class _ChatBotPageState extends ConsumerState<ChatBotPage> {
 
                           return Stack(
                             children: [
-                              Text("${data['username']}"),
-                              Card(
-                                margin: const EdgeInsets.fromLTRB(0, 20, 0, 10),
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    10,
-                                    5,
-                                    10,
-                                    5,
+                              Positioned(
+                                left: 0,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minWidth: 52.w,
+                                    minHeight: 33.h,
+                                    maxWidth: 285.w,
                                   ),
-                                  child: Text(data['message']),
+                                  child: Card(
+                                    margin: EdgeInsets.fromLTRB(0, 8.h, 0, 8.h),
+                                    child: Container(
+                                      width:
+                                          285, // loading -> 52, loaded -> 285
+                                      padding: EdgeInsets.fromLTRB(
+                                        24.w,
+                                        24.h,
+                                        24.w,
+                                        24.h,
+                                      ), // loading -> none, loaded -> all(24)
+                                      child: Text(data['message']),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],

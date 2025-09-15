@@ -135,7 +135,7 @@ class MainApp extends HookConsumerWidget {
             path: "home_login_popup",
             name: 'home_login_popup',
             pageBuilder: (context, state) =>
-                DialogPage(builder: (_) => HomeLoinPopup()),
+                DialogPage(builder: (_) => PortfolioLoginPopup()),
           ),
         ],
       ),
