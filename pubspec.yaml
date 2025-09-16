@@ -13,6 +13,7 @@ dependencies:
     sdk: flutter
   flutter_dotenv: ^6.0.0
   flutter_hooks: ^0.21.3+1
+  flutter_native_splash: ^2.4.6
   flutter_screenutil: ^5.9.3
   flutter_secure_storage: ^9.2.4
   flutter_svg: ^2.2.0
@@ -36,7 +37,24 @@ dev_dependencies:
   riverpod_generator: ^2.6.5
   build_runner: ^2.5.4
   custom_lint: ^0.7.6
+  flutter_launcher_icons: ^0.14.4
   riverpod_lint: ^2.6.5
+
+
+flutter_launcher_icons:
+  android: true # 안드로이드 플랫폼에 런처 아이콘 적용 여부
+  ios: true # iOS 플랫폼에 런처 아이콘 적용 여부
+  image_path: "assets/icons/app_icon_1024.png" # 런처 아이콘으로 사용할 이미지 경로
+  adaptive_icon_background: "#0FA564" # 안드로이드 적응형 아이콘의 배경색
+  adaptive_icon_foreground: "assets/icons/app_icon_1024.png" # 안드로이드 적응형 아이콘의 전경 이미지 경로
+  min_sdk_android: 21 # 안드로이드 최소 SDK 버전 (API 21(Android 5.0) 이상
+
+flutter_native_splash:
+  background_image: "assets/splash.png"
+  android: true # 안드로이드 플랫폼에 스플래시 화면 적용
+  ios: true # iOS 플랫폼에 스플래시 화면 적용
+  android_12: # Android 12 이상을 위한 추가 설정
+    background_image: "assets/splash.png"
 
 flutter:
   uses-material-design: true

@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/model/recommend_product_model.dart';
 import 'package:pin_grow/providers/region_provider.dart';
-import 'package:pin_grow/repository/error.dart';
+import 'package:pin_grow/pages/main/error.dart';
 import 'package:pin_grow/service/secure_storage.dart';
 import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_state.dart';
@@ -127,7 +127,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              ((authState.user != null || authState.user?.goal != null)
+              ((authState.status != AuthStatus.authenticated ||
+                      authState.user != null)
                   ? Container(
                       width: 338.w,
                       height: 192.h,
@@ -185,7 +186,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     onTap: () {
                                       GoRouter.of(
                                         context,
-                                      ).push('/profile/goal_modify');
+                                      ).push('/home/goal_modify');
                                     },
                                     child: Padding(
                                       padding: EdgeInsetsGeometry.fromLTRB(
@@ -337,7 +338,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 onTap: () {
                                   GoRouter.of(
                                     context,
-                                  ).push('/profile/goal_modify');
+                                  ).push('/home/portfolio_login_popup');
                                 },
                                 child: Padding(
                                   padding: EdgeInsetsGeometry.fromLTRB(

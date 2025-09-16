@@ -132,28 +132,32 @@ class MainApp extends HookConsumerWidget {
         builder: (context, state) => const HomePage(),
         routes: [
           GoRoute(
-            path: "home_login_popup",
-            name: 'home_login_popup',
+            path: "goal_modify",
+            name: 'goal_modify',
+            pageBuilder: (context, state) =>
+                DialogPage(builder: (_) => GoalModifyingPage()),
+          ),
+
+          GoRoute(
+            path: "portfolio_login_popup",
+            name: 'portfolio_login_popup',
             pageBuilder: (context, state) =>
                 DialogPage(builder: (_) => PortfolioLoginPopup()),
           ),
         ],
       ),
 
+      /**
+       * 
       GoRoute(
         path: "/profile",
         name: 'profile_page',
         builder: (context, state) => const ProfilePage(),
         routes: [
-          GoRoute(
-            path: "goal_modify",
-            name: 'goal_modify',
-            pageBuilder: (context, state) =>
-                DialogPage(builder: (_) => GoalModifyingPage()),
-          ),
+          
         ],
       ),
-
+       */
       GoRoute(
         path: "/policy_list",
         name: 'policy_list',

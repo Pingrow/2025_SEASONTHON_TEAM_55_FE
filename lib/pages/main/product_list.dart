@@ -12,7 +12,7 @@ import 'package:pin_grow/model/region_model.dart';
 import 'package:pin_grow/model/policy_model.dart';
 import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/providers/region_provider.dart';
-import 'package:pin_grow/repository/error.dart';
+import 'package:pin_grow/pages/main/error.dart';
 import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
