@@ -7,6 +7,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/pages/main/chat_bot.dart';
 import 'package:pin_grow/pages/main/goal_modifying.dart';
 import 'package:pin_grow/pages/main/home_page.dart';
+import 'package:pin_grow/pages/main/ipo_page.dart';
 import 'package:pin_grow/pages/main/login_popup.dart';
 import 'package:pin_grow/pages/main/policy_list.dart';
 import 'package:pin_grow/pages/main/product_list.dart';
@@ -212,6 +213,12 @@ class MainApp extends HookConsumerWidget {
         name: 'special_web_view',
         builder: (context, state) =>
             SpecialProductWebView(section: state.extra.toString()),
+      ),
+
+      GoRoute(
+        path: "/ipo",
+        name: 'ipo',
+        builder: (context, state) => IPOPage(),
       ),
     ],
   );

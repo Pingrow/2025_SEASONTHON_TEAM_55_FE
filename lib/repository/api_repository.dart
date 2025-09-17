@@ -3,13 +3,10 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
-import 'package:pin_grow/model/policy_model.dart';
+import 'package:pin_grow/model/data_lists.dart';
 import 'package:pin_grow/model/recommend_product_model.dart';
 import 'package:pin_grow/service/secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../view_model/auth_view_model.dart';
 
 part 'api_repository.g.dart';
 
@@ -89,7 +86,7 @@ class ApiRepository {
     final token = SecureStorageManager.readData('ACCESS_TOKEN');
     final params = keyword != null ? {"keyword": keyword} : null;
     final url = Uri.http(
-      '3.27.44.246:8080',
+      '16.176.134.222:8080',
       '/api/financial/$productType',
       params,
     );
@@ -127,8 +124,23 @@ class ApiRepository {
     }
   }
 
-  /// TODO:
-  /// fetchBondProduct필요
+  Future<List<List<dynamic>>> fetchBondProduct() async {
+    final token = SecureStorageManager.readData('ACCESS_TOKEN');
+    final url = Uri.http('16.176.134.222:8080', '/api/financial/bond');
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> decodedJson = json.decode(response.body);
+      final Map<String, dynamic> data = decodedJson['data'];
+
+      return [data['sortByInterest'], data['sortByMaturity']];
+    } else {
+      throw Exception('Fail to load bond product list');
+    }
+  }
 
   Future<List<List<dynamic>>> fetchBondProductDummy() async {
     String jsonString = await rootBundle.loadString(
@@ -149,7 +161,7 @@ class ApiRepository {
     required int targetAmount,
     required int targetMonths,
     int? currentAmount,
-    int? riskPreference,
+    String? riskPreference,
   }) async {
     final token = SecureStorageManager.readData('ACCESS_TOKEN');
     //final String riskPreferenceList =
@@ -157,10 +169,10 @@ class ApiRepository {
     final body = {
       "targetAmount": targetAmount,
       "targetMonths": targetMonths,
-      //"currentAmount": currentAmount,
-      //"riskPreference": riskPreference,
+      "currentAmount": currentAmount,
+      "riskPreference": riskPreference,
     };
-    final url = Uri.http('3.27.44.246:8080', '/api/financial/recoommend');
+    final url = Uri.http('16.176.134.222:8080', '/api/financial/recoommend');
     final response = await http.post(
       url,
       body: body,
@@ -170,18 +182,15 @@ class ApiRepository {
     if (response.statusCode == 200) {
       final Map<String, dynamic> decodedJson = json.decode(response.body);
 
+      if (decodedJson.isEmpty || decodedJson['success'] != true) {
+        throw Exception('Failed to load recommendation product list');
+      }
       final RecommendProductModel selectedJson = RecommendProductModel.fromJson(
         decodedJson['data']['optimalCombination'],
       );
-      /**final Map<String, dynamic> selectedJson = {
-        'combinationSummary': decodedJson['combinationSummary'],
-        'totalExpectedReturn': decodedJson['totalExpectedReturn'],
-        'expectedTotalAmount': decodedJson['expectedTotalAmount'],
-        'riskLevel': decodedJson['riskLevel'],
-        'description': decodedJson['description'],
-        'products': decodedJson['products'],
-      }; */
 
+      //print("[DEBUG] ${decodedJson}");
+      //print("[DEBUG] ${selectedJson.products?.first.productName}");
       return selectedJson;
     } else {
       throw Exception('Failed to load recommendation product list');
@@ -209,6 +218,83 @@ class ApiRepository {
       return selectedJson;
     } else {
       throw Exception('Failed to load recommendation product list');
+    }
+  }
+
+  Future<Map<String, dynamic>> postSurveyResult({
+    required int investmentMethod,
+    required int lossTolerance,
+    required List<bool> preferredInvestmentTypes,
+    required int investmentPeriod,
+    required String investmentGoal,
+    required int targetAmount,
+  }) async {
+    final token = SecureStorageManager.readData('ACCESS_TOKEN');
+
+    List<String> trueIndices = preferredInvestmentTypes
+        .asMap() // {0: true, 1: false, 2: true, 3: true}
+        .entries // [(0, true), (1, false), (2, true), (3, true)]
+        .where(
+          (entry) => entry.value == true,
+        ) // [(0, true), (2, true), (3, true)]
+        .map((entry) => preferredInvestmentTypeKeys[entry.key]) // [0, 2, 3]
+        .toList();
+
+    final body = {
+      "investmentMethod": investmentMethodKeys[investmentMethod],
+      "lossTolerance": lossToleranceKeys[lossTolerance],
+      "preferredInvestmentTypes": trueIndices,
+      "investmentPeriod": investmentPeriod,
+      "investmentGoal": investmentGoal,
+      "targetAmount": targetAmount,
+      "address": "string",
+    };
+
+    final url = Uri.http('16.176.134.222:8080', '/api/financial/recoommend');
+    final response = await http.post(
+      url,
+      body: body,
+      headers: {'Authorization': 'Bearer ${token}', 'accept': '*/*'},
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> decodedJson = json.decode(response.body);
+
+      return decodedJson['analysis'];
+    } else {
+      throw Exception('Failed to post survey result');
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchPreference() async {
+    final url = Uri.http('16.176.134.222:8080', '/api/v1/onboard/preference');
+    final token = await SecureStorageManager.readData('ACCESS_TOKEN');
+
+    final header = {'accept': '*/*', 'Authorization': 'Bearer ${token!}'};
+    final response = await http.get(url, headers: header);
+
+    print('[DEBUG:fetchPrefernce] ${response.statusCode}');
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> decodedJson = jsonDecode(response.body);
+
+      return {
+        "completed": decodedJson["completed"],
+        "riskLevel": decodedJson["riskLevel"],
+        "investmentPeriod": decodedJson["investmentPeriod"] != 0
+            ? decodedJson["investmentPeriod"]
+            : null,
+        "preferredInvestmentTypes": decodedJson["preferredInvestmentTypes"],
+        "targetAmount": decodedJson["targetAmount"] != 0
+            ? decodedJson["targetAmount"]
+            : null,
+        "investmentGoal": decodedJson["investmentGoal"],
+        "lossTolerance": decodedJson["lossTolerance"],
+        "investmentMethod": decodedJson["investmentMethod"],
+      };
+    } else {
+      print('[DEBUG:fetchPrefernce] ${response.statusCode}');
+      throw Exception('성향 조회 실패');
     }
   }
 }

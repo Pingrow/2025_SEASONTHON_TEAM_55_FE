@@ -1,14 +1,14 @@
 import 'package:json_annotation/json_annotation.dart';
 
 @JsonEnum()
-enum UserType { unknown, conservative, cautious, balanced, growth, aggresive }
+enum RiskLevel { unknown, conservative, cautious, balanced, growth, aggresive }
 
 class UserModel {
   final int? id;
   final String? nickname;
   final String? email;
   final String? profile_url;
-  final UserType? type;
+  final RiskLevel? type;
   final String? goal;
   final int? goal_money;
   final int? goal_period;
@@ -21,11 +21,11 @@ class UserModel {
     required this.nickname,
     required this.email,
     required this.profile_url,
-    this.type = UserType.unknown,
+    this.type = RiskLevel.unknown,
     this.goal = '',
-    this.goal_money = 0,
-    this.goal_period = 0,
-    this.saved_money = 0,
+    this.goal_money,
+    this.goal_period,
+    this.saved_money,
     this.research_completed = false,
     this.region = '17-0-NODATA-???',
   });
@@ -45,7 +45,7 @@ class UserModel {
       nickname: user['nickname'],
       email: user['email'],
       profile_url: user['profile_url'],
-      type: UserType.values.byName(
+      type: RiskLevel.values.byName(
         user['type'] != "null" ? user['type'] ?? 'unknown' : 'unknown',
       ),
       goal: user['goal'],

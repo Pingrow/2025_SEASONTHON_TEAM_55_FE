@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/service/secure_storage.dart';
+import 'package:pin_grow/view_model/auth_view_model.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_repository.g.dart';
@@ -64,13 +65,13 @@ class AuthRepository {
       throw Exception('카카오 토큰 없음');
     }
 
-    final url = Uri.http('52.64.10.16:8080', '/api/v1/auth/kakao');
+    final url = Uri.http('16.176.134.222:8080', '/api/v1/auth/kakao');
     print("[DEBUG] KAKAO Access Token : ${token.accessToken}");
     final header = {
       'accept': 'application/json',
       'Content-Type': 'application/json',
     };
-    final body = {'code': token.accessToken};
+    final body = {'accessToken': token.accessToken};
     final response = await http.post(
       url,
       headers: header,
@@ -82,12 +83,9 @@ class AuthRepository {
     if (response.statusCode == 200) {
       final Map<String, dynamic> decodedJson = jsonDecode(response.body);
 
-      print('[DEBUG:accesstoken] ${decodedJson['access_token']}');
+      print('[DEBUG:accesstoken] ${decodedJson['accessToken']}');
 
-      SecureStorageManager.saveData(
-        'ACCESS_TOKEN',
-        decodedJson['access_token'],
-      );
+      SecureStorageManager.saveData('ACCESS_TOKEN', decodedJson['accessToken']);
     } else {
       throw Exception('로그인 실패');
     }

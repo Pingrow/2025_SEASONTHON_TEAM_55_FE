@@ -1,13 +1,13 @@
 class PolicyModel {
   final String? plcyNm;
   final String? sprvsnInstCdNm;
-  final int? incCnt;
+  final int? inqCnt;
   final String? url;
 
   PolicyModel({
     required this.plcyNm,
     required this.sprvsnInstCdNm,
-    required this.incCnt,
+    required this.inqCnt,
     required this.url,
   });
 
@@ -15,7 +15,7 @@ class PolicyModel {
     return PolicyModel(
       plcyNm: json['plcyNm'],
       sprvsnInstCdNm: json['sprvsnInstCdNm'],
-      incCnt: json['incCnt'],
+      inqCnt: json['inqCnt'],
       url: json['url'],
     );
   }

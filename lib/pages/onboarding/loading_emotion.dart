@@ -30,7 +30,7 @@ class _LoadingEmotionPageState extends ConsumerState<LoadingEmotionPage> {
     Future.delayed(Duration(milliseconds: 3000), () async {
       _timer?.cancel();
 
-      UserType type = UserType.conservative;
+      RiskLevel type = RiskLevel.conservative;
 
       await ref.read(authViewModelProvider.notifier).modifyUserType(type);
       if (mounted) {

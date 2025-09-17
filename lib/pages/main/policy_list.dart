@@ -201,17 +201,14 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                   color: const Color(0xff0CA361),
                                 ),
                                 borderRadius: BorderRadius.circular(10),
+                                image: DecorationImage(
+                                  image: AssetImage(
+                                    'assets/characters/portfolio.png',
+                                  ),
+                                ),
                               ),
+
                               // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
-                              child: authState.user?.region != null
-                                  ? Image.asset(
-                                      regions![authState.user?.region?.split(
-                                                '-',
-                                              )[2] ??
-                                              '서울특별시']!
-                                          .logo,
-                                    )
-                                  : Container(),
                             ),
                             SizedBox(width: 10.w), // 간격 조정
                             Expanded(
@@ -257,7 +254,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                       ),
                                       SizedBox(width: 3.w),
                                       Text(
-                                        '${policy.incCnt ?? 0}',
+                                        '${policy.inqCnt ?? 0}',
                                         style: TextStyle(
                                           fontSize: 10.sp,
                                           fontWeight: FontWeight.w400,
@@ -422,9 +419,9 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                               ),
                             );
                       });
-                    });
 
-                    _policyFuture = apiRepo.fetchPolicyList();
+                      _policyFuture = apiRepo.fetchPolicyList();
+                    });
                   });
                 },
                 child: Container(
@@ -553,17 +550,18 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                     color: const Color(0xff0CA361),
                                   ),
                                   borderRadius: BorderRadius.circular(10),
+                                  image: DecorationImage(
+                                    image: AssetImage(
+                                      regions[authState.user?.region?.split(
+                                                '-',
+                                              )[2] ??
+                                              'NODATA']!
+                                          .logo,
+                                    ),
+                                  ),
                                 ),
+
                                 // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
-                                child: authState.user?.region != null
-                                    ? Image.asset(
-                                        regions[authState.user?.region?.split(
-                                                  '-',
-                                                )[2] ??
-                                                'NODATA']!
-                                            .logo,
-                                      )
-                                    : Container(),
                               ),
                               SizedBox(width: 10.w), // 간격 조정
                               Expanded(
@@ -609,7 +607,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                         ),
                                         SizedBox(width: 3.w),
                                         Text(
-                                          '${policy.incCnt ?? 0}',
+                                          '${policy.inqCnt ?? 0}',
                                           style: TextStyle(
                                             fontSize: 10.sp,
                                             fontWeight: FontWeight.w400,
@@ -708,16 +706,17 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                           color: const Color(0xff0CA361),
                                         ),
                                         borderRadius: BorderRadius.circular(10),
+                                        image: DecorationImage(
+                                          image: AssetImage(
+                                            regions[authState.user?.region
+                                                        ?.split('-')[2] ??
+                                                    'NODATA']!
+                                                .logo,
+                                          ),
+                                        ),
                                       ),
+
                                       // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
-                                      child: authState.user?.region != null
-                                          ? Image.asset(
-                                              regions[authState.user?.region
-                                                          ?.split('-')[2] ??
-                                                      'NODATA']!
-                                                  .logo,
-                                            )
-                                          : Container(),
                                     ),
                                     SizedBox(width: 10.w), // 간격 조정
                                     Expanded(
@@ -768,7 +767,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                               ),
                                               SizedBox(width: 3.w),
                                               Text(
-                                                '${policy.incCnt ?? 0}',
+                                                '${policy.inqCnt ?? 0}',
                                                 style: TextStyle(
                                                   fontSize: 10.sp,
                                                   fontWeight: FontWeight.w400,
@@ -948,9 +947,10 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                               setState(() {
                                 tapStatus[0] = TapStatus.load;
                               });
-                            });
 
-                            _policyTop10Future = apiRepo.fetchTop10PolicyList();
+                              _policyTop10Future = apiRepo
+                                  .fetchTop10PolicyList();
+                            });
                           }
                         },
                         child: Container(

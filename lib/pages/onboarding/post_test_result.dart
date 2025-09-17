@@ -9,15 +9,15 @@ import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/providers/onboarding_providers.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
-Map<UserType, Map<String, dynamic>> user_type_resource = {
-  UserType.conservative: {
+Map<RiskLevel, Map<String, dynamic>> user_type_resource = {
+  RiskLevel.conservative: {
     'TYPE_NAME': '안정형',
     'IMAGE_URL': 'assets/characters/research_step_3_conservative.png',
     'COMMENT': '이 성향은 예금, 적금 수준의 수익을 기대해요.\n작은 원금 손실도 감내하기 어려운 유형입니다.',
     'PERCENT': 'N',
     'COLOR': 0xff3EB185,
   },
-  UserType.cautious: {
+  RiskLevel.cautious: {
     'TYPE_NAME': '안정추구형',
     'IMAGE_URL': 'assets/characters/research_step_3_cautious.png',
     'COMMENT':
@@ -25,7 +25,7 @@ Map<UserType, Map<String, dynamic>> user_type_resource = {
     'PERCENT': 'N',
     'COLOR': 0xff66B3D5,
   },
-  UserType.balanced: {
+  RiskLevel.balanced: {
     'TYPE_NAME': '위험중립형',
     'IMAGE_URL': 'assets/characters/research_step_3_balanced.png',
     'COMMENT':
@@ -33,7 +33,7 @@ Map<UserType, Map<String, dynamic>> user_type_resource = {
     'PERCENT': 'N',
     'COLOR': 0xffFAD44B,
   },
-  UserType.growth: {
+  RiskLevel.growth: {
     'TYPE_NAME': '적극투자형',
     'IMAGE_URL': 'assets/characters/research_step_3_growth.png',
     'COMMENT':
@@ -41,7 +41,7 @@ Map<UserType, Map<String, dynamic>> user_type_resource = {
     'PERCENT': 'N',
     'COLOR': 0xffFC950E,
   },
-  UserType.aggresive: {
+  RiskLevel.aggresive: {
     'TYPE_NAME': '공격투자형',
     'IMAGE_URL': 'assets/characters/research_step_3_aggresive.png',
     'COMMENT':
@@ -59,7 +59,7 @@ class PostTestResultPage extends StatefulHookConsumerWidget {
 }
 
 class _PostTestResultPageState extends ConsumerState<PostTestResultPage> {
-  //UserType type = UserType.conservative;
+  //RiskLevel type = RiskLevel.conservative;
 
   Future loading() async {
     //투자 성향 별 회원별 퍼센트 갱신 및 캐싱
@@ -67,7 +67,7 @@ class _PostTestResultPageState extends ConsumerState<PostTestResultPage> {
      * int i = 0;
     Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
-        type = UserType.values[++i];
+        type = RiskLevel.values[++i];
         print(type);
         if (i == 5) timer.cancel;
       });

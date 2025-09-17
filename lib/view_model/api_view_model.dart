@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pin_grow/model/bond_product_model.dart';
+import 'package:pin_grow/model/data_lists.dart';
 import 'package:pin_grow/model/policy_model.dart';
 import 'package:pin_grow/model/product_model.dart';
 import 'package:pin_grow/model/recommend_product_model.dart';
@@ -29,8 +30,8 @@ class ProductViewModel extends _$ProductViewModel {
   }
 
   Future<List<ProductModel>> fetchDepositList() async {
-    final List<dynamic> productListJson = await _repository.fetchProductDummy(
-      //await _repository.fetchProduct(
+    final List<dynamic> productListJson = //await _repository.fetchProductDummy(
+    await _repository.fetchProduct(
       'deposits',
       null,
     );
@@ -42,8 +43,8 @@ class ProductViewModel extends _$ProductViewModel {
   }
 
   Future<List<ProductModel>> fetchSavingsList() async {
-    final List<dynamic> productListJson = await _repository.fetchProductDummy(
-      //await _repository.fetchProduct(
+    final List<dynamic> productListJson = //await _repository.fetchProductDummy(
+    await _repository.fetchProduct(
       'savings',
       null,
     );
@@ -56,8 +57,8 @@ class ProductViewModel extends _$ProductViewModel {
   }
 
   Future<List<ProductModel>> fetchSearchList(String? keyword) async {
-    final List<dynamic> productListJson = await _repository.fetchProductDummy(
-      //await _repository.fetchProduct(
+    final List<dynamic> productListJson = //await _repository.fetchProductDummy(
+    await _repository.fetchProduct(
       'search',
       keyword,
     );
@@ -87,8 +88,8 @@ class ProductViewModel extends _$ProductViewModel {
 
   Future<List<OptimalProductModel>> fetchRecommendation(UserModel user) async {
     final RecommendProductModel recommendProductModel = await _repository
-        .fetchRecommendProductDummy(
-          //.fetchRecommendProduct(
+        //.fetchRecommendProductDummy(
+        .fetchRecommendProduct(
           targetAmount: user.goal_money!,
           targetMonths: user.goal_period!,
         );
@@ -104,7 +105,7 @@ class PolicyViewModel extends _$PolicyViewModel {
 
   @override
   PolicyModel build() {
-    return PolicyModel(plcyNm: '', sprvsnInstCdNm: '', incCnt: null, url: '');
+    return PolicyModel(plcyNm: '', sprvsnInstCdNm: '', inqCnt: null, url: '');
   }
 
   Future<List<PolicyModel>> fetchPolicyList() async {
@@ -145,5 +146,45 @@ class PolicyViewModel extends _$PolicyViewModel {
         .toList();
 
     return policies;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class SurveyViewModel extends _$SurveyViewModel {
+  late final ApiRepository _repository = ref.watch(apiRepositoryProvider);
+
+  @override
+  int build() {
+    return 0;
+  }
+
+  Future<bool> checkCompleted() async {
+    final data = await _repository.fetchPreference();
+    return data['compeleted'];
+  }
+
+  Future<RiskLevel> getRiskLevel() async {
+    final data = await _repository.fetchPreference();
+    return RiskLevel.values[riskLevelKeys.indexOf(data['riskLevel'])];
+  }
+
+  Future<bool> completeSurvey({
+    required final investmentMethod,
+    required final lossTolerance,
+    required final preferredInvestmentTypes,
+    required final investmentPeriod,
+    required final investmentGoal,
+    required final targetAmount,
+  }) async {
+    final data = await _repository.postSurveyResult(
+      investmentMethod: investmentMethod,
+      lossTolerance: lossTolerance,
+      preferredInvestmentTypes: preferredInvestmentTypes,
+      investmentPeriod: investmentPeriod,
+      investmentGoal: investmentGoal,
+      targetAmount: targetAmount,
+    );
+
+    return data['resikProfile'] != null;
   }
 }

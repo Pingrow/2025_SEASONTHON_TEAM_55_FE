@@ -1,6 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:pin_grow/model/data_lists.dart';
 import 'package:pin_grow/model/user_model.dart';
+import 'package:pin_grow/repository/api_repository.dart';
 import 'package:pin_grow/service/secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pin_grow/repository/auth_repository.dart';
@@ -30,9 +32,7 @@ class AuthViewModel extends _$AuthViewModel {
       );
     }
 
-    await getUser();
-
-    //await setAuthState(AuthStatus.authenticated, authState?.user);
+    await setAuthState(AuthStatus.authenticated, await getUser());
   }
 
   Future<void> logout() async {
@@ -53,23 +53,37 @@ class AuthViewModel extends _$AuthViewModel {
 
   /// TODO:
   /// 사용자 정보를 가지고 오는 부분 재 정의 필요
-  Future<AuthState?> getUser() async {
+  Future<UserModel?> getUser() async {
     final kakaoUser = await UserApi.instance.me();
-    // DB에 저장된 부가 정보들도 가져오기
+
+    final preference = await ref.read(apiRepositoryProvider).fetchPreference();
+
+    RiskLevel? type = state.user?.type;
+    String? goal = state.user?.goal;
+    int? goal_money = state.user?.goal_money;
+    int? goal_period = state.user?.goal_period;
+
+    if (preference['completed']) {
+      type =
+          RiskLevel.values[riskLevelKeys.indexOf(preference['riskLevel']) + 1];
+      goal = preference['investmentGoal'];
+      goal_money = preference['targetAmount'].round();
+      goal_period = preference['investmentPeriod'];
+    }
+
     final user = UserModel(
       id: kakaoUser.id,
       nickname: kakaoUser.kakaoAccount!.profile!.nickname!,
       email: kakaoUser.kakaoAccount!.email,
       profile_url: kakaoUser.kakaoAccount!.profile!.profileImageUrl,
-      type: state.user?.type,
-      goal: state.user?.goal,
-      goal_money: state.user?.goal_money,
-      goal_period: state.user?.goal_period,
-      research_completed: state.user?.research_completed,
+      type: type,
+      goal: goal,
+      goal_money: goal_money,
+      goal_period: goal_period,
+      research_completed: preference['completed'],
     );
 
-    state = state.copyWith(status: AuthStatus.authenticated, user: user);
-    return AuthState(status: AuthStatus.authenticated, user: user);
+    return user;
   }
 
   Future<AuthState?> getUserFromSecureStorage() async {
@@ -81,7 +95,7 @@ class AuthViewModel extends _$AuthViewModel {
     return authState;
   }
 
-  Future<void> modifyUserType(UserType type) async {
+  Future<void> modifyUserType(RiskLevel type) async {
     final authState = AuthState.fromRawJson(
       await SecureStorageManager.readData('AUTH_STATE'),
     );

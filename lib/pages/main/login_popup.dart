@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/providers/onboarding_providers.dart';
+import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
 Future<void> moveAfterLogin(
@@ -15,9 +16,8 @@ Future<void> moveAfterLogin(
 }) async {
   final authState = ref.read(authViewModelProvider);
 
-  if (await AuthApi.instance.hasToken()
-  /**&& authState.status == AuthStatus.authenticated */
-  ) {
+  if (await AuthApi.instance.hasToken() &&
+      authState.status == AuthStatus.authenticated) {
     bool? researchComplete = authState.user?.research_completed;
 
     print('[DEBUG:Login] researchComplete : $researchComplete');

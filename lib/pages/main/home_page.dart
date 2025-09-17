@@ -121,7 +121,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              ((authState.status != AuthStatus.authenticated ||
+              ((authState.status == AuthStatus.authenticated &&
                       authState.user != null)
                   ? Container(
                       width: 338.w,
@@ -513,9 +513,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ),
 
                     GestureDetector(
-                      /// TODO:
-                      /// 지역 선택 or 변경으로 이동
-                      onTap: () {},
+                      onTap: () async {
+                        GoRouter.of(context).push('/ipo');
+                      },
                       child: Container(
                         width: 115.w,
                         height: 98.h,
@@ -563,216 +563,197 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
 
-              Container(
-                width: 338.w,
-                //height: 251.h,
-                margin: EdgeInsets.fromLTRB(0, 5, 0, 9),
-                padding: EdgeInsets.fromLTRB(15.w, 20.h, 15.w, 15.h),
-                decoration: BoxDecoration(
-                  color: Color(0xffffffff),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 3.0,
-                      color: Colors.black38,
-                      blurStyle: BlurStyle.normal,
-                      offset: Offset(0, 2.5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                              color: Color(0xff374151),
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: authState.user?.nickname ?? '???',
-                                style: TextStyle(
-                                  color: Color(0xff0CA361),
-                                  fontWeight: FontWeight.w800,
+              GestureDetector(
+                onTap: () async {
+                  if (await AuthApi.instance.hasToken() &&
+                      authState.status == AuthStatus.authenticated) {
+                    GoRouter.of(context).push('/product_list');
+                  } else {
+                    GoRouter.of(context).push('/home/portfolio_login_popup');
+                  }
+                },
+                child: Container(
+                  width: 338.w,
+                  //height: 251.h,
+                  margin: EdgeInsets.fromLTRB(0, 5, 0, 9),
+                  padding: EdgeInsets.fromLTRB(15.w, 20.h, 15.w, 15.h),
+                  decoration: BoxDecoration(
+                    color: Color(0xffffffff),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 3.0,
+                        color: Colors.black38,
+                        blurStyle: BlurStyle.normal,
+                        offset: Offset(0, 2.5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                color: Color(0xff374151),
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: authState.user?.nickname ?? '???',
+                                  style: TextStyle(
+                                    color: Color(0xff0CA361),
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
-                              ),
 
-                              TextSpan(text: ' 님을 위한 추천 포트폴리오'),
-                            ],
+                                TextSpan(text: ' 님을 위한 추천 포트폴리오'),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 177.w,
-                          height: 162.h,
-                          margin: EdgeInsets.fromLTRB(6.w, 10.h, 6.w, 0),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Image.asset(
-                                'assets/characters/portfolio.png',
-                                width: 99.w,
-                                height: 99.h,
-                              ),
-                              GestureDetector(
-                                onTap: () async {
-                                  if (await AuthApi.instance.hasToken() &&
-                                      authState.status ==
-                                          AuthStatus.authenticated) {
-                                    GoRouter.of(context).push('/product_list');
-                                  } else {
-                                    GoRouter.of(
-                                      context,
-                                    ).push('/home/portfolio_login_popup');
-                                  }
-                                },
-                                child:
-                                    /// TODO: FutureBuilder 추가
-                                    PieChart(
-                                      PieChartData(
-                                        borderData: FlBorderData(show: false),
-                                        sectionsSpace: 0,
-                                        centerSpaceRadius: (75 / 2).r,
-                                        startDegreeOffset: -90,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            width: 177.w,
+                            height: 162.h,
+                            margin: EdgeInsets.fromLTRB(6.w, 10.h, 6.w, 0),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Image.asset(
+                                  'assets/characters/portfolio.png',
+                                  width: 99.w,
+                                  height: 99.h,
+                                ),
 
-                                        sections: List.generate(
-                                          _portfolio.length,
-                                          (i) {
-                                            return PieChartSectionData(
-                                              color: Color(
-                                                _portfolio_colors[i],
+                                /// TODO: FutureBuilder 추가
+                                PieChart(
+                                  PieChartData(
+                                    borderData: FlBorderData(show: false),
+                                    sectionsSpace: 0,
+                                    centerSpaceRadius: (75 / 2).r,
+                                    startDegreeOffset: -90,
+
+                                    sections: List.generate(_portfolio.length, (
+                                      i,
+                                    ) {
+                                      return PieChartSectionData(
+                                        color: Color(_portfolio_colors[i]),
+                                        value: _portfolio[i]['value'],
+                                        title: '',
+                                        radius: (75 / 2).r,
+                                        badgePositionPercentageOffset: 1.0,
+                                        badgeWidget: Container(
+                                          constraints: BoxConstraints(
+                                            minWidth: 38.w,
+                                            maxWidth: 50.w,
+                                            minHeight: 24.h,
+                                            maxHeight: 24.h,
+                                          ),
+                                          padding: EdgeInsets.fromLTRB(
+                                            5.w,
+                                            0,
+                                            5.w,
+                                            0,
+                                          ),
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            color: Color(0xfff5f5f5),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                blurRadius: 2.0,
+                                                color: Colors.black38,
+                                                blurStyle: BlurStyle.normal,
+                                                offset: Offset(0, 1),
                                               ),
-                                              value: _portfolio[i]['value'],
-                                              title: '',
-                                              radius: (75 / 2).r,
-                                              badgePositionPercentageOffset:
-                                                  1.0,
-                                              badgeWidget: Container(
-                                                constraints: BoxConstraints(
-                                                  minWidth: 38.w,
-                                                  maxWidth: 50.w,
-                                                  minHeight: 24.h,
-                                                  maxHeight: 24.h,
-                                                ),
-                                                padding: EdgeInsets.fromLTRB(
-                                                  5.w,
-                                                  0,
-                                                  5.w,
-                                                  0,
-                                                ),
-                                                alignment: Alignment.center,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(16),
-                                                  color: Color(0xfff5f5f5),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      blurRadius: 2.0,
-                                                      color: Colors.black38,
-                                                      blurStyle:
-                                                          BlurStyle.normal,
-                                                      offset: Offset(0, 1),
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: Text(
-                                                  _portfolio[i]['title'],
-                                                  style: TextStyle(
-                                                    fontSize: 12.sp,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Color(0xff737373),
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
+                                            ],
+                                          ),
+                                          child: Text(
+                                            _portfolio[i]['title'],
+                                            style: TextStyle(
+                                              fontSize: 12.sp,
+                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xff737373),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Container(
+                            width: 94.w,
+                            margin: EdgeInsets.fromLTRB(6.w, 0.h, 6.w, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: List.generate(_portfolio.length, (i) {
+                                return Container(
+                                  margin: EdgeInsetsGeometry.fromLTRB(
+                                    0,
+                                    4.h,
+                                    0,
+                                    4.h,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        width: 11.r,
+                                        height: 11.r,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Color(_portfolio_colors[i]),
                                         ),
                                       ),
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
 
-                        Container(
-                          width: 94.w,
-                          margin: EdgeInsets.fromLTRB(6.w, 0.h, 6.w, 0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: List.generate(_portfolio.length, (i) {
-                              return Container(
-                                margin: EdgeInsetsGeometry.fromLTRB(
-                                  0,
-                                  4.h,
-                                  0,
-                                  4.h,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Container(
-                                      width: 11.r,
-                                      height: 11.r,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Color(_portfolio_colors[i]),
+                                      Container(
+                                        width: 40.w,
+                                        child: Text(
+                                          _portfolio[i]['title'],
+                                          style: TextStyle(
+                                            fontSize: 11.sp,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xff757575),
+                                          ),
+                                        ),
                                       ),
-                                    ),
 
-                                    Container(
-                                      width: 40.w,
-                                      child: Text(
-                                        _portfolio[i]['title'],
+                                      Text(
+                                        '${authState.user != null ? _portfolio[i]['value'].round() : '??'}%',
                                         style: TextStyle(
                                           fontSize: 11.sp,
                                           fontWeight: FontWeight.w500,
                                           color: Color(0xff757575),
                                         ),
                                       ),
-                                    ),
-
-                                    Text(
-                                      '${authState.user != null ? _portfolio[i]['value'].round() : '??'}%',
-                                      style: TextStyle(
-                                        fontSize: 11.sp,
-                                        fontWeight: FontWeight.w500,
-                                        color: Color(0xff757575),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }),
+                                    ],
+                                  ),
+                                );
+                              }),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        GestureDetector(
-                          onTap: () async {
-                            if (await AuthApi.instance.hasToken() &&
-                                authState.status == AuthStatus.authenticated) {
-                              GoRouter.of(context).push('/product_list');
-                            } else {
-                              GoRouter.of(
-                                context,
-                              ).push('/home/portfolio_login_popup');
-                            }
-                          },
-                          child: Row(
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Row(
                             children: [
                               Text(
                                 '상품 보러가가',
@@ -792,11 +773,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
 
-                    /**FutureBuilder(
+                      /**FutureBuilder(
                       future: _portfolio,
                       builder: (context, snapshot) {
                         // 1. 로딩 중 상태 처리
@@ -824,229 +804,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                         return },
                     ),
                 */
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
-              /**Container(
-                width: 338.w,
-                height: 398.h,
-                margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
-                padding: EdgeInsets.fromLTRB(15.w, 20.h, 12.w, 15.h),
-                decoration: BoxDecoration(
-                  color: Color(0xffffffff),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 3.0,
-                      color: Colors.black38,
-                      blurStyle: BlurStyle.normal,
-                      offset: Offset(0, 2.5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  style: TextStyle(
-                                    color: Color(0xff374151),
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: authState.user?.nickname ?? '???',
-                                      style: TextStyle(
-                                        color: Color(0xff0CA361),
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-
-                                    TextSpan(text: ' 님을 위한 저축/투자 조합'),
-                                  ],
-                                ),
-                              ),
-
-                              GestureDetector(
-                                onTap: () {
-                                  GoRouter.of(context).go('/product_list');
-                                },
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      '더 보러가가',
-                                      style: TextStyle(
-                                        fontSize: 10.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xff0CA361),
-                                      ),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.fromLTRB(2, 0, 0, 0),
-                                      child: Image.asset(
-                                        'assets/icons/right_arrow.png',
-                                        width: 5.w,
-                                        height: 9.h,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                '목표 금액: ${NumberFormat.decimalPattern().format(authState.user?.goal_money ?? 0)}원',
-                                style: TextStyle(
-                                  color: Color(0xff6B7280),
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    FutureBuilder(
-                      future: _recommendProduct,
-                      builder: (context, snapshot) {
-                        // 1. 로딩 중 상태 처리
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-
-                        // 2. 에러 발생 상태 처리
-                        if (snapshot.hasError) {
-                          return error();
-                        }
-
-                        // 3. 데이터가 없거나 비어있는 경우 처리
-                        if (!snapshot.hasData ||
-                            snapshot.data == null ||
-                            snapshot.data!.isEmpty) {
-                          return noProduct();
-                        }
-
-                        final products = snapshot.data!;
-
-                        return Expanded(
-                          child: ListView.builder(
-                            itemCount: products.length,
-                            padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
-                            physics: NeverScrollableScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              return Container(
-                                height: 80.h,
-                                padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    top: BorderSide(
-                                      color: Color(0xffD0D0D0),
-                                      width: 0.5,
-                                    ),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            _suggTag(),
-                                            Text(
-                                              products[index].bankName!,
-                                              style: TextStyle(
-                                                fontSize: 10.sp,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xff6B7280),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Text(
-                                          products[index].productName!,
-                                          style: TextStyle(
-                                            fontSize: 15.sp,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xff374151),
-                                          ),
-                                        ),
-                                        Text(
-                                          '${products[index].term}개월 · 금리 최대 ${products[index].monthlyAmount}(월)',
-                                          style: TextStyle(
-                                            fontSize: 10.sp,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color(0xff6B7280),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                          '투입급액: ${NumberFormat.decimalPattern().format(products[index].depositAmount)}원',
-                                          style: TextStyle(
-                                            fontSize: 10.sp,
-                                            fontWeight: FontWeight.w400,
-                                            color: Color(0xff6B7280),
-                                          ),
-                                        ),
-                                        Text(
-                                          '만기급액: ${NumberFormat.decimalPattern().format(products[index].maturityAmount)}원',
-                                          style: TextStyle(
-                                            fontSize: 10.sp,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xff6B7280),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ),
-
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(color: Color(0xffD0D0D0), width: 0.5),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-             */
               GestureDetector(
                 onTap: () {
                   GoRouter.of(context).push('/special');
