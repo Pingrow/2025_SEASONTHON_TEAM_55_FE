@@ -9,7 +9,6 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pin_grow/service/socket.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ChatBotPage extends StatefulHookConsumerWidget {
   const ChatBotPage({super.key});

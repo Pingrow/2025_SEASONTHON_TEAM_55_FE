@@ -1,17 +1,11 @@
-import 'dart:async';
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
-import 'package:pin_grow/model/recommend_product_model.dart';
 import 'package:pin_grow/providers/region_provider.dart';
-import 'package:pin_grow/pages/main/error.dart';
-import 'package:pin_grow/service/secure_storage.dart';
 import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
@@ -478,19 +472,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                           RichText(
                             text: TextSpan(
                               children: [
-                                TextSpan(text: '지금 '),
+                                TextSpan(text: '지금, 내 지역/전국 '),
                                 TextSpan(
-                                  text:
-                                      regions?[authState.user?.region?.split(
-                                            '-',
-                                          )[2]]
-                                          ?.alias ??
-                                      '???',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                TextSpan(text: '에서 가장 '),
-                                TextSpan(
-                                  text: '인기있는 정책',
+                                  text: '인기 정책',
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ],
@@ -553,24 +537,22 @@ class _HomePageState extends ConsumerState<HomePage> {
                           children: [
                             Positioned(
                               top: 0,
-                              child: Text(
-                                regions?[authState.user?.region?.split('-')[2]]
-                                        ?.alias ??
-                                    '???',
-                                style: TextStyle(
-                                  color: Color(0xffBBBBBB),
-                                  fontSize: 50.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              child: Image.asset(
+                                'assets/icons/ipo.png',
+                                width: 102.w,
+                                height: 90.h,
                               ),
                             ),
 
                             Positioned(
-                              bottom: 0,
-                              child: Image.asset(
-                                'assets/characters/main_region.png',
-                                width: 83.r,
-                                height: 83.r,
+                              bottom: 8.h,
+                              child: Text(
+                                '공모주',
+                                style: TextStyle(
+                                  color: Color(0xff0FA564),
+                                  fontSize: 35.sp,
+                                  fontWeight: FontWeight.w900,
+                                ),
                               ),
                             ),
                           ],
@@ -619,7 +601,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 ),
                               ),
 
-                              TextSpan(text: ' 님을 위한 저축/투자 조합'),
+                              TextSpan(text: ' 님을 위한 추천 포트폴리오'),
                             ],
                           ),
                         ),
@@ -641,62 +623,81 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 width: 99.w,
                                 height: 99.h,
                               ),
-                              PieChart(
-                                PieChartData(
-                                  borderData: FlBorderData(show: false),
-                                  sectionsSpace: 0,
-                                  centerSpaceRadius: (75 / 2).r,
-                                  startDegreeOffset: -90,
+                              GestureDetector(
+                                onTap: () async {
+                                  if (await AuthApi.instance.hasToken() &&
+                                      authState.status ==
+                                          AuthStatus.authenticated) {
+                                    GoRouter.of(context).go('/product_list');
+                                  } else {
+                                    GoRouter.of(
+                                      context,
+                                    ).push('/home/portfolio_login_popup');
+                                  }
+                                },
+                                child:
+                                    /// TODO: FutureBuilder 추가
+                                    PieChart(
+                                      PieChartData(
+                                        borderData: FlBorderData(show: false),
+                                        sectionsSpace: 0,
+                                        centerSpaceRadius: (75 / 2).r,
+                                        startDegreeOffset: -90,
 
-                                  sections: List.generate(_portfolio.length, (
-                                    i,
-                                  ) {
-                                    return PieChartSectionData(
-                                      color: Color(_portfolio_colors[i]),
-                                      value: _portfolio[i]['value'],
-                                      title: '',
-                                      radius: (75 / 2).r,
-                                      badgePositionPercentageOffset: 1.0,
-                                      badgeWidget: Container(
-                                        constraints: BoxConstraints(
-                                          minWidth: 38.w,
-                                          maxWidth: 50.w,
-                                          minHeight: 24.h,
-                                          maxHeight: 24.h,
-                                        ),
-                                        padding: EdgeInsets.fromLTRB(
-                                          5.w,
-                                          0,
-                                          5.w,
-                                          0,
-                                        ),
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                          color: Color(0xfff5f5f5),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              blurRadius: 2.0,
-                                              color: Colors.black38,
-                                              blurStyle: BlurStyle.normal,
-                                              offset: Offset(0, 1),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Text(
-                                          _portfolio[i]['title'],
-                                          style: TextStyle(
-                                            fontSize: 12.sp,
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xff737373),
-                                          ),
+                                        sections: List.generate(
+                                          _portfolio.length,
+                                          (i) {
+                                            return PieChartSectionData(
+                                              color: Color(
+                                                _portfolio_colors[i],
+                                              ),
+                                              value: _portfolio[i]['value'],
+                                              title: '',
+                                              radius: (75 / 2).r,
+                                              badgePositionPercentageOffset:
+                                                  1.0,
+                                              badgeWidget: Container(
+                                                constraints: BoxConstraints(
+                                                  minWidth: 38.w,
+                                                  maxWidth: 50.w,
+                                                  minHeight: 24.h,
+                                                  maxHeight: 24.h,
+                                                ),
+                                                padding: EdgeInsets.fromLTRB(
+                                                  5.w,
+                                                  0,
+                                                  5.w,
+                                                  0,
+                                                ),
+                                                alignment: Alignment.center,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                  color: Color(0xfff5f5f5),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      blurRadius: 2.0,
+                                                      color: Colors.black38,
+                                                      blurStyle:
+                                                          BlurStyle.normal,
+                                                      offset: Offset(0, 1),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Text(
+                                                  _portfolio[i]['title'],
+                                                  style: TextStyle(
+                                                    fontSize: 12.sp,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Color(0xff737373),
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ),
-                                    );
-                                  }),
-                                ),
+                                    ),
                               ),
                             ],
                           ),
@@ -761,8 +762,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         GestureDetector(
-                          onTap: () {
-                            GoRouter.of(context).go('/product_list');
+                          onTap: () async {
+                            if (await AuthApi.instance.hasToken() &&
+                                authState.status == AuthStatus.authenticated) {
+                              GoRouter.of(context).go('/product_list');
+                            } else {
+                              GoRouter.of(
+                                context,
+                              ).push('/home/portfolio_login_popup');
+                            }
                           },
                           child: Row(
                             children: [
@@ -1040,7 +1048,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
              */
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  GoRouter.of(context).go('/special');
+                },
                 child: Container(
                   width: 338.w,
                   height: 69.h,
@@ -1098,7 +1108,9 @@ class _HomePageState extends ConsumerState<HomePage> {
 
               GestureDetector(
                 onTap: () {
-                  if (authState.user != null) {}
+                  if (authState.user != null) {
+                    GoRouter.of(context).go('/reward');
+                  }
                 },
                 child: Container(
                   width: 338.w,
@@ -1171,33 +1183,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                 width: 60.r,
                 height: 60.r,
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _suggTag() {
-    return Container(
-      width: 34.w,
-      height: 17.h,
-      margin: EdgeInsets.fromLTRB(0, 0, 6.w, 0),
-      decoration: BoxDecoration(
-        color: Color(0xffffeadb),
-        borderRadius: BorderRadius.circular(17),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset('assets/icons/fire.png', width: 10.r, height: 10.r),
-          Text(
-            '추천',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 10.sp,
-              fontWeight: FontWeight.bold,
-              color: Color(0xff374151),
             ),
           ),
         ],

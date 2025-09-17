@@ -16,6 +16,18 @@ class SelectedIndex extends _$SelectedIndex {
 }
 
 @Riverpod(keepAlive: true)
+class PathAfterResearch extends _$PathAfterResearch {
+  @override
+  String build() {
+    return '/home';
+  }
+
+  void setPath(String path) {
+    state = path;
+  }
+}
+
+@Riverpod(keepAlive: true)
 class ResearchResultStep1 extends _$ResearchResultStep1 {
   @override
   int build() {

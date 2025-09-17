@@ -21,6 +21,7 @@ dependencies:
   google_fonts: ^6.3.1
   hooks_riverpod: ^2.6.1
   http: ^1.5.0
+  icalendar_parser: ^2.1.0
   intl: ^0.20.2
   json_annotation: ^4.9.0
   json_serializable: ^6.9.5
@@ -29,6 +30,7 @@ dependencies:
   riverpod_annotation: ^2.6.1
   url_launcher: ^6.3.2
   web_socket_channel: ^3.0.3
+  webview_flutter: ^4.13.0
 
 dev_dependencies:
   flutter_test:
@@ -62,7 +64,24 @@ flutter:
   fonts:
     - family: Pretendard
       fonts:
-        - asset: assets/fonts/Pretendard/PretendardVariable.ttf
+        - asset: assets/fonts/Pretendard/Pretendard-Thin.woff
+          weight: 100
+        - asset: assets/fonts/Pretendard/Pretendard-ExtraLight.woff
+          weight: 200
+        - asset: assets/fonts/Pretendard/Pretendard-Light.woff
+          weight: 300
+        - asset: assets/fonts/Pretendard/Pretendard-Regular.woff
+          weight: 400
+        - asset: assets/fonts/Pretendard/Pretendard-Medium.woff
+          weight: 500
+        - asset: assets/fonts/Pretendard/Pretendard-SemiBold.woff
+          weight: 600
+        - asset: assets/fonts/Pretendard/Pretendard-Bold.woff
+          weight: 700
+        - asset: assets/fonts/Pretendard/Pretendard-ExtraBold.woff
+          weight: 800
+        - asset: assets/fonts/Pretendard/Pretendard-Black.woff
+          weight: 900
 
   assets:
     - .env
@@ -73,3 +92,5 @@ flutter:
     - assets/region/
     - assets/region_logo/
     - assets/dummy/
+    - assets/trip/
+    - assets/shopping/

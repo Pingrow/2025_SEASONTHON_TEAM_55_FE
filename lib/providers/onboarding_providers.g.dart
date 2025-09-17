@@ -21,6 +21,22 @@ final selectedIndexProvider = NotifierProvider<SelectedIndex, int>.internal(
 );
 
 typedef _$SelectedIndex = Notifier<int>;
+String _$pathAfterResearchHash() => r'795cf31be39e9ab2bc7056b212a7659824bf932d';
+
+/// See also [PathAfterResearch].
+@ProviderFor(PathAfterResearch)
+final pathAfterResearchProvider =
+    NotifierProvider<PathAfterResearch, String>.internal(
+      PathAfterResearch.new,
+      name: r'pathAfterResearchProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$pathAfterResearchHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$PathAfterResearch = Notifier<String>;
 String _$researchResultStep1Hash() =>
     r'f5a758381b7fe6da50519fd8a1eb402f9e531cd7';
 

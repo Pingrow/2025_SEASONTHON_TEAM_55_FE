@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:http/http.dart' as http;
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/service/secure_storage.dart';
@@ -32,7 +29,7 @@ class AuthViewModel extends _$AuthViewModel {
       );
     }
 
-    final authState = await getUser();
+    await getUser();
 
     //await setAuthState(AuthStatus.authenticated, authState?.user);
   }

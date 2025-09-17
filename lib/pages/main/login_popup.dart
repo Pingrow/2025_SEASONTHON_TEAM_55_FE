@@ -9,18 +9,20 @@ import 'package:pin_grow/view_model/auth_view_model.dart';
 
 Future<void> moveAfterLogin(
   BuildContext context,
-  WidgetRef ref,
-  String path,
-) async {
+  WidgetRef ref, {
+  required String path,
+  bool goOnboarding = false,
+}) async {
   final authState = ref.read(authViewModelProvider);
 
-  if (await AuthApi.instance.hasToken()) {
+  if (await AuthApi.instance.hasToken()
+  /**&& authState.status == AuthStatus.authenticated */
+  ) {
     bool? researchComplete = authState.user?.research_completed;
 
     print('[DEBUG:Login] researchComplete : $researchComplete');
-    if (researchComplete ?? false) {
-      GoRouter.of(context).go(path);
-    } else {
+
+    if (!(researchComplete ?? false) && goOnboarding) {
       ref.invalidate(selectedIndexProvider);
       ref.invalidate(researchResultStep1Provider);
       ref.invalidate(researchResultStep2Provider);
@@ -28,6 +30,8 @@ Future<void> moveAfterLogin(
       ref.invalidate(researchResultStep4Provider);
       ref.invalidate(researchResultStep5Provider);
       GoRouter.of(context).go('/step1');
+    } else {
+      GoRouter.of(context).go(path);
     }
   } else {
     print('[DEBUG:Login] tokenInfo\n${UserApi.instance.accessTokenInfo()}');
@@ -153,7 +157,13 @@ class _PolicyLoinPopupState extends ConsumerState<PolicyLoinPopup> {
                   GestureDetector(
                     onTap: () async {
                       await authViewModel.login().then((value) async {
-                        GoRouter.of(context).go('/policy_list');
+                        moveAfterLogin(
+                          context,
+                          ref,
+                          path: '/policy_list',
+                          goOnboarding: true,
+                        );
+                        //GoRouter.of(context).go('/policy_list');
                       });
                     },
                     child: Container(
@@ -176,96 +186,6 @@ class _PolicyLoinPopupState extends ConsumerState<PolicyLoinPopup> {
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                         color: Color(0xff7D7D7D),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-    Scaffold(
-      backgroundColor: Color(0x00000000),
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.fromLTRB(
-          0,
-          MediaQuery.of(context).padding.top,
-          0,
-          MediaQuery.of(context).padding.bottom,
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            GestureDetector(
-              onTap: () {
-                GoRouter.of(context).pop();
-              },
-              child: Container(color: Colors.transparent),
-            ),
-
-            Container(
-              width: 350.w,
-              height: 521.h,
-              padding: EdgeInsets.fromLTRB(0, 34.h, 0, 34.h),
-              decoration: BoxDecoration(
-                color: Color(0xffffffff),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 310.w,
-                    padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 0),
-                    alignment: Alignment.center,
-                    child: RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        style: TextStyle(
-                          color: Color(0xff374151),
-                          fontSize: 25.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        children: [
-                          TextSpan(text: '나만을 위한 '),
-                          TextSpan(
-                            text: '청년정책',
-                            style: TextStyle(color: Color(0xff0CA361)),
-                          ),
-                          TextSpan(text: ',\n 로그인하면 볼 수 있어요!'),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      width: 310.w,
-                      margin: EdgeInsets.fromLTRB(12.w, 30.h, 12.w, 0),
-                      alignment: Alignment.topCenter,
-                      child: Image.asset(
-                        'assets/dummy/policy_example.png',
-                        width: 255.w,
-                        height: 221.h,
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () async {
-                      await authViewModel.login().then((value) async {
-                        GoRouter.of(context).go('/policy_list');
-                      });
-                    },
-                    child: Container(
-                      width: 310.w,
-                      height: 46.h,
-
-                      child: Image.asset(
-                        'assets/kakao_login/ko/kakao_login_medium_wide.png',
                       ),
                     ),
                   ),
@@ -381,7 +301,13 @@ class _ProductLoinPopupState extends ConsumerState<ProductLoinPopup> {
                   GestureDetector(
                     onTap: () async {
                       await authViewModel.login().then((value) async {
-                        GoRouter.of(context).go('/product_list');
+                        moveAfterLogin(
+                          context,
+                          ref,
+                          path: '/product_list',
+                          goOnboarding: true,
+                        );
+                        //GoRouter.of(context).go('/product_list');
                       });
                     },
                     child: Container(
@@ -479,31 +405,36 @@ class _PortfolioLoginPopupState extends ConsumerState<PortfolioLoginPopup> {
                     ),
                   ),
 
-                  Row(
-                    children: [
-                      Text(
-                        '인녕하세요, ',
-                        style: TextStyle(
-                          color: Color(0xff374151),
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.bold,
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 24.h, 0, 24.h),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '안녕하세요, ',
+                          style: TextStyle(
+                            color: Color(0xff374151),
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      Image.asset(
-                        'assets/logo/home_top_logo.png',
-                        width: 83.w,
-                        height: 30.h,
-                      ),
-                      Text(
-                        '입니다.',
-                        style: TextStyle(
-                          color: Color(0xff374151),
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.bold,
+                        Image.asset(
+                          'assets/logo/home_top_logo.png',
+                          width: 83.w,
+                          height: 30.h,
                         ),
-                      ),
-                    ],
+                        Text(
+                          '입니다.',
+                          style: TextStyle(
+                            color: Color(0xff374151),
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+
                   Container(
                     width: 310.w,
                     padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 0),
@@ -528,28 +459,33 @@ class _PortfolioLoginPopupState extends ConsumerState<PortfolioLoginPopup> {
                     ),
                   ),
 
-                  Expanded(
-                    child: Container(
-                      width: 310.w,
-                      margin: EdgeInsets.fromLTRB(12.w, 30.h, 12.w, 0),
-                      alignment: Alignment.topCenter,
-                      child: Image.asset(
-                        'assets/characters/portfolio_login.png',
-                        width: 233.w,
-                        height: 277.h,
-                      ),
+                  Container(
+                    width: 310.w,
+                    margin: EdgeInsets.fromLTRB(12.w, 13.h, 12.w, 24.h),
+                    alignment: Alignment.topCenter,
+                    child: Image.asset(
+                      'assets/characters/portfolio_login.png',
+                      width: 196.w,
+                      height: 196.h,
                     ),
                   ),
 
                   GestureDetector(
                     onTap: () async {
                       await authViewModel.login().then((value) async {
-                        GoRouter.of(context).go('/product_list');
+                        moveAfterLogin(
+                          context,
+                          ref,
+                          path: '/home',
+                          goOnboarding: true,
+                        );
+                        //GoRouter.of(context).go('/product_list');
                       });
                     },
                     child: Container(
                       width: 310.w,
                       height: 46.h,
+                      margin: EdgeInsets.fromLTRB(0, 30.h, 0, 16.h),
 
                       child: Image.asset(
                         'assets/kakao_login/ko/kakao_login_medium_wide.png',

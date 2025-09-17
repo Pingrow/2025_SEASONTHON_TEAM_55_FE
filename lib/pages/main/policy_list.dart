@@ -1,21 +1,18 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:pin_grow/model/region_model.dart';
 import 'package:pin_grow/model/policy_model.dart';
 import 'package:pin_grow/model/user_model.dart';
+import 'package:pin_grow/pages/main/tags.dart';
 import 'package:pin_grow/providers/region_provider.dart';
 import 'package:pin_grow/pages/main/error.dart';
+import 'package:pin_grow/service/outlink.dart';
 import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
-
-import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 
 enum TapStatus { notSelected, selected, load }
 
@@ -90,13 +87,6 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
   late Future<List<PolicyModel>> _policyFuture;
   late Future<List<PolicyModel>> _policyTop10Future;
 
-  Future<void> _launchUrl(String urlString) async {
-    final Uri url = Uri.parse(urlString);
-    if (!await launchUrl(url)) {
-      throw Exception('$urlString을(를) 열 수 없습니다.');
-    }
-  }
-
   @override
   void initState() {
     super.initState();
@@ -152,16 +142,365 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
 
             // 전체를 스크롤 가능하게 만듦
             return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                ), // 좌우 여백을 여기에 추가
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // --- 인기 정책 섹션 ---
+                  Container(
+                    margin: EdgeInsets.fromLTRB(
+                      (MediaQuery.of(context).size.width - 328.w) / 2,
+                      25.h,
+                      (MediaQuery.of(context).size.width - 328.w) / 2,
+                      25.h,
+                    ),
+                    child: RichText(
+                      text: TextSpan(
+                        style: TextStyle(
+                          color: Color(0xff374151),
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: '전국',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const TextSpan(text: ' 의 '),
+                          const TextSpan(
+                            text: '인기 정책',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  ListView.builder(
+                    padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
+                    physics:
+                        const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
+                    shrinkWrap: true,
+                    itemCount: policies.length,
+                    itemBuilder: (context, index) {
+                      final policy = policies[index];
+                      // 재사용 가능한 메소드 호출
+                      return Container(
+                        margin: EdgeInsets.fromLTRB(
+                          (MediaQuery.of(context).size.width - 328.w) / 2,
+                          0.h,
+                          (MediaQuery.of(context).size.width - 328.w) / 2,
+                          25.h,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 56.r,
+                              height: 56.r,
+                              decoration: BoxDecoration(
+                                color: const Color(0xffffffff),
+                                border: Border.all(
+                                  color: const Color(0xff0CA361),
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
+                              child: authState.user?.region != null
+                                  ? Image.asset(
+                                      regions![authState.user?.region?.split(
+                                                '-',
+                                              )[2] ??
+                                              '서울특별시']!
+                                          .logo,
+                                    )
+                                  : Container(),
+                            ),
+                            SizedBox(width: 10.w), // 간격 조정
+                            Expanded(
+                              // 텍스트가 화면을 넘어갈 경우를 대비해 Expanded로 감싸줌
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Row(
+                                    children: [
+                                      popTag(),
+                                      SizedBox(width: 4.w),
+                                      Expanded(
+                                        child: Text(
+                                          policy.sprvsnInstCdNm ?? '기관 정보 없음',
+                                          style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.w400,
+                                            color: const Color(0xff6B7280),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Text(
+                                    policy.plcyNm ?? '정책명 없음',
+                                    style: TextStyle(
+                                      color: const Color(0xff374151),
+                                      fontSize: 20.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Image.asset(
+                                        'assets/icons/eye.png',
+                                        width: 7.r,
+                                        height: 7.r,
+                                      ),
+                                      SizedBox(width: 3.w),
+                                      Text(
+                                        '${policy.incCnt ?? 0}',
+                                        style: TextStyle(
+                                          fontSize: 10.sp,
+                                          fontWeight: FontWeight.w400,
+                                          color: const Color(0xff6B7280),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                if (policy.url != null &&
+                                    policy.url!.isNotEmpty) {
+                                  launchOutLink(policy.url!);
+                                }
+                              },
+                              child: Image.asset(
+                                policy.url != null && policy.url!.isNotEmpty
+                                    ? 'assets/icons/external_link_enabled.png'
+                                    : 'assets/icons/external_link_disabled.png',
+                                width: 21.r,
+                                height: 21.r,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      },
+      1: {
+        TapStatus.notSelected: Container(),
+        TapStatus.selected: Container(
+          margin: EdgeInsets.fromLTRB(
+            (MediaQuery.of(context).size.width - 328.w) / 2,
+            0.h,
+            (MediaQuery.of(context).size.width - 328.w) / 2,
+            0.h,
+          ),
+          child: GridView.builder(
+            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+            itemCount: regions!.keys.length - 1,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 77.w / 47.h,
+            ),
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (region_idx == index) {
+                      region_idx = -1;
+                      return;
+                    }
+
+                    region_idx = index;
+
+                    Timer(Duration(milliseconds: 200), () {
+                      setState(() {
+                        idx = 2;
+                        tapStatus[2] = TapStatus.selected;
+                      });
+                    });
+                  });
+                },
+                child: Container(
+                  width: 77.w,
+                  height: 47.h,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Color(
+                      regionSelectConfig[region_idx == index]!["COLOR"],
+                    ),
+                    border: Border.all(
+                      color: Color(
+                        regionSelectConfig[region_idx ==
+                            index]!["STROKE_COLOR"],
+                      ),
+                    ),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Text(
+                    regions[regions.keys.elementAt(index)]!.alias,
+                    style: TextStyle(
+                      color: Color(
+                        regionSelectConfig[region_idx == index]!["FONT_COLOR"],
+                      ),
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        TapStatus.load: Container(),
+      },
+      2: {
+        TapStatus.notSelected: Container(),
+        TapStatus.selected: Container(
+          margin: EdgeInsets.fromLTRB(
+            (MediaQuery.of(context).size.width - 328.w) / 2,
+            0.h,
+            (MediaQuery.of(context).size.width - 328.w) / 2,
+            0.h,
+          ),
+          child: GridView.builder(
+            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+            itemCount: region_idx != -1
+                ? regions[regions.keys.elementAt(region_idx)]?.areas.length
+                : 0,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 77.w / 47.h,
+            ),
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () async {
+                  setState(() {
+                    if (area_idx == index) {
+                      area_idx = -1;
+                      return;
+                    }
+
+                    area_idx = index;
+
+                    Timer(Duration(milliseconds: 200), () {
+                      setState(() {
+                        tapStatus[1] = TapStatus.load;
+                        tapStatus[2] = TapStatus.load;
+
+                        ref
+                            .read(authViewModelProvider.notifier)
+                            .setAuthState(
+                              authState.status,
+                              UserModel(
+                                id: authState.user?.id,
+                                nickname: authState.user?.nickname,
+                                email: authState.user?.email,
+                                profile_url: authState.user?.profile_url,
+                                goal: authState.user?.goal,
+                                goal_money: authState.user?.goal_money,
+                                goal_period: authState.user?.goal_period,
+                                research_completed:
+                                    authState.user?.research_completed,
+                                saved_money: authState.user?.saved_money,
+                                type: authState.user?.type,
+                                region:
+                                    "$region_idx-$area_idx-${regions.keys.elementAt(region_idx)}-${regions[regions.keys.elementAt(region_idx)]?.areas[area_idx]}", // 00-00-region-area {시도 인덱스}-{시군구 인덱스}-{시도 이름}-{시군구 이름}
+                              ),
+                            );
+                      });
+                    });
+
+                    _policyFuture = apiRepo.fetchPolicyList();
+                  });
+                },
+                child: Container(
+                  width: 77.w,
+                  height: 47.h,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Color(
+                      regionSelectConfig[area_idx == index]!["COLOR"],
+                    ),
+                    border: Border.all(
+                      color: Color(
+                        regionSelectConfig[area_idx == index]!["STROKE_COLOR"],
+                      ),
+                    ),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Text(
+                    regions[regions.keys.elementAt(region_idx)]!.areas[index],
+                    style: TextStyle(
+                      color: Color(
+                        regionSelectConfig[area_idx == index]!["FONT_COLOR"],
+                      ),
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        TapStatus.load: FutureBuilder<List<PolicyModel>>(
+          future: _policyFuture,
+          builder: (context, snapshot) {
+            // 1. 로딩 중 상태 처리
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            // 2. 에러 발생 상태 처리
+            if (snapshot.hasError) {
+              print('에러: ${snapshot.error}');
+              return error();
+              //error();
+            }
+
+            // 3. 데이터가 없거나 비어있는 경우 처리
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return noPolicy();
+            }
+
+            // 4. 데이터 수신 성공 시 UI 구성
+            final allPolicies = snapshot.data!;
+
+            // 데이터를 안전하게 두 부분으로 나눔
+            final popularPolicies = allPolicies.take(3).toList();
+            final recommendedPolicies = allPolicies.skip(3).toList();
+
+            ScrollController scrollController = ScrollController();
+
+            // 전체를 스크롤 가능하게 만듦
+            return Scrollbar(
+              controller: scrollController,
+              child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // --- 인기 정책 섹션 ---
                     Container(
-                      margin: EdgeInsets.only(top: 25.h, bottom: 25.h),
+                      margin: EdgeInsets.fromLTRB(
+                        (MediaQuery.of(context).size.width - 328.w) / 2,
+                        25.h,
+                        (MediaQuery.of(context).size.width - 328.w) / 2,
+                        25.h,
+                      ),
                       child: RichText(
                         text: TextSpan(
                           style: TextStyle(
@@ -170,8 +509,10 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                             fontWeight: FontWeight.w400,
                           ),
                           children: [
+                            TextSpan(text: '지금 '),
                             TextSpan(
-                              text: '전국',
+                              text:
+                                  '${regions[authState.user?.region?.split('-')[2]]!.alias} ${authState.user?.region?.split('-')[3]}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -190,12 +531,17 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                       physics:
                           const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
                       shrinkWrap: true,
-                      itemCount: policies.length,
+                      itemCount: popularPolicies.length,
                       itemBuilder: (context, index) {
-                        final policy = policies[index];
+                        final policy = popularPolicies[index];
                         // 재사용 가능한 메소드 호출
                         return Container(
-                          margin: EdgeInsets.only(bottom: 25.h),
+                          margin: EdgeInsets.fromLTRB(
+                            (MediaQuery.of(context).size.width - 328.w) / 2,
+                            0.h,
+                            (MediaQuery.of(context).size.width - 328.w) / 2,
+                            25.h,
+                          ),
                           child: Row(
                             children: [
                               Container(
@@ -209,12 +555,12 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
-                                child: authState.user?.region == null
+                                child: authState.user?.region != null
                                     ? Image.asset(
-                                        regions![authState.user?.region?.split(
+                                        regions[authState.user?.region?.split(
                                                   '-',
                                                 )[2] ??
-                                                '서울특별시']!
+                                                'NODATA']!
                                             .logo,
                                       )
                                     : Container(),
@@ -228,7 +574,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                   children: [
                                     Row(
                                       children: [
-                                        _popTag(),
+                                        popTag(),
                                         SizedBox(width: 4.w),
                                         Expanded(
                                           child: Text(
@@ -279,7 +625,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                 onTap: () {
                                   if (policy.url != null &&
                                       policy.url!.isNotEmpty) {
-                                    _launchUrl(policy.url!);
+                                    launchOutLink(policy.url!);
                                   }
                                 },
                                 child: Image.asset(
@@ -295,274 +641,134 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                         );
                       },
                     ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      },
-      1: {
-        TapStatus.notSelected: Container(),
-        TapStatus.selected: GridView.builder(
-          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-          itemCount: regions!.keys.length - 1,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 77.w / 47.h,
-          ),
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  if (region_idx == index) {
-                    region_idx = -1;
-                    return;
-                  }
 
-                  region_idx = index;
+                    // --- 추천 정책 섹션 (데이터가 있을 때만 표시) ---
+                    if (recommendedPolicies.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            height: 20.h,
+                            color: Color(0xffF1F4F6),
+                          ),
 
-                  Timer(Duration(milliseconds: 200), () {
-                    setState(() {
-                      idx = 2;
-                      tapStatus[2] = TapStatus.selected;
-                    });
-                  });
-                });
-              },
-              child: Container(
-                width: 77.w,
-                height: 47.h,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Color(
-                    regionSelectConfig[region_idx == index]!["COLOR"],
-                  ),
-                  border: Border.all(
-                    color: Color(
-                      regionSelectConfig[region_idx == index]!["STROKE_COLOR"],
-                    ),
-                  ),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: Text(
-                  regions![regions.keys.elementAt(index)]!.alias,
-                  style: TextStyle(
-                    color: Color(
-                      regionSelectConfig[region_idx == index]!["FONT_COLOR"],
-                    ),
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-        TapStatus.load: Container(),
-      },
-      2: {
-        TapStatus.notSelected: Container(),
-        TapStatus.selected: GridView.builder(
-          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-          itemCount: region_idx != -1
-              ? regions != null
-                    ? regions[regions.keys.elementAt(region_idx)]?.areas.length
-                    : 0
-              : 0,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 77.w / 47.h,
-          ),
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () async {
-                setState(() {
-                  if (area_idx == index) {
-                    area_idx = -1;
-                    return;
-                  }
-
-                  area_idx = index;
-
-                  Timer(Duration(milliseconds: 200), () {
-                    setState(() {
-                      tapStatus[1] = TapStatus.load;
-                      tapStatus[2] = TapStatus.load;
-
-                      ref
-                          .read(authViewModelProvider.notifier)
-                          .setAuthState(
-                            authState.status,
-                            UserModel(
-                              id: authState.user?.id,
-                              nickname: authState.user?.nickname,
-                              email: authState.user?.email,
-                              profile_url: authState.user?.profile_url,
-                              goal: authState.user?.goal,
-                              goal_money: authState.user?.goal_money,
-                              goal_period: authState.user?.goal_period,
-                              research_completed:
-                                  authState.user?.research_completed,
-                              saved_money: authState.user?.saved_money,
-                              type: authState.user?.type,
-                              region:
-                                  "$region_idx-$area_idx-${regions!.keys.elementAt(region_idx)}-${regions![regions.keys.elementAt(region_idx)]?.areas[area_idx]}", // 00-00-region-area {시도 인덱스}-{시군구 인덱스}-{시도 이름}-{시군구 이름}
+                          Container(
+                            margin: EdgeInsets.fromLTRB(
+                              (MediaQuery.of(context).size.width - 328.w) / 2,
+                              25.h,
+                              (MediaQuery.of(context).size.width - 328.w) / 2,
+                              25.h,
                             ),
-                          );
-                    });
-                  });
-
-                  _policyFuture = apiRepo.fetchPolicyList();
-                });
-              },
-              child: Container(
-                width: 77.w,
-                height: 47.h,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Color(regionSelectConfig[area_idx == index]!["COLOR"]),
-                  border: Border.all(
-                    color: Color(
-                      regionSelectConfig[area_idx == index]!["STROKE_COLOR"],
-                    ),
-                  ),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: Text(
-                  regions![regions.keys.elementAt(region_idx)]!.areas[index],
-                  style: TextStyle(
-                    color: Color(
-                      regionSelectConfig[area_idx == index]!["FONT_COLOR"],
-                    ),
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-        TapStatus.load: // 기존 build 메소드 내의 FutureBuilder 부분을 아래 코드로 교체하세요.
-            // 데이터를 한 번만 로드하기 위한 단일 FutureBuilder
-            FutureBuilder<List<PolicyModel>>(
-              future: _policyFuture,
-              builder: (context, snapshot) {
-                // 1. 로딩 중 상태 처리
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                // 2. 에러 발생 상태 처리
-                if (snapshot.hasError) {
-                  print('에러: ${snapshot.error}');
-                  return error();
-                  //error();
-                }
-
-                // 3. 데이터가 없거나 비어있는 경우 처리
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return noPolicy();
-                }
-
-                // 4. 데이터 수신 성공 시 UI 구성
-                final allPolicies = snapshot.data!;
-
-                // 데이터를 안전하게 두 부분으로 나눔
-                final popularPolicies = allPolicies.take(3).toList();
-                final recommendedPolicies = allPolicies.skip(3).toList();
-
-                // 전체를 스크롤 가능하게 만듦
-                return SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                    ), // 좌우 여백을 여기에 추가
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // --- 인기 정책 섹션 ---
-                        Container(
-                          margin: EdgeInsets.only(top: 25.h, bottom: 25.h),
-                          child: RichText(
-                            text: TextSpan(
-                              style: TextStyle(
-                                color: Color(0xff374151),
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              children: [
-                                TextSpan(text: '지금 '),
-                                TextSpan(
-                                  text:
-                                      '${regions[authState.user?.region?.split('-')[2]]!.alias} ${authState.user?.region?.split('-')[3]}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                            child: RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  color: Color(0xff374151),
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text:
+                                        '${regions[authState.user?.region?.split('-')[2]]!.alias} ${authState.user?.region?.split('-')[3]}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                const TextSpan(text: ' 의 '),
-                                const TextSpan(
-                                  text: '인기 정책',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ],
+                                  const TextSpan(text: ' 의 이런 정책은 어떠신가요?'),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        ListView.builder(
-                          padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
-                          physics:
-                              const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
-                          shrinkWrap: true,
-                          itemCount: popularPolicies.length,
-                          itemBuilder: (context, index) {
-                            final policy = popularPolicies[index];
-                            // 재사용 가능한 메소드 호출
-                            return Container(
-                              margin: EdgeInsets.only(bottom: 25.h),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 56.r,
-                                    height: 56.r,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xffABABAB),
-                                      border: Border.all(
-                                        color: const Color(0xff0CA361),
+                          ListView.builder(
+                            padding: EdgeInsets.zero,
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: recommendedPolicies.length,
+                            itemBuilder: (context, index) {
+                              final policy = recommendedPolicies[index];
+                              // 동일한 메소드 재사용
+                              return Container(
+                                margin: EdgeInsets.fromLTRB(
+                                  (MediaQuery.of(context).size.width - 328.w) /
+                                      2,
+                                  0.h,
+                                  (MediaQuery.of(context).size.width - 328.w) /
+                                      2,
+                                  25.h,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 56.r,
+                                      height: 56.r,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xffffffff),
+                                        border: Border.all(
+                                          color: const Color(0xff0CA361),
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
-                                      borderRadius: BorderRadius.circular(10),
+                                      // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
+                                      child: authState.user?.region != null
+                                          ? Image.asset(
+                                              regions[authState.user?.region
+                                                          ?.split('-')[2] ??
+                                                      'NODATA']!
+                                                  .logo,
+                                            )
+                                          : Container(),
                                     ),
-                                    // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
-                                    child: authState.user?.region == null
-                                        ? Image.asset(
-                                            regions![authState.user?.region
-                                                        ?.split('-')[2] ??
-                                                    'NODATA']!
-                                                .logo,
-                                          )
-                                        : Container(),
-                                  ),
-                                  SizedBox(width: 10.w), // 간격 조정
-                                  Expanded(
-                                    // 텍스트가 화면을 넘어갈 경우를 대비해 Expanded로 감싸줌
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            _popTag(),
-                                            SizedBox(width: 4.w),
-                                            Expanded(
-                                              child: Text(
-                                                policy.sprvsnInstCdNm ??
-                                                    '기관 정보 없음',
+                                    SizedBox(width: 10.w), // 간격 조정
+                                    Expanded(
+                                      // 텍스트가 화면을 넘어갈 경우를 대비해 Expanded로 감싸줌
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              SizedBox(width: 4.w),
+                                              Expanded(
+                                                child: Text(
+                                                  policy.sprvsnInstCdNm ??
+                                                      '기관 정보 없음',
+                                                  style: TextStyle(
+                                                    fontSize: 10.sp,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: const Color(
+                                                      0xff6B7280,
+                                                    ),
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Text(
+                                            policy.plcyNm ?? '정책명 없음',
+                                            style: TextStyle(
+                                              color: const Color(0xff374151),
+                                              fontSize: 20.sp,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Row(
+                                            children: [
+                                              Image.asset(
+                                                'assets/icons/eye.png',
+                                                width: 7.r,
+                                                height: 7.r,
+                                              ),
+                                              SizedBox(width: 3.w),
+                                              Text(
+                                                '${policy.incCnt ?? 0}',
                                                 style: TextStyle(
                                                   fontSize: 10.sp,
                                                   fontWeight: FontWeight.w400,
@@ -570,227 +776,41 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                                                     0xff6B7280,
                                                   ),
                                                 ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Text(
-                                          policy.plcyNm ?? '정책명 없음',
-                                          style: TextStyle(
-                                            color: const Color(0xff374151),
-                                            fontSize: 20.sp,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        Row(
-                                          children: [
-                                            Image.asset(
-                                              'assets/icons/eye.png',
-                                              width: 7.r,
-                                              height: 7.r,
-                                            ),
-                                            SizedBox(width: 3.w),
-                                            Text(
-                                              '${policy.incCnt ?? 0}',
-                                              style: TextStyle(
-                                                fontSize: 10.sp,
-                                                fontWeight: FontWeight.w400,
-                                                color: const Color(0xff6B7280),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      if (policy.url != null &&
-                                          policy.url!.isNotEmpty) {
-                                        _launchUrl(policy.url!);
-                                      }
-                                    },
-                                    child: Image.asset(
-                                      policy.url != null &&
-                                              policy.url!.isNotEmpty
-                                          ? 'assets/icons/external_link_enabled.png'
-                                          : 'assets/icons/external_link_disabled.png',
-                                      width: 21.r,
-                                      height: 21.r,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-
-                        // --- 추천 정책 섹션 (데이터가 있을 때만 표시) ---
-                        if (recommendedPolicies.isNotEmpty)
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                margin: EdgeInsets.only(
-                                  top: 25.h,
-                                  bottom: 25.h,
-                                ),
-                                child: RichText(
-                                  text: TextSpan(
-                                    style: TextStyle(
-                                      color: Color(0xff374151),
-                                      fontSize: 18.sp,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    children: [
-                                      TextSpan(
-                                        text:
-                                            '${regions[authState.user?.region?.split('-')[2]]!.alias} ${authState.user?.region?.split('-')[3]}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const TextSpan(text: ' 의 이런 정책은 어떠신가요?'),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              ListView.builder(
-                                padding: EdgeInsets.zero,
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: recommendedPolicies.length,
-                                itemBuilder: (context, index) {
-                                  final policy = recommendedPolicies[index];
-                                  // 동일한 메소드 재사용
-                                  return Container(
-                                    margin: EdgeInsets.only(bottom: 25.h),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 56.r,
-                                          height: 56.r,
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xffABABAB),
-                                            border: Border.all(
-                                              color: const Color(0xff0CA361),
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                          ),
-                                          // TODO: API 응답에 이미지가 있다면 Image.network(policy.imageUrl!) 등으로 교체
-                                          child: authState.user?.region == null
-                                              ? Image.asset(
-                                                  regions![authState
-                                                              .user
-                                                              ?.region
-                                                              ?.split('-')[2] ??
-                                                          'NODATA']!
-                                                      .logo,
-                                                )
-                                              : Container(),
-                                        ),
-                                        SizedBox(width: 10.w), // 간격 조정
-                                        Expanded(
-                                          // 텍스트가 화면을 넘어갈 경우를 대비해 Expanded로 감싸줌
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  SizedBox(width: 4.w),
-                                                  Expanded(
-                                                    child: Text(
-                                                      policy.sprvsnInstCdNm ??
-                                                          '기관 정보 없음',
-                                                      style: TextStyle(
-                                                        fontSize: 10.sp,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        color: const Color(
-                                                          0xff6B7280,
-                                                        ),
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              Text(
-                                                policy.plcyNm ?? '정책명 없음',
-                                                style: TextStyle(
-                                                  color: const Color(
-                                                    0xff374151,
-                                                  ),
-                                                  fontSize: 20.sp,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Image.asset(
-                                                    'assets/icons/eye.png',
-                                                    width: 7.r,
-                                                    height: 7.r,
-                                                  ),
-                                                  SizedBox(width: 3.w),
-                                                  Text(
-                                                    '${policy.incCnt ?? 0}',
-                                                    style: TextStyle(
-                                                      fontSize: 10.sp,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      color: const Color(
-                                                        0xff6B7280,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
                                               ),
                                             ],
                                           ),
-                                        ),
-                                        GestureDetector(
-                                          onTap: () {
-                                            if (policy.url != null &&
-                                                policy.url!.isNotEmpty) {
-                                              _launchUrl(policy.url!);
-                                            }
-                                          },
-                                          child: Image.asset(
-                                            policy.url != null &&
-                                                    policy.url!.isNotEmpty
-                                                ? 'assets/icons/external_link_enabled.png'
-                                                : 'assets/icons/external_link_disabled.png',
-                                            width: 21.r,
-                                            height: 21.r,
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  );
-                                },
-                              ),
-                            ],
+                                    GestureDetector(
+                                      onTap: () {
+                                        if (policy.url != null &&
+                                            policy.url!.isNotEmpty) {
+                                          launchOutLink(policy.url!);
+                                        }
+                                      },
+                                      child: Image.asset(
+                                        policy.url != null &&
+                                                policy.url!.isNotEmpty
+                                            ? 'assets/icons/external_link_enabled.png'
+                                            : 'assets/icons/external_link_disabled.png',
+                                        width: 21.r,
+                                        height: 21.r,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       },
     };
 
@@ -818,9 +838,9 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                       //width: 338.w,
                       //height: 39.h,
                       margin: EdgeInsets.fromLTRB(
-                        (MediaQuery.of(context).size.width - 338.w) / 2 - 10.w,
+                        (MediaQuery.of(context).size.width - 328.w) / 2,
                         20.h,
-                        (MediaQuery.of(context).size.width - 338.w) / 2 - 10.w,
+                        (MediaQuery.of(context).size.width - 328.w) / 2,
                         10.h,
                       ),
 
@@ -1050,7 +1070,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
 
               Expanded(
                 child: Container(
-                  width: 338.w,
+                  //width: 338.w,
                   child: idx == -1
                       ? Container()
                       : policiesForRegion[idx]![tapStatus[idx]],
@@ -1071,32 +1091,6 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                 width: 60.r,
                 height: 60.r,
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _popTag() {
-    return Container(
-      width: 34.w,
-      height: 17.h,
-      decoration: BoxDecoration(
-        color: Color(0xffffeadb),
-        borderRadius: BorderRadius.circular(17),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset('assets/icons/fire.png', width: 10.r, height: 10.r),
-          Text(
-            '인기',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 10.sp,
-              fontWeight: FontWeight.bold,
-              color: Color(0xff374151),
             ),
           ),
         ],

@@ -2,13 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/model/user_model.dart';
-import 'package:pin_grow/service/secure_storage.dart';
-import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
 class LoadingEmotionPage extends StatefulHookConsumerWidget {
@@ -19,14 +15,30 @@ class LoadingEmotionPage extends StatefulHookConsumerWidget {
 }
 
 class _LoadingEmotionPageState extends ConsumerState<LoadingEmotionPage> {
+  Timer? _timer;
+  int i = 0;
+
   Future loading() async {
     // 투자 성향 분석 로딩 대체 timer
-    Timer(Duration(milliseconds: 3000), () async {
+
+    _timer = Timer.periodic(Duration(milliseconds: 1000), (timer) async {
+      setState(() {
+        i = (i + 1) % 3;
+      });
+    });
+
+    Future.delayed(Duration(milliseconds: 3000), () async {
+      _timer?.cancel();
+
       UserType type = UserType.conservative;
 
       await ref.read(authViewModelProvider.notifier).modifyUserType(type);
+      if (mounted) {
+        GoRouter.of(context).go('/post_test_result');
+      }
+    });
 
-      /**final authState = ref.watch(authViewModelProvider);
+    /**final authState = ref.watch(authViewModelProvider);
 
       
       final user = UserModel(
@@ -51,8 +63,8 @@ class _LoadingEmotionPageState extends ConsumerState<LoadingEmotionPage> {
             ).toRawJson()!,
       );
  */
-      GoRouter.of(context).go('/loading_policy');
-    });
+
+    //GoRouter.of(context).go('/loading_policy');
 
     //성향 분류 후 데이터 캐싱 필요
   }
@@ -65,8 +77,16 @@ class _LoadingEmotionPageState extends ConsumerState<LoadingEmotionPage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+
+    _timer?.cancel();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final user = ref.read(authViewModelProvider).user;
+
     return Container(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
@@ -102,6 +122,15 @@ class _LoadingEmotionPageState extends ConsumerState<LoadingEmotionPage> {
                   TextSpan(text: ' 님의 \n성향을 분석중입니다'),
                 ],
               ),
+            ),
+          ),
+
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 40.h, 0, 0),
+            child: Image.asset(
+              'assets/characters/onboarding_loading${i + 1}.png',
+              width: 162.w,
+              height: 243.h,
             ),
           ),
         ],

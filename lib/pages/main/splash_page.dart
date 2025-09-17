@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,10 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
-import 'package:pin_grow/model/user_model.dart';
 import 'package:pin_grow/providers/region_provider.dart';
-//import 'package:pin_grow/repository/auth_repository.dart';
-import 'package:pin_grow/service/secure_storage.dart';
 import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
@@ -49,7 +45,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
     // Debugging 용 데이터 삭제 + 로그아웃 코드
     //SecureStorageManager.deleteAllData();
-    await ref.read(authViewModelProvider.notifier).logout();
+    //await ref.read(authViewModelProvider.notifier).logout();
 
     /**
      * AuthState? authState = AuthState.fromRawJson(

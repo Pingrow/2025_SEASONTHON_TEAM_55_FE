@@ -2,14 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/model/user_model.dart';
-import 'package:pin_grow/service/secure_storage.dart';
-import 'package:pin_grow/view_model/auth_state.dart';
+import 'package:pin_grow/providers/onboarding_providers.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
 Map<UserType, Map<String, dynamic>> user_type_resource = {
@@ -88,6 +85,7 @@ class _PostTestResultPageState extends ConsumerState<PostTestResultPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authViewModelProvider);
+    final String? path = ref.watch(pathAfterResearchProvider);
 
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -328,7 +326,7 @@ class _PostTestResultPageState extends ConsumerState<PostTestResultPage> {
 
           GestureDetector(
             onTap: () {
-              GoRouter.of(context).go('/home');
+              GoRouter.of(context).go(path ?? '/home');
             },
             child: Container(
               width: 347.w,

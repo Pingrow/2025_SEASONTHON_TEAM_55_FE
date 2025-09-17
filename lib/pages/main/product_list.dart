@@ -1,23 +1,18 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:pin_grow/model/bond_product_model.dart';
 import 'package:pin_grow/model/product_model.dart';
-import 'package:pin_grow/model/region_model.dart';
-import 'package:pin_grow/model/policy_model.dart';
-import 'package:pin_grow/model/user_model.dart';
-import 'package:pin_grow/providers/region_provider.dart';
+import 'package:pin_grow/model/recommend_product_model.dart';
+import 'package:pin_grow/pages/main/tags.dart';
 import 'package:pin_grow/pages/main/error.dart';
 import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
-
-import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 
 Map<bool, Map<String, dynamic>> selectConfig = {
   true: {
@@ -51,6 +46,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
   String hintValue = '';
 
   late Future<List<ProductModel>> _productsFuture;
+  late Future<List<OptimalProductModel>> _recommendationFuture;
   late Future<(List<BondProductModel>, List<BondProductModel>)> _bondsFuture;
 
   @override
@@ -70,11 +66,145 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
     }
 
     _productsFuture = apiRepo.fetchDepositList();
+    _recommendationFuture = apiRepo.fetchRecommendation(authState.user!);
     _bondsFuture = apiRepo.fetchBondsList();
   }
 
   Map<int, Widget> get _products => {
-    0: FutureBuilder<List<ProductModel>>(
+    0: FutureBuilder<List<OptimalProductModel>>(
+      future: _recommendationFuture,
+      builder: (context, snapshot) {
+        // 1. 로딩 중 상태 처리
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        // 2. 에러 발생 상태 처리
+        if (snapshot.hasError) {
+          return error();
+        }
+
+        // 3. 데이터가 없거나 비어있는 경우 처리
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return noProduct();
+        }
+
+        // 4. 데이터 수신 성공 시 UI 구성
+        final products = snapshot.data!;
+
+        ScrollController scrollController = ScrollController();
+
+        // 전체를 스크롤 가능하게 만듦
+        return Scrollbar(
+          controller: scrollController,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              (MediaQuery.of(context).size.width - 328.w) / 2,
+              0,
+              (MediaQuery.of(context).size.width - 328.w) / 2,
+              0,
+            ),
+            controller: scrollController,
+            child: Container(
+              //width: 338.w,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListView.builder(
+                    padding: EdgeInsets.only(
+                      bottom: 10.h,
+                    ), // ListView의 기본 패딩 제거
+                    physics:
+                        const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
+                    shrinkWrap: true,
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        height: 80.h,
+                        //padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Color(0xffD0D0D0),
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    suggTag(),
+                                    Text(
+                                      products[index].bankName!,
+                                      style: TextStyle(
+                                        fontSize: 10.sp,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xff6B7280),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  products[index].productName!,
+                                  style: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff374151),
+                                  ),
+                                ),
+                                Text(
+                                  '${products[index].term}개월 · 금리 최대 ${products[index].monthlyAmount}(월)',
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xff6B7280),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '투입급액: ${NumberFormat.decimalPattern().format(products[index].depositAmount)}원',
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xff6B7280),
+                                  ),
+                                ),
+                                Text(
+                                  '만기급액: ${NumberFormat.decimalPattern().format(products[index].maturityAmount)}원',
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff6B7280),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    ),
+    1: FutureBuilder<List<ProductModel>>(
       future: _productsFuture,
       builder: (context, snapshot) {
         // 1. 로딩 중 상태 처리
@@ -102,9 +232,9 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
           controller: scrollController,
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
-              (MediaQuery.of(context).size.width - 348.w) / 2,
+              (MediaQuery.of(context).size.width - 328.w) / 2,
               0,
-              (MediaQuery.of(context).size.width - 348.w) / 2,
+              (MediaQuery.of(context).size.width - 328.w) / 2,
               0,
             ),
             controller: scrollController,
@@ -114,7 +244,9 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ListView.builder(
-                    padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
+                    padding: EdgeInsets.only(
+                      bottom: 10.h,
+                    ), // ListView의 기본 패딩 제거
                     physics:
                         const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
                     shrinkWrap: true,
@@ -123,7 +255,16 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                       // 재사용 가능한 메소드 호출
                       return Container(
                         width: 338.w,
-                        margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+                        height: 80.h,
+                        //margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Color(0xffD0D0D0),
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
 
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -155,7 +296,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                 Text(
                                   '1~${products[index].bestTerm}개월 · 금리 최대 ${products[index].bestRate}(연)',
                                   style: TextStyle(
-                                    fontSize: 10.sp,
+                                    fontSize: 11.sp,
                                     fontWeight: FontWeight.w400,
                                     color: Color(0xff6B7280),
                                   ),
@@ -188,7 +329,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
         );
       },
     ),
-    1: FutureBuilder<(List<BondProductModel>, List<BondProductModel>)>(
+    2: FutureBuilder<(List<BondProductModel>, List<BondProductModel>)>(
       future: _bondsFuture,
       builder: (context, snapshot) {
         // 1. 로딩 중 상태 처리
@@ -219,9 +360,9 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
           controller: scrollController,
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
-              (MediaQuery.of(context).size.width - 348.w) / 2,
+              0, //(MediaQuery.of(context).size.width - 328.w) / 2,
               0,
-              (MediaQuery.of(context).size.width - 348.w) / 2,
+              0, //(MediaQuery.of(context).size.width - 328.w) / 2,
               0,
             ),
             controller: scrollController,
@@ -231,7 +372,12 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                 Container(
                   width: MediaQuery.of(context).size.width - 20.w,
                   padding: EdgeInsets.fromLTRB(0, 0, 0, 5.h),
-                  margin: EdgeInsets.only(top: 25.h, bottom: 5.h),
+                  margin: EdgeInsets.fromLTRB(
+                    (MediaQuery.of(context).size.width - 328.w) / 2,
+                    25.h,
+                    (MediaQuery.of(context).size.width - 328.w) / 2,
+                    5.h,
+                  ),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(color: Color(0xffD0D0D0), width: 1),
@@ -256,7 +402,12 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                   ),
                 ),
                 ListView.builder(
-                  padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
+                  padding: EdgeInsets.fromLTRB(
+                    (MediaQuery.of(context).size.width - 328.w) / 2,
+                    0,
+                    (MediaQuery.of(context).size.width - 328.w) / 2,
+                    10.h,
+                  ), // ListView의 기본 패딩 제거
                   physics:
                       const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
                   shrinkWrap: true,
@@ -308,10 +459,22 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     );
                   },
                 ),
+
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 20.h,
+                  color: Color(0xffF1F4F6),
+                ),
+
                 Container(
                   width: MediaQuery.of(context).size.width - 20.w,
                   padding: EdgeInsets.fromLTRB(0, 0, 0, 5.h),
-                  margin: EdgeInsets.only(top: 25.h, bottom: 5.h),
+                  margin: EdgeInsets.fromLTRB(
+                    (MediaQuery.of(context).size.width - 328.w) / 2,
+                    25.h,
+                    (MediaQuery.of(context).size.width - 328.w) / 2,
+                    5.h,
+                  ),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(color: Color(0xffD0D0D0), width: 1),
@@ -336,7 +499,12 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                   ),
                 ),
                 ListView.builder(
-                  padding: EdgeInsets.zero, // ListView의 기본 패딩 제거
+                  padding: EdgeInsets.fromLTRB(
+                    (MediaQuery.of(context).size.width - 328.w) / 2,
+                    0,
+                    (MediaQuery.of(context).size.width - 328.w) / 2,
+                    10.h,
+                  ), // ListView의 기본 패딩 제거
                   physics:
                       const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
                   shrinkWrap: true,
@@ -394,8 +562,8 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
         );
       },
     ),
-    2: notReady(),
-    3: Container(),
+    3: notReady(),
+    4: Container(),
   };
 
   @override
@@ -567,7 +735,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
               FittedBox(
                 fit: BoxFit.fill,
                 child: Container(
-                  width: 338.w,
+                  //width: 338.w,
                   height: 47.h,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -579,7 +747,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             if (authState.user == null) {
                               setState(() {
                                 tap_idx = -1;
-                                idx = 3;
+                                idx = 4;
                               });
 
                               Timer(Duration(milliseconds: 200), () {
@@ -593,13 +761,14 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                 idx = 0;
                                 hintValue = '';
                                 _controller.text = '';
-                                _productsFuture = apiRepo.fetchDepositList();
+                                _recommendationFuture = apiRepo
+                                    .fetchRecommendation(authState.user!);
                               });
                             }
                           }
                         },
                         child: Container(
-                          width: 77.w,
+                          width: 60.w,
                           height: 36.h,
                           margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
                           alignment: Alignment.center,
@@ -613,7 +782,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             borderRadius: BorderRadius.circular(13),
                           ),
                           child: Text(
-                            '정기예금',
+                            '추천',
                             style: TextStyle(
                               color: Color(
                                 selectConfig[tap_idx == 0]!["FONT_COLOR"],
@@ -631,7 +800,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             if (authState.user == null) {
                               setState(() {
                                 tap_idx = -1;
-                                idx = 3;
+                                idx = 4;
                               });
 
                               Timer(Duration(milliseconds: 200), () {
@@ -642,16 +811,16 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             } else {
                               setState(() {
                                 tap_idx = 1;
-                                idx = 0;
+                                idx = 1;
                                 hintValue = '';
                                 _controller.text = '';
-                                _productsFuture = apiRepo.fetchSavingsList();
+                                _productsFuture = apiRepo.fetchDepositList();
                               });
                             }
                           }
                         },
                         child: Container(
-                          width: 77.w,
+                          width: 60.w,
                           height: 36.h,
                           margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
                           alignment: Alignment.center,
@@ -665,7 +834,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             borderRadius: BorderRadius.circular(13),
                           ),
                           child: Text(
-                            '적금',
+                            '정기예금',
                             style: TextStyle(
                               color: Color(
                                 selectConfig[tap_idx == 1]!["FONT_COLOR"],
@@ -683,7 +852,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             if (authState.user == null) {
                               setState(() {
                                 tap_idx = -1;
-                                idx = 3;
+                                idx = 4;
                               });
 
                               Timer(Duration(milliseconds: 200), () {
@@ -697,13 +866,13 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                 idx = 1;
                                 hintValue = '';
                                 _controller.text = '';
-                                _bondsFuture = apiRepo.fetchBondsList();
+                                _productsFuture = apiRepo.fetchSavingsList();
                               });
                             }
                           }
                         },
                         child: Container(
-                          width: 77.w,
+                          width: 60.w,
                           height: 36.h,
                           margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
                           alignment: Alignment.center,
@@ -717,7 +886,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             borderRadius: BorderRadius.circular(13),
                           ),
                           child: Text(
-                            '채권',
+                            '적금',
                             style: TextStyle(
                               color: Color(
                                 selectConfig[tap_idx == 2]!["FONT_COLOR"],
@@ -735,7 +904,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             if (authState.user == null) {
                               setState(() {
                                 tap_idx = -1;
-                                idx = 3;
+                                idx = 4;
                               });
 
                               Timer(Duration(milliseconds: 200), () {
@@ -749,15 +918,15 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                 idx = 2;
                                 hintValue = '';
                                 _controller.text = '';
-                                //_productsFuture = apiRepo.fetchDepositList();
+                                _bondsFuture = apiRepo.fetchBondsList();
                               });
                             }
                           }
                         },
                         child: Container(
-                          width: 77.w,
+                          width: 60.w,
                           height: 36.h,
-                          margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: Color(selectConfig[tap_idx == 3]!["COLOR"]),
@@ -769,10 +938,62 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             borderRadius: BorderRadius.circular(13),
                           ),
                           child: Text(
-                            'ETF',
+                            '채권',
                             style: TextStyle(
                               color: Color(
                                 selectConfig[tap_idx == 3]!["FONT_COLOR"],
+                              ),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () async {
+                          if (tap_idx != 4) {
+                            if (authState.user == null) {
+                              setState(() {
+                                tap_idx = -1;
+                                idx = 4;
+                              });
+
+                              Timer(Duration(milliseconds: 200), () {
+                                GoRouter.of(
+                                  context,
+                                ).push('/product_list/product_login_popup');
+                              });
+                            } else {
+                              setState(() {
+                                tap_idx = 4;
+                                idx = 3;
+                                hintValue = '';
+                                _controller.text = '';
+                                //_productsFuture = apiRepo.fetchDepositList();
+                              });
+                            }
+                          }
+                        },
+                        child: Container(
+                          width: 60.w,
+                          height: 36.h,
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Color(selectConfig[tap_idx == 4]!["COLOR"]),
+                            border: Border.all(
+                              color: Color(
+                                selectConfig[tap_idx == 4]!["STROKE_COLOR"],
+                              ),
+                            ),
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: Text(
+                            'ETF',
+                            style: TextStyle(
+                              color: Color(
+                                selectConfig[tap_idx == 4]!["FONT_COLOR"],
                               ),
                               fontSize: 13.sp,
                               fontWeight: FontWeight.w600,
@@ -787,7 +1008,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
               Expanded(
                 child: Container(
-                  width: MediaQuery.of(context).size.width - 20.w,
+                  //width: MediaQuery.of(context).size.width - 20.w,
                   child: _products[idx],
                 ),
               ),

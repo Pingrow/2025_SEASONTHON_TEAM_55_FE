@@ -9,7 +9,8 @@ import 'package:pin_grow/pages/main/home_page.dart';
 import 'package:pin_grow/pages/main/login_popup.dart';
 import 'package:pin_grow/pages/main/policy_list.dart';
 import 'package:pin_grow/pages/main/product_list.dart';
-import 'package:pin_grow/pages/main/profile.dart';
+import 'package:pin_grow/pages/main/reward.dart';
+import 'package:pin_grow/pages/main/special_products.dart';
 import 'package:pin_grow/pages/onboarding/loading_emotion.dart';
 import 'package:pin_grow/pages/onboarding/loading_policy.dart';
 import 'package:pin_grow/pages/onboarding/post_test_result.dart';
@@ -191,6 +192,25 @@ class MainApp extends HookConsumerWidget {
         name: 'chat_bot',
         pageBuilder: (context, state) =>
             DialogPage(builder: (_) => ChatBotPage()),
+      ),
+
+      GoRoute(
+        path: "/reward",
+        name: 'reward',
+        builder: (context, state) => RewardPage(),
+      ),
+
+      GoRoute(
+        path: "/special",
+        name: 'special',
+        builder: (context, state) => SpecialProduct(),
+      ),
+
+      GoRoute(
+        path: "/special_web_view",
+        name: 'special_web_view',
+        builder: (context, state) =>
+            SpecialProductWebView(section: state.extra.toString()),
       ),
     ],
   );
