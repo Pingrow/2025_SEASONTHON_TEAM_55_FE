@@ -31,7 +31,8 @@ Future<void> moveAfterLogin(
       ref.invalidate(researchResultStep5Provider);
       GoRouter.of(context).go('/step1');
     } else {
-      GoRouter.of(context).go(path);
+      GoRouter.of(context).go('/home');
+      GoRouter.of(context).push(path);
     }
   } else {
     print('[DEBUG:Login] tokenInfo\n${UserApi.instance.accessTokenInfo()}');

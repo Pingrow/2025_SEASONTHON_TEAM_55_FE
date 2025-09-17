@@ -59,7 +59,7 @@ class _SpecialProductState extends ConsumerState<SpecialProduct> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        GoRouter.of(context).go('/home');
+                        GoRouter.of(context).pop();
                       },
                       child: Padding(
                         padding: EdgeInsetsGeometry.fromLTRB(
@@ -126,7 +126,7 @@ class _SpecialProductState extends ConsumerState<SpecialProduct> {
 
               GestureDetector(
                 onTap: () {
-                  GoRouter.of(context).go(
+                  GoRouter.of(context).push(
                     '/special_web_view',
                     /**extra: 'savingsTitle'*/
                   );
@@ -187,7 +187,7 @@ class _SpecialProductState extends ConsumerState<SpecialProduct> {
               ),
               GestureDetector(
                 onTap: () {
-                  GoRouter.of(context).go(
+                  GoRouter.of(context).push(
                     '/special_web_view',
                     extra: 'installmentSavingsListArea1',
                     /** 'depositTitle'*/
@@ -249,7 +249,7 @@ class _SpecialProductState extends ConsumerState<SpecialProduct> {
               ),
               GestureDetector(
                 onTap: () {
-                  GoRouter.of(context).go(
+                  GoRouter.of(context).push(
                     '/special_web_view',
                     extra: 'depositListArea1',
                     /** 'target-section'*/
@@ -391,7 +391,7 @@ class _SpecialProductWebViewState extends ConsumerState<SpecialProductWebView> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        GoRouter.of(context).go('/special');
+                        GoRouter.of(context).pop();
                       },
                       child: Padding(
                         padding: EdgeInsetsGeometry.fromLTRB(

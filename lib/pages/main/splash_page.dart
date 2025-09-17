@@ -45,7 +45,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
     // Debugging 용 데이터 삭제 + 로그아웃 코드
     //SecureStorageManager.deleteAllData();
-    //await ref.read(authViewModelProvider.notifier).logout();
+    await ref.read(authViewModelProvider.notifier).logout();
 
     /**
      * AuthState? authState = AuthState.fromRawJson(

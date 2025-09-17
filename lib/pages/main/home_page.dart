@@ -488,7 +488,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                           GestureDetector(
                             onTap: () {
-                              GoRouter.of(context).go('/policy_list');
+                              GoRouter.of(context).push('/policy_list');
                             },
                             child: Container(
                               alignment: Alignment.center,
@@ -628,7 +628,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   if (await AuthApi.instance.hasToken() &&
                                       authState.status ==
                                           AuthStatus.authenticated) {
-                                    GoRouter.of(context).go('/product_list');
+                                    GoRouter.of(context).push('/product_list');
                                   } else {
                                     GoRouter.of(
                                       context,
@@ -765,7 +765,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                           onTap: () async {
                             if (await AuthApi.instance.hasToken() &&
                                 authState.status == AuthStatus.authenticated) {
-                              GoRouter.of(context).go('/product_list');
+                              GoRouter.of(context).push('/product_list');
                             } else {
                               GoRouter.of(
                                 context,
@@ -1049,7 +1049,7 @@ class _HomePageState extends ConsumerState<HomePage> {
              */
               GestureDetector(
                 onTap: () {
-                  GoRouter.of(context).go('/special');
+                  GoRouter.of(context).push('/special');
                 },
                 child: Container(
                   width: 338.w,
@@ -1109,7 +1109,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               GestureDetector(
                 onTap: () {
                   if (authState.user != null) {
-                    GoRouter.of(context).go('/reward');
+                    GoRouter.of(context).push('/reward');
                   }
                 },
                 child: Container(

@@ -17,14 +17,14 @@ import 'package:pin_grow/view_model/auth_view_model.dart';
 Map<bool, Map<String, dynamic>> selectConfig = {
   true: {
     // Selected
-    "COLOR": 0x330CA361,
-    "STROKE_COLOR": 0xff0CA361,
+    "COLOR": 0xffCEEDDF,
+    //"STROKE_COLOR": 0xff0CA361,
     "FONT_COLOR": 0xff374151,
   },
   false: {
     // NOT Selected
     "COLOR": 0xffF7F7F7,
-    "STROKE_COLOR": 0xffE7E7E7,
+    //"STROKE_COLOR": 0xffE7E7E7,
     "FONT_COLOR": 0xffABABAB,
   },
 };
@@ -378,27 +378,36 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     (MediaQuery.of(context).size.width - 328.w) / 2,
                     5.h,
                   ),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xffD0D0D0), width: 1),
-                    ),
-                  ),
-                  child: RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        color: Color(0xff374151),
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      children: [
-                        const TextSpan(text: '금융채 '),
-                        const TextSpan(
-                          text: 'Top 5',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: Color(0xff374151),
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+
+                          children: [
+                            const TextSpan(text: '금융채 '),
+                            const TextSpan(
+                              text: 'Top 5',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
-                        const TextSpan(text: ' (금리순)'),
-                      ],
-                    ),
+                      ),
+                      Text(
+                        '금리순',
+                        style: TextStyle(
+                          color: Color(0xff374151),
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 ListView.builder(
@@ -415,7 +424,17 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                   itemBuilder: (context, index) {
                     // 재사용 가능한 메소드 호출
                     return Container(
-                      margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+                      width: 338.w,
+                      height: 80.h,
+                      //margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xffD0D0D0),
+                            width: 0.5,
+                          ),
+                        ),
+                      ),
 
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -434,7 +453,6 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                 ),
                               ),
                               Container(
-                                width: 220,
                                 child: Text(
                                   sortByInterest[index].isinCdNm!,
                                   style: TextStyle(
@@ -447,7 +465,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                               Text(
                                 '만기일 ${sortByInterest[index].bondExprDt} · 금리 최대 ${sortByInterest[index].bondSrfcInrt}%(연)',
                                 style: TextStyle(
-                                  fontSize: 10.sp,
+                                  fontSize: 11.sp,
                                   fontWeight: FontWeight.w400,
                                   color: Color(0xff6B7280),
                                 ),
@@ -475,29 +493,39 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     (MediaQuery.of(context).size.width - 328.w) / 2,
                     5.h,
                   ),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xffD0D0D0), width: 1),
-                    ),
-                  ),
-                  child: RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        color: Color(0xff374151),
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      children: [
-                        const TextSpan(text: '금융채 '),
-                        const TextSpan(
-                          text: 'Top 5',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: Color(0xff374151),
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w400,
+                          ),
+
+                          children: [
+                            const TextSpan(text: '금융채 '),
+                            const TextSpan(
+                              text: 'Top 5',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
-                        const TextSpan(text: ' (만기순)'),
-                      ],
-                    ),
+                      ),
+                      Text(
+                        '만기순',
+                        style: TextStyle(
+                          color: Color(0xff374151),
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+
                 ListView.builder(
                   padding: EdgeInsets.fromLTRB(
                     (MediaQuery.of(context).size.width - 328.w) / 2,
@@ -508,12 +536,21 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                   physics:
                       const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
                   shrinkWrap: true,
-                  itemCount: sortByMaturity.length,
+                  itemCount: sortByInterest.length,
                   itemBuilder: (context, index) {
                     // 재사용 가능한 메소드 호출
                     return Container(
-                      margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
-
+                      width: 338.w,
+                      height: 80.h,
+                      //margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color(0xffD0D0D0),
+                            width: 0.5,
+                          ),
+                        ),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -544,7 +581,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                               Text(
                                 '만기일 ${sortByMaturity[index].bondExprDt} · 금리 최대 ${sortByMaturity[index].bondSrfcInrt}%(연)',
                                 style: TextStyle(
-                                  fontSize: 10.sp,
+                                  fontSize: 11.sp,
                                   fontWeight: FontWeight.w400,
                                   color: Color(0xff6B7280),
                                 ),
@@ -604,7 +641,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              GoRouter.of(context).go('/home');
+                              GoRouter.of(context).pop();
                             },
                             child: Padding(
                               padding: EdgeInsetsGeometry.fromLTRB(
@@ -623,6 +660,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                         ],
                       ),
                     ),
+
                     Container(
                       width: 338.w,
                       child: Row(
@@ -650,11 +688,331 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                         ],
                       ),
                     ),
+                  ],
+                ),
+              ),
 
-                    Container(
+              FittedBox(
+                fit: BoxFit.fill,
+                child: Container(
+                  //width: 338.w,
+                  height: 47.h,
+                  margin: EdgeInsets.fromLTRB(0, 16.h, 0, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          if (tap_idx != 0) {
+                            if (authState.user == null) {
+                              setState(() {
+                                tap_idx = -1;
+                                idx = 4;
+                              });
+
+                              Timer(Duration(milliseconds: 200), () {
+                                GoRouter.of(
+                                  context,
+                                ).push('/product_list/product_login_popup');
+                              });
+                            } else {
+                              setState(() {
+                                tap_idx = 0;
+                                idx = 0;
+                                hintValue = '';
+                                _controller.text = '';
+                                _recommendationFuture = apiRepo
+                                    .fetchRecommendation(authState.user!);
+                              });
+                            }
+                          }
+                        },
+                        child: Container(
+                          width: 60.w,
+                          height: 36.h,
+                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Color(selectConfig[tap_idx == 0]!["COLOR"]),
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 2.0,
+                                color: Colors.black26,
+                                blurStyle: BlurStyle.normal,
+                                offset: Offset(0, 1.5),
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: Text(
+                            '추천',
+                            style: TextStyle(
+                              color: Color(
+                                selectConfig[tap_idx == 0]!["FONT_COLOR"],
+                              ),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () async {
+                          if (tap_idx != 1) {
+                            if (authState.user == null) {
+                              setState(() {
+                                tap_idx = -1;
+                                idx = 4;
+                              });
+
+                              Timer(Duration(milliseconds: 200), () {
+                                GoRouter.of(
+                                  context,
+                                ).push('/product_list/product_login_popup');
+                              });
+                            } else {
+                              setState(() {
+                                tap_idx = 1;
+                                idx = 1;
+                                hintValue = '';
+                                _controller.text = '';
+                                _productsFuture = apiRepo.fetchDepositList();
+                              });
+                            }
+                          }
+                        },
+                        child: Container(
+                          width: 60.w,
+                          height: 36.h,
+                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Color(selectConfig[tap_idx == 1]!["COLOR"]),
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 2.0,
+                                color: Colors.black26,
+                                blurStyle: BlurStyle.normal,
+                                offset: Offset(0, 1.5),
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: Text(
+                            '정기예금',
+                            style: TextStyle(
+                              color: Color(
+                                selectConfig[tap_idx == 1]!["FONT_COLOR"],
+                              ),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () async {
+                          if (tap_idx != 2) {
+                            if (authState.user == null) {
+                              setState(() {
+                                tap_idx = -1;
+                                idx = 4;
+                              });
+
+                              Timer(Duration(milliseconds: 200), () {
+                                GoRouter.of(
+                                  context,
+                                ).push('/product_list/product_login_popup');
+                              });
+                            } else {
+                              setState(() {
+                                tap_idx = 2;
+                                idx = 1;
+                                hintValue = '';
+                                _controller.text = '';
+                                _productsFuture = apiRepo.fetchSavingsList();
+                              });
+                            }
+                          }
+                        },
+                        child: Container(
+                          width: 60.w,
+                          height: 36.h,
+                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Color(selectConfig[tap_idx == 2]!["COLOR"]),
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 2.0,
+                                color: Colors.black26,
+                                blurStyle: BlurStyle.normal,
+                                offset: Offset(0, 1.5),
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: Text(
+                            '적금',
+                            style: TextStyle(
+                              color: Color(
+                                selectConfig[tap_idx == 2]!["FONT_COLOR"],
+                              ),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () async {
+                          if (tap_idx != 3) {
+                            if (authState.user == null) {
+                              setState(() {
+                                tap_idx = -1;
+                                idx = 4;
+                              });
+
+                              Timer(Duration(milliseconds: 200), () {
+                                GoRouter.of(
+                                  context,
+                                ).push('/product_list/product_login_popup');
+                              });
+                            } else {
+                              setState(() {
+                                tap_idx = 3;
+                                idx = 2;
+                                hintValue = '';
+                                _controller.text = '';
+                                _bondsFuture = apiRepo.fetchBondsList();
+                              });
+                            }
+                          }
+                        },
+                        child: Container(
+                          width: 60.w,
+                          height: 36.h,
+                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Color(selectConfig[tap_idx == 3]!["COLOR"]),
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 2.0,
+                                color: Colors.black26,
+                                blurStyle: BlurStyle.normal,
+                                offset: Offset(0, 1.5),
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: Text(
+                            '채권',
+                            style: TextStyle(
+                              color: Color(
+                                selectConfig[tap_idx == 3]!["FONT_COLOR"],
+                              ),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: () async {
+                          if (tap_idx != 4) {
+                            if (authState.user == null) {
+                              setState(() {
+                                tap_idx = -1;
+                                idx = 4;
+                              });
+
+                              Timer(Duration(milliseconds: 200), () {
+                                GoRouter.of(
+                                  context,
+                                ).push('/product_list/product_login_popup');
+                              });
+                            } else {
+                              setState(() {
+                                tap_idx = 4;
+                                idx = 3;
+                                hintValue = '';
+                                _controller.text = '';
+                                //_productsFuture = apiRepo.fetchDepositList();
+                              });
+                            }
+                          }
+                        },
+                        child: Container(
+                          width: 60.w,
+                          height: 36.h,
+                          margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Color(selectConfig[tap_idx == 4]!["COLOR"]),
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 2.0,
+                                color: Colors.black26,
+                                blurStyle: BlurStyle.normal,
+                                offset: Offset(0, 1.5),
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: Text(
+                            'ETF',
+                            style: TextStyle(
+                              color: Color(
+                                selectConfig[tap_idx == 4]!["FONT_COLOR"],
+                              ),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              tap_idx == 0
+                  ? Container(
                       width: 338.w,
                       height: 47.h,
-                      margin: EdgeInsets.fromLTRB(0, 12.h, 0, 6.h),
+                      margin: EdgeInsets.fromLTRB(0, 6.h, 0, 6.h),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Color(0xffFCF7E2),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 2.0,
+                            color: Colors.black26,
+                            blurStyle: BlurStyle.normal,
+                            offset: Offset(0, 1.5),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        '현재 목표 금액: ${NumberFormat.decimalPattern().format(authState.user?.goal_money)}원',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xff505561),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      width: 338.w,
+                      height: 47.h,
+                      margin: EdgeInsets.fromLTRB(0, 6.h, 0, 6.h),
                       child: Form(
                         key: _globalKey,
                         child: TextFormField(
@@ -668,7 +1026,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                             ),
 
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(32),
+                              borderRadius: BorderRadius.circular(20),
                               borderSide: BorderSide.none,
                             ),
 
@@ -728,283 +1086,6 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              FittedBox(
-                fit: BoxFit.fill,
-                child: Container(
-                  //width: 338.w,
-                  height: 47.h,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: () async {
-                          if (tap_idx != 0) {
-                            if (authState.user == null) {
-                              setState(() {
-                                tap_idx = -1;
-                                idx = 4;
-                              });
-
-                              Timer(Duration(milliseconds: 200), () {
-                                GoRouter.of(
-                                  context,
-                                ).push('/product_list/product_login_popup');
-                              });
-                            } else {
-                              setState(() {
-                                tap_idx = 0;
-                                idx = 0;
-                                hintValue = '';
-                                _controller.text = '';
-                                _recommendationFuture = apiRepo
-                                    .fetchRecommendation(authState.user!);
-                              });
-                            }
-                          }
-                        },
-                        child: Container(
-                          width: 60.w,
-                          height: 36.h,
-                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Color(selectConfig[tap_idx == 0]!["COLOR"]),
-                            border: Border.all(
-                              color: Color(
-                                selectConfig[tap_idx == 0]!["STROKE_COLOR"],
-                              ),
-                            ),
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: Text(
-                            '추천',
-                            style: TextStyle(
-                              color: Color(
-                                selectConfig[tap_idx == 0]!["FONT_COLOR"],
-                              ),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      GestureDetector(
-                        onTap: () async {
-                          if (tap_idx != 1) {
-                            if (authState.user == null) {
-                              setState(() {
-                                tap_idx = -1;
-                                idx = 4;
-                              });
-
-                              Timer(Duration(milliseconds: 200), () {
-                                GoRouter.of(
-                                  context,
-                                ).push('/product_list/product_login_popup');
-                              });
-                            } else {
-                              setState(() {
-                                tap_idx = 1;
-                                idx = 1;
-                                hintValue = '';
-                                _controller.text = '';
-                                _productsFuture = apiRepo.fetchDepositList();
-                              });
-                            }
-                          }
-                        },
-                        child: Container(
-                          width: 60.w,
-                          height: 36.h,
-                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Color(selectConfig[tap_idx == 1]!["COLOR"]),
-                            border: Border.all(
-                              color: Color(
-                                selectConfig[tap_idx == 1]!["STROKE_COLOR"],
-                              ),
-                            ),
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: Text(
-                            '정기예금',
-                            style: TextStyle(
-                              color: Color(
-                                selectConfig[tap_idx == 1]!["FONT_COLOR"],
-                              ),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      GestureDetector(
-                        onTap: () async {
-                          if (tap_idx != 2) {
-                            if (authState.user == null) {
-                              setState(() {
-                                tap_idx = -1;
-                                idx = 4;
-                              });
-
-                              Timer(Duration(milliseconds: 200), () {
-                                GoRouter.of(
-                                  context,
-                                ).push('/product_list/product_login_popup');
-                              });
-                            } else {
-                              setState(() {
-                                tap_idx = 2;
-                                idx = 1;
-                                hintValue = '';
-                                _controller.text = '';
-                                _productsFuture = apiRepo.fetchSavingsList();
-                              });
-                            }
-                          }
-                        },
-                        child: Container(
-                          width: 60.w,
-                          height: 36.h,
-                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Color(selectConfig[tap_idx == 2]!["COLOR"]),
-                            border: Border.all(
-                              color: Color(
-                                selectConfig[tap_idx == 2]!["STROKE_COLOR"],
-                              ),
-                            ),
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: Text(
-                            '적금',
-                            style: TextStyle(
-                              color: Color(
-                                selectConfig[tap_idx == 2]!["FONT_COLOR"],
-                              ),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      GestureDetector(
-                        onTap: () async {
-                          if (tap_idx != 3) {
-                            if (authState.user == null) {
-                              setState(() {
-                                tap_idx = -1;
-                                idx = 4;
-                              });
-
-                              Timer(Duration(milliseconds: 200), () {
-                                GoRouter.of(
-                                  context,
-                                ).push('/product_list/product_login_popup');
-                              });
-                            } else {
-                              setState(() {
-                                tap_idx = 3;
-                                idx = 2;
-                                hintValue = '';
-                                _controller.text = '';
-                                _bondsFuture = apiRepo.fetchBondsList();
-                              });
-                            }
-                          }
-                        },
-                        child: Container(
-                          width: 60.w,
-                          height: 36.h,
-                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Color(selectConfig[tap_idx == 3]!["COLOR"]),
-                            border: Border.all(
-                              color: Color(
-                                selectConfig[tap_idx == 3]!["STROKE_COLOR"],
-                              ),
-                            ),
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: Text(
-                            '채권',
-                            style: TextStyle(
-                              color: Color(
-                                selectConfig[tap_idx == 3]!["FONT_COLOR"],
-                              ),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      GestureDetector(
-                        onTap: () async {
-                          if (tap_idx != 4) {
-                            if (authState.user == null) {
-                              setState(() {
-                                tap_idx = -1;
-                                idx = 4;
-                              });
-
-                              Timer(Duration(milliseconds: 200), () {
-                                GoRouter.of(
-                                  context,
-                                ).push('/product_list/product_login_popup');
-                              });
-                            } else {
-                              setState(() {
-                                tap_idx = 4;
-                                idx = 3;
-                                hintValue = '';
-                                _controller.text = '';
-                                //_productsFuture = apiRepo.fetchDepositList();
-                              });
-                            }
-                          }
-                        },
-                        child: Container(
-                          width: 60.w,
-                          height: 36.h,
-                          margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Color(selectConfig[tap_idx == 4]!["COLOR"]),
-                            border: Border.all(
-                              color: Color(
-                                selectConfig[tap_idx == 4]!["STROKE_COLOR"],
-                              ),
-                            ),
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: Text(
-                            'ETF',
-                            style: TextStyle(
-                              color: Color(
-                                selectConfig[tap_idx == 4]!["FONT_COLOR"],
-                              ),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
 
               Expanded(
                 child: Container(

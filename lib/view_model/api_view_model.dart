@@ -115,8 +115,8 @@ class PolicyViewModel extends _$PolicyViewModel {
 
     print('$region $area');
 
-    final List<dynamic> policyListJson = await _repository.fetchPolicyDummy(
-      //await _repository.fetchPolicy(
+    final List<dynamic> policyListJson = //await _repository.fetchPolicyDummy(
+    await _repository.fetchPolicy(
       'policies',
       region,
       area,
@@ -134,8 +134,8 @@ class PolicyViewModel extends _$PolicyViewModel {
     final region = authState.user?.region?.split('-')[2] ?? 'NODATA';
     final area = authState.user?.region?.split('-')[3] ?? '???';
 
-    final List<dynamic> policyListJson = await _repository.fetchPolicyDummy(
-      //await _repository.fetchPolicy(
+    final List<dynamic> policyListJson = //await _repository.fetchPolicyDummy(
+    await _repository.fetchPolicy(
       'top10',
       region,
       area,

@@ -1221,7 +1221,7 @@ class _RewardPageState extends ConsumerState<RewardPage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        GoRouter.of(context).go('/home');
+                        GoRouter.of(context).pop();
                       },
                       child: Padding(
                         padding: EdgeInsetsGeometry.fromLTRB(

@@ -65,12 +65,24 @@ class AuthRepository {
     }
 
     final url = Uri.http('52.64.10.16:8080', '/api/v1/auth/kakao');
-    print("[DEBUG] KAKAO Access Token : ${token!.accessToken}");
+    print("[DEBUG] KAKAO Access Token : ${token.accessToken}");
+    final header = {
+      'accept': 'application/json',
+      'Content-Type': 'application/json',
+    };
     final body = {'code': token.accessToken};
-    final response = await http.post(url, body: body);
+    final response = await http.post(
+      url,
+      headers: header,
+      body: jsonEncode(body),
+    );
+
+    print(response.statusCode);
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> decodedJson = jsonDecode(response.body);
+
+      print('[DEBUG:accesstoken] ${decodedJson['access_token']}');
 
       SecureStorageManager.saveData(
         'ACCESS_TOKEN',

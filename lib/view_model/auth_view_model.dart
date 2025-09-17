@@ -23,6 +23,7 @@ class AuthViewModel extends _$AuthViewModel {
       await _repository.loginWithKakao();
       await _repository.login();
     } catch (e) {
+      print('[ERROR:Login] $e');
       state = state.copyWith(
         status: AuthStatus.error,
         errorMessage: e.toString(),

@@ -849,7 +849,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              GoRouter.of(context).go('/home');
+                              GoRouter.of(context).pop();
                             },
                             child: Padding(
                               padding: EdgeInsetsGeometry.fromLTRB(

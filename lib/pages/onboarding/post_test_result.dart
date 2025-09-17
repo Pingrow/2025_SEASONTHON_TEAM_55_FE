@@ -326,7 +326,7 @@ class _PostTestResultPageState extends ConsumerState<PostTestResultPage> {
 
           GestureDetector(
             onTap: () {
-              GoRouter.of(context).go(path ?? '/home');
+              GoRouter.of(context).push(path ?? '/home');
             },
             child: Container(
               width: 347.w,

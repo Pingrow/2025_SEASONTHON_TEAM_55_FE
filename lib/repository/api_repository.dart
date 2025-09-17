@@ -25,7 +25,7 @@ class ApiRepository {
     String? region,
     String? area,
   ) async {
-    final token = await SecureStorageManager.readData('ACCESS_TOKEN');
+    //final token = await SecureStorageManager.readData('ACCESS_TOKEN');
 
     final params = type != 'top10'
         ? {
@@ -34,7 +34,7 @@ class ApiRepository {
           }
         : null;
 
-    final url = Uri.http('16.176.49.213:5001', '/youth-policy/$type', params);
+    final url = Uri.http('3.107.105.153:5001', '/youth-policy/$type', params);
     final response = await http.get(
       url,
       headers: {'accept': 'application/json'},
