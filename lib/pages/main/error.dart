@@ -94,47 +94,41 @@ Widget noProduct() {
 }
 
 Widget error() {
-  return Expanded(
-    child: FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Image.asset(
-            'assets/icons/no_policy.png',
-            width: 203.r,
-            height: 203.r,
-          ),
+  return FittedBox(
+    fit: BoxFit.scaleDown,
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Image.asset('assets/icons/no_policy.png', width: 203.r, height: 203.r),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '자료를 불러오다 문제가 발생했어요.',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xff374151),
-                ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '자료를 불러오다 문제가 발생했어요.',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w400,
+                color: Color(0xff374151),
               ),
-              Image.asset(
-                'assets/icons/crying_face.png',
-                width: 21.r,
-                height: 21.r,
-              ),
-            ],
-          ),
-          Text(
-            '문제가 계속 발생한다면 문의를 남겨주세요.',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w400,
-              color: Color(0xff374151),
             ),
+            Image.asset(
+              'assets/icons/crying_face.png',
+              width: 21.r,
+              height: 21.r,
+            ),
+          ],
+        ),
+        Text(
+          '문제가 계속 발생한다면 문의를 남겨주세요.',
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w400,
+            color: Color(0xff374151),
           ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }

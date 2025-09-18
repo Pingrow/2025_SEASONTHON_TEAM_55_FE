@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pin_grow/model/user_model.dart';
+import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
 class LoadingEmotionPage extends StatefulHookConsumerWidget {
@@ -30,7 +31,9 @@ class _LoadingEmotionPageState extends ConsumerState<LoadingEmotionPage> {
     Future.delayed(Duration(milliseconds: 3000), () async {
       _timer?.cancel();
 
-      RiskLevel type = RiskLevel.conservative;
+      RiskLevel type = await ref
+          .read(surveyViewModelProvider.notifier)
+          .getRiskLevel();
 
       await ref.read(authViewModelProvider.notifier).modifyUserType(type);
       if (mounted) {

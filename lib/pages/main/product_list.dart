@@ -12,6 +12,7 @@ import 'package:pin_grow/model/recommend_product_model.dart';
 import 'package:pin_grow/pages/main/tags.dart';
 import 'package:pin_grow/pages/main/error.dart';
 import 'package:pin_grow/view_model/api_view_model.dart';
+import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
 Map<bool, Map<String, dynamic>> selectConfig = {
@@ -58,7 +59,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
     if (authState.user == null) {
       tap_idx = -1;
-      idx = 3;
+      idx = 4;
 
       Timer(Duration(milliseconds: 200), () {
         GoRouter.of(context).push('/product_list/product_login_popup');
@@ -81,6 +82,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
         // 2. 에러 발생 상태 처리
         if (snapshot.hasError) {
+          print(snapshot.error);
           return error();
         }
 
@@ -120,8 +122,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     itemCount: products.length,
                     itemBuilder: (context, index) {
                       return Container(
-                        height: 80.h,
-                        //padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
+                        padding: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
                         decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
@@ -153,7 +154,10 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                   ],
                                 ),
                                 Text(
-                                  products[index].productName!,
+                                  products[index].productName!.replaceAll(
+                                    '\n',
+                                    ' ',
+                                  ),
                                   style: TextStyle(
                                     fontSize: 20.sp,
                                     fontWeight: FontWeight.bold,
@@ -255,8 +259,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                       // 재사용 가능한 메소드 호출
                       return Container(
                         width: 338.w,
-                        height: 80.h,
-                        //margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+                        padding: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
                         decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
@@ -285,7 +288,10 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                 Container(
                                   width: 220,
                                   child: Text(
-                                    products[index].productName!,
+                                    products[index].productName!.replaceAll(
+                                      '\n',
+                                      ' ',
+                                    ),
                                     style: TextStyle(
                                       fontSize: 20.sp,
                                       fontWeight: FontWeight.bold,
@@ -379,35 +385,22 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     5.h,
                   ),
 
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      RichText(
-                        text: TextSpan(
-                          style: TextStyle(
-                            color: Color(0xff374151),
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-
-                          children: [
-                            const TextSpan(text: '금융채 '),
-                            const TextSpan(
-                              text: 'Top 5',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        color: Color(0xff374151),
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w400,
                       ),
-                      Text(
-                        '금리순',
-                        style: TextStyle(
-                          color: Color(0xff374151),
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
+                      children: [
+                        const TextSpan(text: '금융채 '),
+                        const TextSpan(
+                          text: 'Top 5',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                      ),
-                    ],
+                        const TextSpan(text: ' (금리순)'),
+                      ],
+                    ),
                   ),
                 ),
                 ListView.builder(
@@ -493,39 +486,29 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     (MediaQuery.of(context).size.width - 328.w) / 2,
                     5.h,
                   ),
-
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      RichText(
-                        text: TextSpan(
-                          style: TextStyle(
-                            color: Color(0xff374151),
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w400,
-                          ),
-
-                          children: [
-                            const TextSpan(text: '금융채 '),
-                            const TextSpan(
-                              text: 'Top 5',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xffD0D0D0), width: 1),
+                    ),
+                  ),
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        color: Color(0xff374151),
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w400,
                       ),
-                      Text(
-                        '만기순',
-                        style: TextStyle(
-                          color: Color(0xff374151),
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
+                      children: [
+                        const TextSpan(text: '금융채 '),
+                        const TextSpan(
+                          text: 'Top 5',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                      ),
-                    ],
+                        const TextSpan(text: ' (만기순)'),
+                      ],
+                    ),
                   ),
                 ),
-
                 ListView.builder(
                   padding: EdgeInsets.fromLTRB(
                     (MediaQuery.of(context).size.width - 328.w) / 2,
@@ -536,21 +519,12 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                   physics:
                       const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
                   shrinkWrap: true,
-                  itemCount: sortByInterest.length,
+                  itemCount: sortByMaturity.length,
                   itemBuilder: (context, index) {
                     // 재사용 가능한 메소드 호출
                     return Container(
-                      width: 338.w,
-                      height: 80.h,
-                      //margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Color(0xffD0D0D0),
-                            width: 0.5,
-                          ),
-                        ),
-                      ),
+                      margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -581,7 +555,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                               Text(
                                 '만기일 ${sortByMaturity[index].bondExprDt} · 금리 최대 ${sortByMaturity[index].bondSrfcInrt}%(연)',
                                 style: TextStyle(
-                                  fontSize: 11.sp,
+                                  fontSize: 10.sp,
                                   fontWeight: FontWeight.w400,
                                   color: Color(0xff6B7280),
                                 ),
@@ -1049,10 +1023,12 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                               ),
                               child: GestureDetector(
                                 onTap: () {
-                                  if (authState.user == null) {
+                                  if (authState.status !=
+                                          AuthStatus.authenticated &&
+                                      authState.user == null) {
                                     setState(() {
                                       tap_idx = -1;
-                                      idx = 3;
+                                      idx = 4;
                                     });
 
                                     Timer(Duration(milliseconds: 200), () {
@@ -1062,13 +1038,13 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                     });
                                   } else {
                                     setState(() {
-                                      tap_idx = 4;
-                                      idx = 0;
-                                      _productsFuture = apiRepo.fetchSearchList(
-                                        '우리은행',
-                                        /**_controller.text*/
-                                      );
+                                      tap_idx = -1;
+                                      idx = 1;
                                     });
+
+                                    _productsFuture = apiRepo.fetchSearchList(
+                                      _controller.text,
+                                    );
                                   }
                                 },
                                 child: Image.asset(

@@ -164,7 +164,7 @@ class _SpecialProductState extends ConsumerState<SpecialProduct> {
                             ),
                           ),
                           Text(
-                            '이자 높은 적rma 상품',
+                            '이자 높은 적금 상품',
                             style: TextStyle(
                               fontSize: 20.sp,
                               fontWeight: FontWeight.bold,
@@ -290,7 +290,7 @@ class _SpecialProductState extends ConsumerState<SpecialProduct> {
                           Text(
                             '세금 덜 내는 방법',
                             style: TextStyle(
-                              fontSize: 17.sp,
+                              fontSize: 20.sp,
                               fontWeight: FontWeight.bold,
                               color: Color(0xff374151),
                             ),

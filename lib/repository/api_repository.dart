@@ -74,20 +74,16 @@ class ApiRepository {
     }
   }
 
-  // productType은 saving, deposit, search
+  // productType은 savings, deposits, search
   Future<List<dynamic>> fetchProduct(
     String productType,
     String? keyword,
   ) async {
-    if (productType == 'search' && keyword == null) {
-      return fetchProductDummy(productType, keyword);
-    }
-
     final token = SecureStorageManager.readData('ACCESS_TOKEN');
     final params = keyword != null ? {"keyword": keyword} : null;
     final url = Uri.http(
       '16.176.134.222:8080',
-      '/api/financial/$productType',
+      '/api/v1/financial/$productType',
       params,
     );
     final response = await http.get(
@@ -98,8 +94,11 @@ class ApiRepository {
     if (response.statusCode == 200) {
       final Map<String, dynamic> decodedJson = json.decode(response.body);
 
-      return decodedJson['data'];
+      return productType != 'search'
+          ? decodedJson['data']
+          : decodedJson['data']['products'];
     } else {
+      print('[DEBUG:Fetch Product] ${response.statusCode}');
       throw Exception('Failed to load product($productType) list');
     }
   }
@@ -126,12 +125,13 @@ class ApiRepository {
 
   Future<List<List<dynamic>>> fetchBondProduct() async {
     final token = SecureStorageManager.readData('ACCESS_TOKEN');
-    final url = Uri.http('16.176.134.222:8080', '/api/financial/bond');
+    final url = Uri.http('16.176.134.222:8080', '/api/v1/financial/bond');
     final response = await http.get(
       url,
-      headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
+      headers: {'accept': '*/*', 'Authorization': 'Bearer $token'},
     );
 
+    print(response.statusCode);
     if (response.statusCode == 200) {
       final Map<String, dynamic> decodedJson = json.decode(response.body);
       final Map<String, dynamic> data = decodedJson['data'];
@@ -163,24 +163,32 @@ class ApiRepository {
     int? currentAmount,
     String? riskPreference,
   }) async {
-    final token = SecureStorageManager.readData('ACCESS_TOKEN');
-    //final String riskPreferenceList =
+    final token = await SecureStorageManager.readData('ACCESS_TOKEN');
+    print(token);
 
     final body = {
-      "targetAmount": targetAmount,
-      "targetMonths": targetMonths,
-      "currentAmount": currentAmount,
-      "riskPreference": riskPreference,
+      'targetAmount': targetAmount,
+      'targetMonths': targetMonths,
+      if (currentAmount != null) 'currentAmount': currentAmount,
+      if (riskPreference != null) 'riskPreference': riskPreference,
     };
-    final url = Uri.http('16.176.134.222:8080', '/api/financial/recoommend');
+    final url = Uri.http('16.176.134.222:8080', '/api/v1/financial/recommend');
+
     final response = await http.post(
       url,
-      body: body,
-      headers: {'Authorization': 'Bearer ${token}', 'accept': '*/*'},
+      body: jsonEncode(body),
+      headers: {
+        'accept': '*/*',
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
     );
 
+    print(response.statusCode);
+    print(response.body);
+
     if (response.statusCode == 200) {
-      final Map<String, dynamic> decodedJson = json.decode(response.body);
+      final Map<String, dynamic> decodedJson = jsonDecode(response.body);
 
       if (decodedJson.isEmpty || decodedJson['success'] != true) {
         throw Exception('Failed to load recommendation product list');

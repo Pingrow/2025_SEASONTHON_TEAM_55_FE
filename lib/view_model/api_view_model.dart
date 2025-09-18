@@ -92,6 +92,9 @@ class ProductViewModel extends _$ProductViewModel {
         .fetchRecommendProduct(
           targetAmount: user.goal_money!,
           targetMonths: user.goal_period!,
+          currentAmount: user.saved_money ?? 0,
+          riskPreference:
+              riskLevelKeys[RiskLevel.values.indexOf(user.type!) - 1],
         );
     final List<OptimalProductModel> products = recommendProductModel.products!;
 
