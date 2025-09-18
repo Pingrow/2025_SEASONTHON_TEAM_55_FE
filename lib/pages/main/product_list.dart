@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pin_grow/model/bond_product_model.dart';
+import 'package:pin_grow/model/etf_model.dart';
 import 'package:pin_grow/model/product_model.dart';
 import 'package:pin_grow/model/recommend_product_model.dart';
 import 'package:pin_grow/pages/main/tags.dart';
@@ -49,6 +50,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
   late Future<List<ProductModel>> _productsFuture;
   late Future<List<OptimalProductModel>> _recommendationFuture;
   late Future<(List<BondProductModel>, List<BondProductModel>)> _bondsFuture;
+  late Future<List<ETFModel>> _etfFuture;
 
   @override
   void initState() {
@@ -56,6 +58,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
     final authState = ref.read(authViewModelProvider);
     final apiRepo = ref.read(productViewModelProvider.notifier);
+    final etfApiRepo = ref.read(etfViewModelProvider.notifier);
 
     if (authState.user == null) {
       tap_idx = -1;
@@ -69,6 +72,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
     _productsFuture = apiRepo.fetchDepositList();
     _recommendationFuture = apiRepo.fetchRecommendation(authState.user!);
     _bondsFuture = apiRepo.fetchBondsList();
+    _etfFuture = etfApiRepo.fetchEtfList();
   }
 
   Map<int, Widget> get _products => {
@@ -573,8 +577,187 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
         );
       },
     ),
-    3: notReady(),
-    4: Container(),
+    3: FutureBuilder<List<ETFModel>>(
+      future: _etfFuture,
+      builder: (context, snapshot) {
+        // 1. 로딩 중 상태 처리
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        // 2. 에러 발생 상태 처리
+        if (snapshot.hasError) {
+          return error();
+        }
+
+        // 3. 데이터가 없거나 비어있는 경우 처리
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return noProduct();
+        }
+
+        // 4. 데이터 수신 성공 시 UI 구성
+        final etfs = snapshot.data!;
+
+        ScrollController scrollController = ScrollController();
+
+        // 전체를 스크롤 가능하게 만듦
+        return Scrollbar(
+          controller: scrollController,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              (MediaQuery.of(context).size.width - 328.w) / 2,
+              0,
+              (MediaQuery.of(context).size.width - 328.w) / 2,
+              0,
+            ),
+            controller: scrollController,
+            child: Container(
+              //width: 338.w,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListView.builder(
+                    padding: EdgeInsets.only(
+                      bottom: 10.h,
+                    ), // ListView의 기본 패딩 제거
+                    physics:
+                        const NeverScrollableScrollPhysics(), // 부모 스크롤과 충돌 방지
+                    shrinkWrap: true,
+                    itemCount: etfs.length,
+                    itemBuilder: (context, index) {
+                      // 재사용 가능한 메소드 호출
+                      return Container(
+                        width: 338.w,
+                        padding: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Color(0xffD0D0D0),
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  etfs[index].corpNm,
+                                  style: TextStyle(
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff6B7280),
+                                  ),
+                                ),
+                                Container(
+                                  width: 220,
+                                  child: Text(
+                                    etfs[index].itmsNm,
+                                    style: TextStyle(
+                                      fontSize: 20.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xff374151),
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '거래량: ${etfs[index].trqu} | 시총: ${etfs[index].mrktTotAmt}',
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xff6B7280),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '${etfs[index].clpr}원',
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff6B7280),
+                                  ),
+                                ),
+                                RichText(
+                                  text: TextSpan(
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xff6B7280),
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text:
+                                            (int.tryParse(etfs[index].vs) ??
+                                                    0) ==
+                                                0
+                                            ? '-'
+                                            : (int.tryParse(etfs[index].vs) ??
+                                                      0) <
+                                                  0
+                                            ? '▼'
+                                            : '▲',
+                                        style: TextStyle(
+                                          color: Color(
+                                            (int.tryParse(etfs[index].vs) ??
+                                                        0) ==
+                                                    0
+                                                ? 0xff6B7280
+                                                : (int.tryParse(
+                                                            etfs[index].vs,
+                                                          ) ??
+                                                          0) <
+                                                      0
+                                                ? 0xff6B7280
+                                                : 0xff6B7280,
+                                          ),
+                                        ),
+                                      ),
+
+                                      TextSpan(
+                                        text:
+                                            '${(int.tryParse(etfs[index].vs) ?? 0) == 0
+                                                ? '-'
+                                                : (int.tryParse(etfs[index].vs) ?? 0) < 0
+                                                ? '▼'
+                                                : '▲'}${etfs[index].vs.substring(1)}원 (${etfs[index].fltRt})',
+                                      ),
+                                      TextSpan(
+                                        text:
+                                            '${(int.tryParse(etfs[index].vs) ?? 0) == 0
+                                                ? '-'
+                                                : (int.tryParse(etfs[index].vs) ?? 0) < 0
+                                                ? '▼'
+                                                : '▲'}${etfs[index].vs.substring(1)}원 (${etfs[index].fltRt})',
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    ),
+    4: notReady(),
+    5: Container(),
   };
 
   @override

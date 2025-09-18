@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -234,6 +235,11 @@ class MainApp extends HookConsumerWidget {
       builder: (context, child) {
         return MaterialApp.router(
           routerConfig: router(),
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           theme: ThemeData(
             scaffoldBackgroundColor: Color(0xFFD9D9D9),
             bottomNavigationBarTheme: BottomNavigationBarThemeData(

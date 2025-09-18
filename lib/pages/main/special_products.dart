@@ -311,6 +311,21 @@ class _SpecialProductState extends ConsumerState<SpecialProduct> {
               ),
             ],
           ),
+
+          Positioned(
+            right: 15.w,
+            bottom: 15.h,
+            child: GestureDetector(
+              onTap: () {
+                GoRouter.of(context).push('/chat_bot');
+              },
+              child: Image.asset(
+                'assets/icons/chat_bot_icon.png',
+                width: 60.r,
+                height: 60.r,
+              ),
+            ),
+          ),
         ],
       ),
     );

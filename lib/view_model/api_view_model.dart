@@ -1,6 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pin_grow/model/bond_product_model.dart';
 import 'package:pin_grow/model/data_lists.dart';
+import 'package:pin_grow/model/etf_model.dart';
 import 'package:pin_grow/model/policy_model.dart';
 import 'package:pin_grow/model/product_model.dart';
 import 'package:pin_grow/model/recommend_product_model.dart';
@@ -191,5 +192,24 @@ class SurveyViewModel extends _$SurveyViewModel {
     );
 
     return data['riskProfile'] != null;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class EtfViewModel extends _$EtfViewModel {
+  late final ApiRepository _repository = ref.watch(apiRepositoryProvider);
+
+  @override
+  List<EtfViewModel> build() {
+    return [];
+  }
+
+  Future<List<ETFModel>> fetchEtfList() async {
+    final List<dynamic> data = await _repository.fetchEtfProduct();
+    final List<ETFModel> etfs = data
+        .map((jsonItem) => ETFModel.fromJson(jsonItem))
+        .toList();
+
+    return etfs;
   }
 }

@@ -231,6 +231,25 @@ class ApiRepository {
     }
   }
 
+  Future<List<List<dynamic>>> fetchEtfProduct() async {
+    final token = SecureStorageManager.readData('ACCESS_TOKEN');
+    final url = Uri.http('16.176.134.222:8080', '/api/etf');
+    final response = await http.get(
+      url,
+      headers: {'accept': '*/*', 'Authorization': 'Bearer $token'},
+    );
+
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> decodedJson = json.decode(response.body);
+      final Map<String, dynamic> data = decodedJson['data'];
+
+      return data['etfs'];
+    } else {
+      throw Exception('Fail to load etf product list');
+    }
+  }
+
   Future<Map<String, dynamic>> postSurveyResult({
     required int investmentMethod,
     required int lossTolerance,
