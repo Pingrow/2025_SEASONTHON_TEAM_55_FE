@@ -84,8 +84,8 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
 
   List<String> apiLsit = [];
 
-  late Future<List<PolicyModel>> _policyFuture;
-  late Future<List<PolicyModel>> _policyTop10Future;
+  late Future<List<PolicyModel?>?> _policyFuture;
+  late Future<List<PolicyModel?>?> _policyTop10Future;
 
   @override
   void initState() {
@@ -119,7 +119,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
       0: {
         TapStatus.notSelected: Container(),
         TapStatus.selected: Container(),
-        TapStatus.load: FutureBuilder<List<PolicyModel>>(
+        TapStatus.load: FutureBuilder<List<PolicyModel?>?>(
           future: _policyTop10Future,
           builder: (context, snapshot) {
             // 1. 로딩 중 상태 처리
@@ -129,11 +129,18 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
 
             // 2. 에러 발생 상태 처리
             if (snapshot.hasError) {
+              if (snapshot.data == null) {
+                return noPolicy();
+              }
+
+              print(snapshot.data);
               return error();
             }
 
             // 3. 데이터가 없거나 비어있는 경우 처리
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            if (!snapshot.hasData ||
+                snapshot.data!.isEmpty ||
+                snapshot.data == null) {
               return noPolicy();
             }
 
@@ -182,6 +189,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                     itemCount: policies.length,
                     itemBuilder: (context, index) {
                       final policy = policies[index];
+                      if (policy == null) return Container();
                       // 재사용 가능한 메소드 호출
                       return Container(
                         margin: EdgeInsets.fromLTRB(
@@ -454,7 +462,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
             },
           ),
         ),
-        TapStatus.load: FutureBuilder<List<PolicyModel>>(
+        TapStatus.load: FutureBuilder<List<PolicyModel?>?>(
           future: _policyFuture,
           builder: (context, snapshot) {
             // 1. 로딩 중 상태 처리
@@ -464,13 +472,19 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
 
             // 2. 에러 발생 상태 처리
             if (snapshot.hasError) {
+              if (snapshot.data == null) {
+                return noPolicy();
+              }
+
               print('에러: ${snapshot.error}');
               return error();
               //error();
             }
 
             // 3. 데이터가 없거나 비어있는 경우 처리
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            if (!snapshot.hasData ||
+                snapshot.data!.isEmpty ||
+                snapshot.data == null) {
               return noPolicy();
             }
 
@@ -531,6 +545,7 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                       itemCount: popularPolicies.length,
                       itemBuilder: (context, index) {
                         final policy = popularPolicies[index];
+                        if (policy == null) return Container();
                         // 재사용 가능한 메소드 호출
                         return Container(
                           margin: EdgeInsets.fromLTRB(
@@ -685,6 +700,8 @@ class _PolicyListPageState extends ConsumerState<PolicyListPage> {
                             itemCount: recommendedPolicies.length,
                             itemBuilder: (context, index) {
                               final policy = recommendedPolicies[index];
+
+                              if (policy == null) return Container();
                               // 동일한 메소드 재사용
                               return Container(
                                 margin: EdgeInsets.fromLTRB(

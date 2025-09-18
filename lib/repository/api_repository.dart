@@ -4,8 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:pin_grow/model/data_lists.dart';
+import 'package:pin_grow/model/portfolio_model.dart';
 import 'package:pin_grow/model/recommend_product_model.dart';
+import 'package:pin_grow/model/user_model.dart';
+import 'package:pin_grow/pages/onboarding/post_test_result.dart';
 import 'package:pin_grow/service/secure_storage.dart';
+import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'api_repository.g.dart';
@@ -167,7 +171,7 @@ class ApiRepository {
     print(token);
 
     final body = {
-      'targetAmount': 1000000, //targetAmount,
+      'targetAmount': targetAmount, // 1000000이상
       'targetMonths': targetMonths,
       if (currentAmount != null) 'currentAmount': currentAmount,
       if (riskPreference != null) 'riskPreference': riskPreference,
@@ -231,20 +235,57 @@ class ApiRepository {
     }
   }
 
-  Future<List<List<dynamic>>> fetchEtfProduct() async {
+  Future<List<dynamic>> fetchEtfProduct() async {
     final token = SecureStorageManager.readData('ACCESS_TOKEN');
-    final url = Uri.http('16.176.134.222:8080', '/api/etf');
+    final url = Uri.http('16.176.134.222:8080', '/api/etf/etf');
     final response = await http.get(
       url,
       headers: {'accept': '*/*', 'Authorization': 'Bearer $token'},
     );
 
     print(response.statusCode);
+    print('[DEBUG:ETF] ${response.statusCode}');
+
     if (response.statusCode == 200) {
       final Map<String, dynamic> decodedJson = json.decode(response.body);
       final Map<String, dynamic> data = decodedJson['data'];
 
       return data['etfs'];
+    } else {
+      throw Exception('Fail to load etf product list');
+    }
+  }
+
+  Future<PortfolioModel> fetchPortfolio(UserModel user) async {
+    //final token = SecureStorageManager.readData('ACCESS_TOKEN');
+    final url = Uri.http('3.107.105.153:5001', '/portfolio/recommend');
+
+    final body = {
+      "risk_level": user_type_resource[user.type]!['TYPE_NAME'],
+      "target_amount": user.goal_money,
+      "period": user.goal_period,
+    };
+
+    print(jsonEncode(body));
+    final response = await http.post(
+      url,
+      body: jsonEncode(body),
+      headers: {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        /** 'Authorization': 'Bearer $token' */
+      },
+    );
+
+    print('[DEBUG:portfolio] ${response.statusCode}');
+    print(response.body);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> decodedJson = json.decode(response.body);
+      final PortfolioModel data = PortfolioModel.fromJson(decodedJson);
+
+      print(data.allocation.properties.values);
+
+      return data;
     } else {
       throw Exception('Fail to load etf product list');
     }
@@ -258,7 +299,7 @@ class ApiRepository {
     required String investmentGoal,
     required int targetAmount,
   }) async {
-    final token = SecureStorageManager.readData('ACCESS_TOKEN');
+    final token = await SecureStorageManager.readData('ACCESS_TOKEN');
 
     List<String> trueIndices = preferredInvestmentTypes
         .asMap() // {0: true, 1: false, 2: true, 3: true}
@@ -279,12 +320,21 @@ class ApiRepository {
       "address": "string",
     };
 
-    final url = Uri.http('16.176.134.222:8080', '/api/financial/recoommend');
+    print(jsonEncode(body));
+
+    final url = Uri.http('16.176.134.222:8080', '/api/v1/onboard/survey');
     final response = await http.post(
       url,
-      body: body,
-      headers: {'Authorization': 'Bearer ${token}', 'accept': '*/*'},
+      body: jsonEncode(body),
+      headers: {
+        'accept': 'application/json',
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
     );
+
+    print(response.statusCode);
+    print(response.body);
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> decodedJson = json.decode(response.body);

@@ -258,6 +258,9 @@ class MainApp extends HookConsumerWidget {
               padding: EdgeInsets.fromLTRB(10, 5, 5, 10),
               trackHeight: 8.h,
             ),
+            progressIndicatorTheme: ProgressIndicatorThemeData(
+              color: Color(0xffFFD16F),
+            ),
           ),
           builder: (context, child) {
             return Scaffold(

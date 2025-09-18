@@ -55,7 +55,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     print('[DEBUG #1] : ${authState.toJson()}');
      */
 
-    await ref.read(regionProvider.notifier).getRegions();
+    //await ref.read(regionProvider.notifier).getRegions();
 
     try {
       AccessTokenInfo tokenInfo = await UserApi.instance.accessTokenInfo();
@@ -83,7 +83,10 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         .read(authViewModelProvider.notifier)
         .setAuthState(authState.status, authState.user);
  */
-    switch (authState?.status ?? AuthStatus.unauthenticated) {
+
+    GoRouter.of(context).go('/home');
+
+    /**switch (authState?.status ?? AuthStatus.unauthenticated) {
       case AuthStatus.unauthenticated || AuthStatus.error:
         //GoRouter.of(context).go('/product_list');
         GoRouter.of(context).go('/home');
@@ -105,6 +108,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         }
         break;
     }
+  */
   }
 
   @override

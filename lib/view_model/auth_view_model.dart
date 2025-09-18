@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/model/data_lists.dart';
@@ -100,8 +102,6 @@ class AuthViewModel extends _$AuthViewModel {
       await SecureStorageManager.readData('AUTH_STATE'),
     );
 
-    print(authState.user?.goal);
-
     final user = UserModel(
       id: state.user?.id,
       nickname: state.user?.nickname,
@@ -115,5 +115,6 @@ class AuthViewModel extends _$AuthViewModel {
     );
 
     state = state.copyWith(status: state.status, user: user);
+    await SecureStorageManager.saveData('AUTH_STATE', jsonEncode(state));
   }
 }

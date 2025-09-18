@@ -22,7 +22,7 @@ final productViewModelProvider =
     );
 
 typedef _$ProductViewModel = Notifier<ProductModel>;
-String _$policyViewModelHash() => r'3a6a4cd45024b68d3cfbd20fe653a021a72c6cce';
+String _$policyViewModelHash() => r'0714814ddfb728db03e6f8124f3f53895c29b0cc';
 
 /// See also [PolicyViewModel].
 @ProviderFor(PolicyViewModel)
@@ -38,7 +38,7 @@ final policyViewModelProvider =
     );
 
 typedef _$PolicyViewModel = Notifier<PolicyModel>;
-String _$surveyViewModelHash() => r'5b938e5cc2450c47e6a90fabea02fefeac49c29d';
+String _$surveyViewModelHash() => r'6e749dc94a6bc4c1b612d1ebcb96e86dd11dd5f0';
 
 /// See also [SurveyViewModel].
 @ProviderFor(SurveyViewModel)
@@ -69,5 +69,22 @@ final etfViewModelProvider =
     );
 
 typedef _$EtfViewModel = Notifier<List<EtfViewModel>>;
+String _$portfolioViewModelHash() =>
+    r'299fc95486657b5c78b31648e865e28b05472d2f';
+
+/// See also [PortfolioViewModel].
+@ProviderFor(PortfolioViewModel)
+final portfolioViewModelProvider =
+    NotifierProvider<PortfolioViewModel, List<PortfolioViewModel>>.internal(
+      PortfolioViewModel.new,
+      name: r'portfolioViewModelProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$portfolioViewModelHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$PortfolioViewModel = Notifier<List<PortfolioViewModel>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

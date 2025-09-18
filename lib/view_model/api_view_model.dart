@@ -3,6 +3,7 @@ import 'package:pin_grow/model/bond_product_model.dart';
 import 'package:pin_grow/model/data_lists.dart';
 import 'package:pin_grow/model/etf_model.dart';
 import 'package:pin_grow/model/policy_model.dart';
+import 'package:pin_grow/model/portfolio_model.dart';
 import 'package:pin_grow/model/product_model.dart';
 import 'package:pin_grow/model/recommend_product_model.dart';
 import 'package:pin_grow/model/user_model.dart';
@@ -114,7 +115,7 @@ class PolicyViewModel extends _$PolicyViewModel {
     return PolicyModel(plcyNm: '', sprvsnInstCdNm: '', inqCnt: null, url: '');
   }
 
-  Future<List<PolicyModel>> fetchPolicyList() async {
+  Future<List<PolicyModel?>?> fetchPolicyList() async {
     final authState = ref.read(authViewModelProvider);
 
     final region = authState.user?.region?.split('-')[2] ?? 'NODATA';
@@ -128,14 +129,14 @@ class PolicyViewModel extends _$PolicyViewModel {
       region,
       area,
     );
-    final List<PolicyModel> policies = policyListJson
-        .map((jsonItem) => PolicyModel.fromJson(jsonItem))
-        .toList();
+    final List<PolicyModel?>? policies = policyListJson.map((jsonItem) {
+      if (jsonItem != null) return PolicyModel.fromJson(jsonItem);
+    }).toList();
 
     return policies;
   }
 
-  Future<List<PolicyModel>> fetchTop10PolicyList() async {
+  Future<List<PolicyModel?>?> fetchTop10PolicyList() async {
     final authState = ref.read(authViewModelProvider);
 
     final region = authState.user?.region?.split('-')[2] ?? 'NODATA';
@@ -147,9 +148,9 @@ class PolicyViewModel extends _$PolicyViewModel {
       region,
       area,
     );
-    final List<PolicyModel> policies = policyListJson
-        .map((jsonItem) => PolicyModel.fromJson(jsonItem))
-        .toList();
+    final List<PolicyModel?>? policies = policyListJson.map((jsonItem) {
+      if (jsonItem != null) return PolicyModel.fromJson(jsonItem);
+    }).toList();
 
     return policies;
   }
@@ -175,12 +176,12 @@ class SurveyViewModel extends _$SurveyViewModel {
   }
 
   Future<bool> completeSurvey({
-    required final investmentMethod,
-    required final lossTolerance,
-    required final preferredInvestmentTypes,
-    required final investmentPeriod,
-    required final investmentGoal,
-    required final targetAmount,
+    required int investmentMethod,
+    required int lossTolerance,
+    required List<bool> preferredInvestmentTypes,
+    required int investmentPeriod,
+    required String investmentGoal,
+    required int targetAmount,
   }) async {
     final data = await _repository.postSurveyResult(
       investmentMethod: investmentMethod,
@@ -192,6 +193,23 @@ class SurveyViewModel extends _$SurveyViewModel {
     );
 
     return data['riskProfile'] != null;
+  }
+
+  Future<void> modifyGoal({
+    int? investmentPeriod,
+    String? investmentGoal,
+    int? targetAmount,
+  }) async {
+    final data = await _repository.fetchPreference();
+
+    await _repository.postSurveyResult(
+      investmentMethod: data['investmentMethod'],
+      lossTolerance: data['lossTolerance'],
+      preferredInvestmentTypes: data['preferredInvestmentTypes'],
+      investmentPeriod: investmentPeriod ?? data['investmentPeriod'],
+      investmentGoal: investmentGoal ?? data['investmentGoal'],
+      targetAmount: targetAmount ?? data['targetAmount'],
+    );
   }
 }
 
@@ -211,5 +229,28 @@ class EtfViewModel extends _$EtfViewModel {
         .toList();
 
     return etfs;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class PortfolioViewModel extends _$PortfolioViewModel {
+  late final ApiRepository _repository = ref.watch(apiRepositoryProvider);
+
+  @override
+  List<PortfolioViewModel> build() {
+    return [];
+  }
+
+  Future<List<Map<String, dynamic>>> fetchPortfolioAllocation(
+    UserModel user,
+  ) async {
+    final PortfolioModel data = await _repository.fetchPortfolio(user);
+
+    return [
+      {'value': data.allocation.properties['deposit'], 'title': '정기예금'},
+      {'value': data.allocation.properties['saving'], 'title': '적금'},
+      {'value': data.allocation.properties['bond'], 'title': '채권'},
+      {'value': data.allocation.properties['etf'], 'title': 'ETF'},
+    ];
   }
 }

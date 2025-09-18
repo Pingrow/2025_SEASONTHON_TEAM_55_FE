@@ -18,11 +18,12 @@ Future<void> moveAfterLogin(
 
   if (await AuthApi.instance.hasToken() &&
       authState.status == AuthStatus.authenticated) {
-    bool? researchComplete = authState.user?.research_completed;
+    bool? researchComplete =
+        (authState.user?.research_completed ?? false) && false;
 
     print('[DEBUG:Login] researchComplete : $researchComplete');
 
-    if (!(researchComplete ?? false) && goOnboarding) {
+    if (!(researchComplete) && goOnboarding) {
       ref.invalidate(selectedIndexProvider);
       ref.invalidate(researchResultStep1Provider);
       ref.invalidate(researchResultStep2Provider);
@@ -32,6 +33,7 @@ Future<void> moveAfterLogin(
       GoRouter.of(context).go('/step1');
     } else {
       GoRouter.of(context).go('/home');
+
       GoRouter.of(context).push(path);
     }
   } else {

@@ -64,9 +64,15 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
       tap_idx = -1;
       idx = 4;
 
-      Timer(Duration(milliseconds: 200), () {
-        GoRouter.of(context).push('/product_list/product_login_popup');
+      // build가 끝난 후에 실행되도록 예약
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          // 위젯이 여전히 화면에 있는지 확인
+          GoRouter.of(context).push('/product_list/product_login_popup');
+        }
       });
+
+      return;
     }
 
     _productsFuture = apiRepo.fetchDepositList();
@@ -86,6 +92,10 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
         // 2. 에러 발생 상태 처리
         if (snapshot.hasError) {
+          if (snapshot.data == null) {
+            return noProduct();
+          }
+
           print(snapshot.error);
           return error();
         }
@@ -222,6 +232,10 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
         // 2. 에러 발생 상태 처리
         if (snapshot.hasError) {
+          if (snapshot.data == null) {
+            return noProduct();
+          }
+
           return error();
         }
 
@@ -349,6 +363,10 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
         // 2. 에러 발생 상태 처리
         if (snapshot.hasError) {
+          if (snapshot.data == null) {
+            return noProduct();
+          }
+
           return error();
         }
 
@@ -587,6 +605,10 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
 
         // 2. 에러 발생 상태 처리
         if (snapshot.hasError) {
+          if (snapshot.data == null) {
+            return noProduct();
+          }
+
           return error();
         }
 
@@ -666,7 +688,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                   ),
                                 ),
                                 Text(
-                                  '거래량: ${etfs[index].trqu} | 시총: ${etfs[index].mrktTotAmt}',
+                                  '거래량: ${NumberFormat.decimalPattern().format(etfs[index].trqu)} | 시총: ${NumberFormat.decimalPattern().format(etfs[index].mrktTotAmt)}',
                                   style: TextStyle(
                                     fontSize: 11.sp,
                                     fontWeight: FontWeight.w400,
@@ -680,9 +702,9 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  '${etfs[index].clpr}원',
+                                  '${NumberFormat.decimalPattern().format(etfs[index].clpr)}원',
                                   style: TextStyle(
-                                    fontSize: 12.sp,
+                                    fontSize: 14.sp,
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xff6B7280),
                                   ),
@@ -717,29 +739,26 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                                           ) ??
                                                           0) <
                                                       0
-                                                ? 0xff6B7280
-                                                : 0xff6B7280,
+                                                ? 0xff0C2FA3
+                                                : 0xffA30C0C,
                                           ),
                                         ),
                                       ),
 
                                       TextSpan(
                                         text:
-                                            '${(int.tryParse(etfs[index].vs) ?? 0) == 0
-                                                ? '-'
-                                                : (int.tryParse(etfs[index].vs) ?? 0) < 0
-                                                ? '▼'
-                                                : '▲'}${etfs[index].vs.substring(1)}원 (${etfs[index].fltRt})',
-                                      ),
-                                      TextSpan(
-                                        text:
-                                            '${(int.tryParse(etfs[index].vs) ?? 0) == 0
-                                                ? '-'
-                                                : (int.tryParse(etfs[index].vs) ?? 0) < 0
-                                                ? '▼'
-                                                : '▲'}${etfs[index].vs.substring(1)}원 (${etfs[index].fltRt})',
+                                            '${NumberFormat.decimalPattern().format(int.tryParse(etfs[index].vs))}원',
                                       ),
                                     ],
+                                  ),
+                                ),
+
+                                Text(
+                                  '(${double.tryParse(etfs[index].fltRt)}%)',
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff6B7280),
                                   ),
                                 ),
                               ],
@@ -849,293 +868,290 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                 ),
               ),
 
-              FittedBox(
-                fit: BoxFit.fill,
-                child: Container(
-                  //width: 338.w,
-                  height: 47.h,
-                  margin: EdgeInsets.fromLTRB(0, 16.h, 0, 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: () async {
-                          if (tap_idx != 0) {
-                            if (authState.user == null) {
-                              setState(() {
-                                tap_idx = -1;
-                                idx = 4;
-                              });
+              Container(
+                //width: 338.w,
+                height: 47.h,
+                margin: EdgeInsets.fromLTRB(0, 16.h, 0, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        if (tap_idx != 0) {
+                          if (authState.user == null) {
+                            setState(() {
+                              tap_idx = -1;
+                              idx = 4;
+                            });
 
-                              Timer(Duration(milliseconds: 200), () {
-                                GoRouter.of(
-                                  context,
-                                ).push('/product_list/product_login_popup');
-                              });
-                            } else {
-                              setState(() {
-                                tap_idx = 0;
-                                idx = 0;
-                                hintValue = '';
-                                _controller.text = '';
-                                _recommendationFuture = apiRepo
-                                    .fetchRecommendation(authState.user!);
-                              });
-                            }
+                            Timer(Duration(milliseconds: 200), () {
+                              GoRouter.of(
+                                context,
+                              ).push('/product_list/product_login_popup');
+                            });
+                          } else {
+                            setState(() {
+                              tap_idx = 0;
+                              idx = 0;
+                              hintValue = '';
+                              _controller.text = '';
+                              _recommendationFuture = apiRepo
+                                  .fetchRecommendation(authState.user!);
+                            });
                           }
-                        },
-                        child: Container(
-                          width: 60.w,
-                          height: 36.h,
-                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Color(selectConfig[tap_idx == 0]!["COLOR"]),
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 2.0,
-                                color: Colors.black26,
-                                blurStyle: BlurStyle.normal,
-                                offset: Offset(0, 1.5),
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: Text(
-                            '추천',
-                            style: TextStyle(
-                              color: Color(
-                                selectConfig[tap_idx == 0]!["FONT_COLOR"],
-                              ),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
+                        }
+                      },
+                      child: Container(
+                        width: 60.w,
+                        height: 36.h,
+                        margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Color(selectConfig[tap_idx == 0]!["COLOR"]),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 2.0,
+                              color: Colors.black26,
+                              blurStyle: BlurStyle.normal,
+                              offset: Offset(0, 1.5),
                             ),
+                          ],
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: Text(
+                          '추천',
+                          style: TextStyle(
+                            color: Color(
+                              selectConfig[tap_idx == 0]!["FONT_COLOR"],
+                            ),
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+                    ),
 
-                      GestureDetector(
-                        onTap: () async {
-                          if (tap_idx != 1) {
-                            if (authState.user == null) {
-                              setState(() {
-                                tap_idx = -1;
-                                idx = 4;
-                              });
+                    GestureDetector(
+                      onTap: () async {
+                        if (tap_idx != 1) {
+                          if (authState.user == null) {
+                            setState(() {
+                              tap_idx = -1;
+                              idx = 4;
+                            });
 
-                              Timer(Duration(milliseconds: 200), () {
-                                GoRouter.of(
-                                  context,
-                                ).push('/product_list/product_login_popup');
-                              });
-                            } else {
-                              setState(() {
-                                tap_idx = 1;
-                                idx = 1;
-                                hintValue = '';
-                                _controller.text = '';
-                                _productsFuture = apiRepo.fetchDepositList();
-                              });
-                            }
+                            Timer(Duration(milliseconds: 200), () {
+                              GoRouter.of(
+                                context,
+                              ).push('/product_list/product_login_popup');
+                            });
+                          } else {
+                            setState(() {
+                              tap_idx = 1;
+                              idx = 1;
+                              hintValue = '';
+                              _controller.text = '';
+                              _productsFuture = apiRepo.fetchDepositList();
+                            });
                           }
-                        },
-                        child: Container(
-                          width: 60.w,
-                          height: 36.h,
-                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Color(selectConfig[tap_idx == 1]!["COLOR"]),
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 2.0,
-                                color: Colors.black26,
-                                blurStyle: BlurStyle.normal,
-                                offset: Offset(0, 1.5),
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: Text(
-                            '정기예금',
-                            style: TextStyle(
-                              color: Color(
-                                selectConfig[tap_idx == 1]!["FONT_COLOR"],
-                              ),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
+                        }
+                      },
+                      child: Container(
+                        width: 60.w,
+                        height: 36.h,
+                        margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Color(selectConfig[tap_idx == 1]!["COLOR"]),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 2.0,
+                              color: Colors.black26,
+                              blurStyle: BlurStyle.normal,
+                              offset: Offset(0, 1.5),
                             ),
+                          ],
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: Text(
+                          '정기예금',
+                          style: TextStyle(
+                            color: Color(
+                              selectConfig[tap_idx == 1]!["FONT_COLOR"],
+                            ),
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+                    ),
 
-                      GestureDetector(
-                        onTap: () async {
-                          if (tap_idx != 2) {
-                            if (authState.user == null) {
-                              setState(() {
-                                tap_idx = -1;
-                                idx = 4;
-                              });
+                    GestureDetector(
+                      onTap: () async {
+                        if (tap_idx != 2) {
+                          if (authState.user == null) {
+                            setState(() {
+                              tap_idx = -1;
+                              idx = 4;
+                            });
 
-                              Timer(Duration(milliseconds: 200), () {
-                                GoRouter.of(
-                                  context,
-                                ).push('/product_list/product_login_popup');
-                              });
-                            } else {
-                              setState(() {
-                                tap_idx = 2;
-                                idx = 1;
-                                hintValue = '';
-                                _controller.text = '';
-                                _productsFuture = apiRepo.fetchSavingsList();
-                              });
-                            }
+                            Timer(Duration(milliseconds: 200), () {
+                              GoRouter.of(
+                                context,
+                              ).push('/product_list/product_login_popup');
+                            });
+                          } else {
+                            setState(() {
+                              tap_idx = 2;
+                              idx = 1;
+                              hintValue = '';
+                              _controller.text = '';
+                              _productsFuture = apiRepo.fetchSavingsList();
+                            });
                           }
-                        },
-                        child: Container(
-                          width: 60.w,
-                          height: 36.h,
-                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Color(selectConfig[tap_idx == 2]!["COLOR"]),
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 2.0,
-                                color: Colors.black26,
-                                blurStyle: BlurStyle.normal,
-                                offset: Offset(0, 1.5),
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: Text(
-                            '적금',
-                            style: TextStyle(
-                              color: Color(
-                                selectConfig[tap_idx == 2]!["FONT_COLOR"],
-                              ),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
+                        }
+                      },
+                      child: Container(
+                        width: 60.w,
+                        height: 36.h,
+                        margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Color(selectConfig[tap_idx == 2]!["COLOR"]),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 2.0,
+                              color: Colors.black26,
+                              blurStyle: BlurStyle.normal,
+                              offset: Offset(0, 1.5),
                             ),
+                          ],
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: Text(
+                          '적금',
+                          style: TextStyle(
+                            color: Color(
+                              selectConfig[tap_idx == 2]!["FONT_COLOR"],
+                            ),
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+                    ),
 
-                      GestureDetector(
-                        onTap: () async {
-                          if (tap_idx != 3) {
-                            if (authState.user == null) {
-                              setState(() {
-                                tap_idx = -1;
-                                idx = 4;
-                              });
+                    GestureDetector(
+                      onTap: () async {
+                        if (tap_idx != 3) {
+                          if (authState.user == null) {
+                            setState(() {
+                              tap_idx = -1;
+                              idx = 4;
+                            });
 
-                              Timer(Duration(milliseconds: 200), () {
-                                GoRouter.of(
-                                  context,
-                                ).push('/product_list/product_login_popup');
-                              });
-                            } else {
-                              setState(() {
-                                tap_idx = 3;
-                                idx = 2;
-                                hintValue = '';
-                                _controller.text = '';
-                                _bondsFuture = apiRepo.fetchBondsList();
-                              });
-                            }
+                            Timer(Duration(milliseconds: 200), () {
+                              GoRouter.of(
+                                context,
+                              ).push('/product_list/product_login_popup');
+                            });
+                          } else {
+                            setState(() {
+                              tap_idx = 3;
+                              idx = 2;
+                              hintValue = '';
+                              _controller.text = '';
+                              _bondsFuture = apiRepo.fetchBondsList();
+                            });
                           }
-                        },
-                        child: Container(
-                          width: 60.w,
-                          height: 36.h,
-                          margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Color(selectConfig[tap_idx == 3]!["COLOR"]),
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 2.0,
-                                color: Colors.black26,
-                                blurStyle: BlurStyle.normal,
-                                offset: Offset(0, 1.5),
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: Text(
-                            '채권',
-                            style: TextStyle(
-                              color: Color(
-                                selectConfig[tap_idx == 3]!["FONT_COLOR"],
-                              ),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
+                        }
+                      },
+                      child: Container(
+                        width: 60.w,
+                        height: 36.h,
+                        margin: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Color(selectConfig[tap_idx == 3]!["COLOR"]),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 2.0,
+                              color: Colors.black26,
+                              blurStyle: BlurStyle.normal,
+                              offset: Offset(0, 1.5),
                             ),
+                          ],
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: Text(
+                          '채권',
+                          style: TextStyle(
+                            color: Color(
+                              selectConfig[tap_idx == 3]!["FONT_COLOR"],
+                            ),
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+                    ),
 
-                      GestureDetector(
-                        onTap: () async {
-                          if (tap_idx != 4) {
-                            if (authState.user == null) {
-                              setState(() {
-                                tap_idx = -1;
-                                idx = 4;
-                              });
+                    GestureDetector(
+                      onTap: () async {
+                        if (tap_idx != 4) {
+                          if (authState.user == null) {
+                            setState(() {
+                              tap_idx = -1;
+                              idx = 4;
+                            });
 
-                              Timer(Duration(milliseconds: 200), () {
-                                GoRouter.of(
-                                  context,
-                                ).push('/product_list/product_login_popup');
-                              });
-                            } else {
-                              setState(() {
-                                tap_idx = 4;
-                                idx = 3;
-                                hintValue = '';
-                                _controller.text = '';
-                                //_productsFuture = apiRepo.fetchDepositList();
-                              });
-                            }
+                            Timer(Duration(milliseconds: 200), () {
+                              GoRouter.of(
+                                context,
+                              ).push('/product_list/product_login_popup');
+                            });
+                          } else {
+                            setState(() {
+                              tap_idx = 4;
+                              idx = 3;
+                              hintValue = '';
+                              _controller.text = '';
+                              //_productsFuture = apiRepo.fetchDepositList();
+                            });
                           }
-                        },
-                        child: Container(
-                          width: 60.w,
-                          height: 36.h,
-                          margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Color(selectConfig[tap_idx == 4]!["COLOR"]),
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 2.0,
-                                color: Colors.black26,
-                                blurStyle: BlurStyle.normal,
-                                offset: Offset(0, 1.5),
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(13),
-                          ),
-                          child: Text(
-                            'ETF',
-                            style: TextStyle(
-                              color: Color(
-                                selectConfig[tap_idx == 4]!["FONT_COLOR"],
-                              ),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
+                        }
+                      },
+                      child: Container(
+                        width: 60.w,
+                        height: 36.h,
+                        margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Color(selectConfig[tap_idx == 4]!["COLOR"]),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 2.0,
+                              color: Colors.black26,
+                              blurStyle: BlurStyle.normal,
+                              offset: Offset(0, 1.5),
                             ),
+                          ],
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: Text(
+                          'ETF',
+                          style: TextStyle(
+                            color: Color(
+                              selectConfig[tap_idx == 4]!["FONT_COLOR"],
+                            ),
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
 
@@ -1166,7 +1182,8 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                         ),
                       ),
                     )
-                  : Container(
+                  : (tap_idx < 3)
+                  ? Container(
                       width: 338.w,
                       height: 47.h,
                       margin: EdgeInsets.fromLTRB(0, 6.h, 0, 6.h),
@@ -1244,7 +1261,8 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                           ),
                         ),
                       ),
-                    ),
+                    )
+                  : Container(),
 
               Expanded(
                 child: Container(

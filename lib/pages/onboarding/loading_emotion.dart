@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:pin_grow/model/data_lists.dart';
 import 'package:pin_grow/model/user_model.dart';
+import 'package:pin_grow/providers/onboarding_providers.dart';
+import 'package:pin_grow/service/secure_storage.dart';
 import 'package:pin_grow/view_model/api_view_model.dart';
+import 'package:pin_grow/view_model/auth_state.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 
 class LoadingEmotionPage extends StatefulHookConsumerWidget {
@@ -22,23 +26,49 @@ class _LoadingEmotionPageState extends ConsumerState<LoadingEmotionPage> {
   Future loading() async {
     // 투자 성향 분석 로딩 대체 timer
 
-    _timer = Timer.periodic(Duration(milliseconds: 1000), (timer) async {
+    _timer = Timer.periodic(Duration(milliseconds: 500), (timer) async {
       setState(() {
         i = (i + 1) % 3;
       });
     });
 
-    Future.delayed(Duration(milliseconds: 3000), () async {
-      _timer?.cancel();
+    Future.delayed(Duration(seconds: 3), () async {
+      final authState = await ref.read(authViewModelProvider.notifier);
+      final surveyResult = await ref.read(surveyViewModelProvider.notifier);
+
+      final int selectedIndexStep1 = ref.read(researchResultStep1Provider);
+      final int selectedIndexStep2 = ref.read(researchResultStep2Provider);
+      final List<bool> selectedIndexStep3 = ref.read(
+        researchResultStep3Provider,
+      );
+      final double selectedIndexStep4 = ref.read(researchResultStep4Provider);
+      final String? resultOfStep5_goal = ref.read(
+        researchResultStep5_goalProvider,
+      );
+      final String? resultOfStep5_money = ref.read(
+        researchResultStep5_moneyProvider,
+      );
+
+      await surveyResult.completeSurvey(
+        investmentMethod: selectedIndexStep1,
+        lossTolerance: selectedIndexStep2,
+        preferredInvestmentTypes: selectedIndexStep3,
+        investmentPeriod: selectedIndexStep4.round(),
+        investmentGoal: resultOfStep5_goal ?? '',
+        targetAmount:
+            int.tryParse(resultOfStep5_money!.replaceAll(',', '')) ?? 0,
+      );
 
       RiskLevel type = await ref
           .read(surveyViewModelProvider.notifier)
           .getRiskLevel();
 
-      await ref.read(authViewModelProvider.notifier).modifyUserType(type);
+      await authState.modifyUserType(type);
       if (mounted) {
         GoRouter.of(context).go('/post_test_result');
       }
+
+      _timer?.cancel();
     });
 
     /**final authState = ref.watch(authViewModelProvider);
