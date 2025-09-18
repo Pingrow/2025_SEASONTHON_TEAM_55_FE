@@ -9,6 +9,14 @@ import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_view_model.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+// 이벤트와 '차선' 정보를 함께 담을 클래스
+class PositionedEvent {
+  final Event event;
+  final int laneIndex; // 몇 번째 세로줄에 위치하는지
+
+  PositionedEvent(this.event, this.laneIndex);
+}
+
 class IPOPage extends StatefulHookConsumerWidget {
   const IPOPage({super.key});
 
@@ -121,194 +129,223 @@ class _IPOPageState extends ConsumerState<IPOPage> {
                 ),
               ),
 
+              // IPOPage.dart
+
+              // ...
               Expanded(
                 child: Container(
                   margin: EdgeInsets.symmetric(
                     horizontal: (MediaQuery.of(context).size.width - 328.w) / 2,
                   ),
                   child: FutureBuilder<List<Event>>(
-                    future: _eventsFuture, // 추적할 Future를 지정
+                    future: _eventsFuture,
                     builder: (context, snapshot) {
-                      // 로딩 중일 때 로딩 인디케이터 표시
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       }
-
-                      // 에러가 발생했을 때 에러 메시지 표시
                       if (snapshot.hasError) {
                         return Center(child: Text('에러 발생: ${snapshot.error}'));
                       }
-
-                      // 데이터 로딩이 성공적으로 완료되었을 때
-                      if (!snapshot.hasData) {
-                        return Container();
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return TableCalendar(
+                          // 데이터 없을 때 빈 캘린더 표시
+                          firstDay: DateTime.utc(2020, 1, 1),
+                          lastDay: DateTime.utc(2030, 12, 31),
+                          focusedDay: _focusedDay,
+                          locale: 'ko_KR',
+                        );
                       }
+
                       final events = snapshot.data!;
 
+                      // 1. 이벤트를 시작일, 기간 순으로 정렬
                       events.sort((a, b) {
-                        // 1. 시작일 기준으로 오름차순 정렬
                         final startDateComparison = a.start.compareTo(b.start);
-                        if (startDateComparison != 0) {
+                        if (startDateComparison != 0)
                           return startDateComparison;
-                        }
-                        // 2. 시작일이 같다면, 종료일 기준으로 내림차순 정렬 (긴 일정이 위로)
                         return b.end.compareTo(a.end);
                       });
 
-                      // 데이터를 table_calendar 형식으로 변환
-                      final eventsMap = LinkedHashMap<DateTime, List<Event>>(
-                        equals: isSameDay,
-                        hashCode: (key) =>
-                            key.day * 1000000 + key.month * 10000 + key.year,
-                      );
+                      // 2. "차선 할당" 로직 (레이아웃 엔진)
+                      final Map<DateTime, List<PositionedEvent?>>
+                      positionedEventsMap = {};
+                      final List<DateTime> laneEndDates = [];
 
-                      for (var event in events) {
+                      for (final event in events) {
+                        int targetLane = -1;
+
+                        // 비어있는 가장 빠른 차선 찾기
+                        for (int i = 0; i < laneEndDates.length; i++) {
+                          if (event.start.isAfter(laneEndDates[i])) {
+                            targetLane = i;
+                            break;
+                          }
+                        }
+
+                        // 비어있는 차선이 없으면 새 차선 만들기
+                        if (targetLane == -1) {
+                          targetLane = laneEndDates.length;
+                          laneEndDates.add(event.end);
+                        } else {
+                          laneEndDates[targetLane] = event.end;
+                        }
+
+                        // 이벤트 기간의 모든 날짜에, 계산된 차선 정보와 함께 이벤트 추가
                         for (
                           var d = event.start;
                           d.isBefore(event.end.add(const Duration(days: 1)));
                           d = d.add(const Duration(days: 1))
                         ) {
                           final day = DateTime.utc(d.year, d.month, d.day);
-                          if (eventsMap[day] == null) {
-                            eventsMap[day] = [];
+
+                          if (positionedEventsMap[day] == null) {
+                            positionedEventsMap[day] = [];
                           }
-                          eventsMap[day]!.add(event);
+
+                          // 리스트 길이를 차선에 맞게 null로 채우기
+                          while (positionedEventsMap[day]!.length <=
+                              targetLane) {
+                            positionedEventsMap[day]!.add(null);
+                          }
+
+                          // 해당 차선에 이벤트 배치
+                          positionedEventsMap[day]![targetLane] =
+                              PositionedEvent(event, targetLane);
                         }
                       }
 
-                      List<Event> getEventsForDay(DateTime day) {
-                        return eventsMap[day] ?? [];
+                      // 3. UI에 전달할 함수 만들기
+                      List<PositionedEvent?> getEventsForDay(DateTime day) {
+                        return positionedEventsMap[day] ?? [];
                       }
 
-                      // 캘린더와 리스트뷰를 포함한 UI 반환
+                      // 4. TableCalendar 위젯 반환 (eventLoader 수정)
                       return Container(
                         //height: MediaQuery.of(context).size.height * 0.6,
                         child: Column(
                           children: [
-                            TableCalendar<Event>(
-                              locale: 'ko_KR',
-
-                              headerStyle: HeaderStyle(
-                                formatButtonVisible: false,
-                                titleCentered: true,
-                                titleTextStyle: TextStyle(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.bold,
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xffD0D0D0),
+                                    width: 0.5,
+                                  ),
                                 ),
                               ),
-                              firstDay: DateTime.utc(2020, 1, 1),
-                              lastDay: DateTime.utc(2030, 12, 31),
-                              focusedDay: _focusedDay,
-                              selectedDayPredicate: (day) =>
-                                  isSameDay(_selectedDay, day),
-                              eventLoader: getEventsForDay,
+                              child: TableCalendar<PositionedEvent?>(
+                                locale: 'ko_KR',
 
-                              rangeStartDay: _rangeStart,
-                              rangeEndDay: _rangeEnd,
-                              rangeSelectionMode: RangeSelectionMode
-                                  .toggledOff, // 사용자가 직접 범위 선택하는 기능은 끔
-                              rowHeight: 70,
-                              onDaySelected: (selectedDay, focusedDay) {
-                                setState(() {
-                                  _selectedDay = selectedDay;
-                                  _focusedDay = focusedDay;
-                                });
-                              },
-                              calendarBuilders: CalendarBuilders(
-                                // 각 날짜 셀에 이벤트 위젯을 빌드
-                                defaultBuilder: (context, day, focusedDay) {
-                                  final eventsOnDay = getEventsForDay(day);
-                                  if (eventsOnDay.isNotEmpty) {
+                                headerStyle: HeaderStyle(
+                                  formatButtonVisible: false,
+                                  titleCentered: true,
+                                  titleTextStyle: TextStyle(
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                firstDay: DateTime.utc(2020, 1, 1),
+                                lastDay: DateTime.utc(2030, 12, 31),
+                                focusedDay: _focusedDay,
+                                selectedDayPredicate: (day) =>
+                                    isSameDay(_selectedDay, day),
+                                eventLoader: getEventsForDay,
+                                rangeStartDay: _rangeStart,
+                                rangeEndDay: _rangeEnd,
+                                rangeSelectionMode: RangeSelectionMode
+                                    .toggledOff, // 사용자가 직접 범위 선택하는 기능은 끔
+                                rowHeight: 70,
+                                onDaySelected: (selectedDay, focusedDay) {
+                                  setState(() {
+                                    _selectedDay = selectedDay;
+                                    _focusedDay = focusedDay;
+                                  });
+                                },
+                                calendarBuilders: CalendarBuilders(
+                                  // ▼▼▼ 빌더 함수들의 타입과 로직을 수정해야 합니다.
+                                  defaultBuilder: (context, day, focusedDay) {
+                                    final eventsOnDay = getEventsForDay(day);
                                     return _buildDayWithEvents(
                                       day,
                                       eventsOnDay,
                                     );
-                                  }
-                                  return null; // 이벤트 없으면 기본 빌더 사용
-                                },
-                                // 선택된 날짜도 동일하게 이벤트 표시
-                                selectedBuilder: (context, day, focusedDay) {
-                                  final eventsOnDay = getEventsForDay(day);
-                                  return _buildDayWithEvents(
-                                    day,
-                                    eventsOnDay,
-                                    isSelected: true,
-                                  );
-                                },
-                                // 오늘 날짜도 동일하게 이벤트 표시
-                                todayBuilder: (context, day, focusedDay) {
-                                  final eventsOnDay = getEventsForDay(day);
-                                  return _buildDayWithEvents(
-                                    day,
-                                    eventsOnDay,
-                                    isToday: true,
-                                  );
-                                },
-                              ),
+                                  },
+                                  selectedBuilder: (context, day, focusedDay) {
+                                    final eventsOnDay = getEventsForDay(day);
+                                    return _buildDayWithEvents(
+                                      day,
+                                      eventsOnDay,
+                                      isSelected: true,
+                                    );
+                                  },
+                                  todayBuilder: (context, day, focusedDay) {
+                                    final eventsOnDay = getEventsForDay(day);
+                                    return _buildDayWithEvents(
+                                      day,
+                                      eventsOnDay,
+                                      isToday: true,
+                                    );
+                                  },
+                                ),
+                                calendarStyle: CalendarStyle(
+                                  cellAlignment: Alignment.topCenter,
 
-                              // 5. 스타일링: 범위 선택 UI를 보기 좋게 만듦
-                              calendarStyle: CalendarStyle(
-                                cellAlignment: Alignment.topCenter,
-
-                                rangeStartDecoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.horizontal(
-                                    left: Radius.circular(8.0),
+                                  rangeStartDecoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    shape: BoxShape.rectangle,
+                                    borderRadius: BorderRadius.horizontal(
+                                      left: Radius.circular(8.0),
+                                    ),
                                   ),
-                                ),
-                                rangeEndDecoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.horizontal(
-                                    right: Radius.circular(8.0),
+                                  rangeEndDecoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    shape: BoxShape.rectangle,
+                                    borderRadius: BorderRadius.horizontal(
+                                      right: Radius.circular(8.0),
+                                    ),
                                   ),
-                                ),
-                                withinRangeDecoration: const BoxDecoration(
-                                  color: Colors.lightBlue,
-                                  shape: BoxShape.rectangle,
-                                ),
+                                  withinRangeDecoration: const BoxDecoration(
+                                    color: Colors.lightBlue,
+                                    shape: BoxShape.rectangle,
+                                  ),
 
-                                markerSize: 0,
+                                  markerSize: 0,
+                                ),
                               ),
                             ),
 
-                            const SizedBox(height: 8.0),
                             Expanded(
                               child: ListView.builder(
+                                padding: EdgeInsets.symmetric(vertical: 10.h),
                                 itemCount: getEventsForDay(
                                   _selectedDay ?? DateTime.now(),
-                                ).length,
+                                ).where((e) => e != null).length,
                                 itemBuilder: (context, index) {
-                                  final event = getEventsForDay(
+                                  final validEvents = getEventsForDay(
                                     _selectedDay ?? DateTime.now(),
-                                  )[index];
-                                  return GestureDetector(
-                                    onTap: () {
-                                      // 6. 하단 리스트의 일정을 탭하면 캘린더에 해당 범위가 하이라이트됨
-                                      setState(() {
-                                        _rangeStart = event.start;
-                                        _rangeEnd = event.end;
-                                        _selectedDay = event.start;
-                                        _focusedDay = event.start;
-                                      });
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 12.0,
-                                        vertical: 4.0,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(),
-                                        borderRadius: BorderRadius.circular(
-                                          12.0,
+                                  ).where((e) => e != null).toList();
+                                  final positionedEvent = validEvents[index];
+                                  final event = positionedEvent!.event;
+
+                                  return Container(
+                                    padding: EdgeInsets.fromLTRB(
+                                      0,
+                                      5.h,
+                                      0,
+                                      10.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          color: Color(0xffD0D0D0),
+                                          width: 0.5,
                                         ),
                                       ),
-                                      child: ListTile(
-                                        title: Text(event.title),
-                                        subtitle: Text(
-                                          "기간: ${event.start.toLocal().toString().split(' ')[0]} ~ ${event.end.toLocal().toString().split(' ')[0]}",
-                                        ),
+                                    ),
+                                    child: ListTile(
+                                      title: Text(event.title),
+                                      subtitle: Text(
+                                        "기간: ${event.start.toLocal().toString().split(' ')[0]} ~ ${event.end.toLocal().toString().split(' ')[0]}",
                                       ),
                                     ),
                                   );
@@ -346,7 +383,7 @@ class _IPOPageState extends ConsumerState<IPOPage> {
   // 날짜 셀 안에 이벤트 내용을 표시하는 위젯을 생성하는 헬퍼 함수
   Widget _buildDayWithEvents(
     DateTime day,
-    List<Event> events, {
+    List<PositionedEvent?> events, {
     bool isSelected = false,
     bool isToday = false,
   }) {
@@ -376,40 +413,50 @@ class _IPOPageState extends ConsumerState<IPOPage> {
         Expanded(
           child: SingleChildScrollView(
             physics: NeverScrollableScrollPhysics(),
+
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 ...events
+                    .take(2)
                     .map(
-                      (event) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        margin: const EdgeInsets.only(bottom: 2.0),
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.green[200],
-                          borderRadius:
-                              (day.month == event.start.month &&
-                                  day.day == event.start.day)
-                              ? BorderRadius.horizontal(
-                                  left: Radius.circular(4.0),
-                                )
-                              : (day.month == event.end.month &&
-                                    day.day == event.end.day)
-                              ? BorderRadius.horizontal(
-                                  right: Radius.circular(4.0),
-                                )
-                              : BorderRadius.zero,
-                        ),
+                      (event) => (event == null)
+                          ? Container(
+                              height: 21, // 이벤트 박스 높이 + 마진
+                              margin: const EdgeInsets.only(bottom: 3.0),
+                            )
+                          : Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4.0,
+                              ),
+                              margin: const EdgeInsets.only(bottom: 2.0),
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.green[200],
+                                borderRadius:
+                                    (day.month == event.event.start.month &&
+                                        day.day == event.event.start.day)
+                                    ? BorderRadius.horizontal(
+                                        left: Radius.circular(4.0),
+                                      )
+                                    : (day.month == event.event.end.month &&
+                                          day.day == event.event.end.day)
+                                    ? BorderRadius.horizontal(
+                                        right: Radius.circular(4.0),
+                                      )
+                                    : BorderRadius.zero,
+                              ),
 
-                        child: Text(
-                          event.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
+                              child: Text(
+                                event!.event.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10.sp,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
                     )
                     .toList(),
               ],
