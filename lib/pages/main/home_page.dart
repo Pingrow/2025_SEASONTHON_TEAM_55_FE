@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pin_grow/model/portfolio_model.dart';
+import 'package:pin_grow/providers/providers.dart';
 import 'package:pin_grow/providers/region_provider.dart';
 import 'package:pin_grow/view_model/api_view_model.dart';
 import 'package:pin_grow/view_model/auth_state.dart';
@@ -22,7 +23,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   double progressRate = 0.00;
   int touchedIndex = -1;
 
-  late Future<List<Map<String, dynamic>>> _portfolio;
   List<int> _portfolio_colors = [
     0xff0FA564,
     0xff3CBA92,
@@ -37,19 +37,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     final authState = ref.read(authViewModelProvider);
     final apiRepo = ref.read(portfolioViewModelProvider.notifier);
 
-    _portfolio = authState.status == AuthStatus.authenticated
-        ? Future.value([
-            {'value': 45.0, 'title': '정기예금'},
-            {'value': 25.0, 'title': '적금'},
-            {'value': 20.0, 'title': '채권'},
-            {'value': 10.0, 'title': 'ETF'},
-          ]) //apiRepo.fetchPortfolioAllocation(authState.user!)
-        : Future.value([
-            {'value': 45.0, 'title': '???'},
-            {'value': 25.0, 'title': '???'},
-            {'value': 20.0, 'title': '???'},
-            {'value': 10.0, 'title': '???'},
-          ]);
     /**authState.user != null
         ? Future(List.empty) //apiRepo.fetchRecommendation(authState.user!)
         : Future(List.empty); */
@@ -60,6 +47,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     final authState = ref.watch(authViewModelProvider);
     final regions = ref.watch(regionProvider);
     final apiRepo = ref.read(productViewModelProvider.notifier);
+
+    final AsyncValue<List<Map<String, dynamic>>> _portfolio = ref.watch(
+      portfolioProvider,
+    );
 
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -612,35 +603,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ],
                     ),
 
-                    FutureBuilder<List<Map<String, dynamic>>>(
-                      future: _portfolio,
-                      builder: (context, snapshot) {
-                        List<Map<String, dynamic>> portfolio;
-
-                        // 1. 로딩 중 상태 처리
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          portfolio = [
-                            {'value': 100, 'title': ''},
-                          ];
-                        }
-
-                        // 2. 에러 발생 상태 처리
-                        if (snapshot.hasError ||
-                            !snapshot.hasData ||
-                            snapshot.data == null ||
-                            snapshot.data!.isEmpty) {
-                          print(snapshot.error);
-                          portfolio = [
-                            {'value': 45.0, 'title': '???'},
-                            {'value': 25.0, 'title': '???'},
-                            {'value': 20.0, 'title': '???'},
-                            {'value': 10.0, 'title': '???'},
-                          ];
-                        } else {
-                          portfolio = snapshot.data!;
-                        }
-
+                    _portfolio.when(
+                      data: (List<Map<String, dynamic>> portfolio) {
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -649,17 +613,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 if (await AuthApi.instance.hasToken() &&
                                     authState.status ==
                                         AuthStatus.authenticated) {
-                                  _portfolio = Future.value([
-                                    {'value': 45.0, 'title': '정기예금'},
-                                    {'value': 25.0, 'title': '적금'},
-                                    {'value': 20.0, 'title': '채권'},
-                                    {'value': 10.0, 'title': 'ETF'},
-                                  ]);
-                                  /**ref
-                                      .read(portfolioViewModelProvider.notifier)
-                                      .fetchPortfolioAllocation(
-                                        authState.user!,
-                                      ); */
                                 } else {
                                   GoRouter.of(
                                     context,
@@ -800,6 +753,322 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ),
                           ],
                         );
+                      },
+                      error: (Object error, StackTrace stackTrace) {
+                        ref.refresh(portfolioProvider);
+                        print(error);
+                        List<Map<String, dynamic>> portfolio = [
+                          {'value': 45.0, 'title': '???'},
+                          {'value': 25.0, 'title': '???'},
+                          {'value': 20.0, 'title': '???'},
+                          {'value': 10.0, 'title': '???'},
+                        ];
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                if (await AuthApi.instance.hasToken() &&
+                                    authState.status ==
+                                        AuthStatus.authenticated) {
+                                } else {
+                                  GoRouter.of(
+                                    context,
+                                  ).push('/home/portfolio_login_popup');
+                                }
+                              },
+                              child: Container(
+                                width: 177.w,
+                                height: 162.h,
+                                margin: EdgeInsets.fromLTRB(6.w, 10.h, 6.w, 0),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Image.asset(
+                                      'assets/characters/portfolio.png',
+                                      width: 99.w,
+                                      height: 99.h,
+                                    ),
+
+                                    PieChart(
+                                      PieChartData(
+                                        borderData: FlBorderData(show: false),
+                                        sectionsSpace: 0,
+                                        centerSpaceRadius: (75 / 2).r,
+                                        startDegreeOffset: -90,
+
+                                        sections: List.generate(
+                                          portfolio.length,
+                                          (i) {
+                                            return PieChartSectionData(
+                                              color: Color(
+                                                _portfolio_colors[i],
+                                              ),
+                                              value:
+                                                  (portfolio[i]['value'] as num)
+                                                      .toDouble(),
+                                              title: '',
+                                              radius: (75 / 2).r,
+                                              badgePositionPercentageOffset:
+                                                  1.0,
+                                              badgeWidget: Container(
+                                                constraints: BoxConstraints(
+                                                  minWidth: 38.w,
+                                                  maxWidth: 50.w,
+                                                  minHeight: 24.h,
+                                                  maxHeight: 24.h,
+                                                ),
+                                                padding: EdgeInsets.fromLTRB(
+                                                  5.w,
+                                                  0,
+                                                  5.w,
+                                                  0,
+                                                ),
+                                                alignment: Alignment.center,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                  color: Color(0xfff5f5f5),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      blurRadius: 2.0,
+                                                      color: Colors.black38,
+                                                      blurStyle:
+                                                          BlurStyle.normal,
+                                                      offset: Offset(0, 1),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Text(
+                                                  portfolio[i]['title'],
+                                                  style: TextStyle(
+                                                    fontSize: 12.sp,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Color(0xff737373),
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 94.w,
+                              margin: EdgeInsets.fromLTRB(6.w, 0.h, 6.w, 0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: List.generate(portfolio.length, (i) {
+                                  return Container(
+                                    margin: EdgeInsetsGeometry.fromLTRB(
+                                      0,
+                                      4.h,
+                                      0,
+                                      4.h,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Container(
+                                          width: 11.r,
+                                          height: 11.r,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Color(_portfolio_colors[i]),
+                                          ),
+                                        ),
+
+                                        Container(
+                                          width: 40.w,
+                                          child: Text(
+                                            portfolio[i]['title'],
+                                            style: TextStyle(
+                                              fontSize: 11.sp,
+                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xff757575),
+                                            ),
+                                          ),
+                                        ),
+
+                                        Text(
+                                          '${authState.user != null ? portfolio[i]['value'].round() : '??'}%',
+                                          style: TextStyle(
+                                            fontSize: 11.sp,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xff757575),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                      loading: () {
+                        List<Map<String, dynamic>> portfolio = [
+                          {'value': 45.0, 'title': '???'},
+                          {'value': 25.0, 'title': '???'},
+                          {'value': 20.0, 'title': '???'},
+                          {'value': 10.0, 'title': '???'},
+                        ];
+                        return CircularProgressIndicator();
+                        /** Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                if (await AuthApi.instance.hasToken() &&
+                                    authState.status ==
+                                        AuthStatus.authenticated) {
+                                } else {
+                                  GoRouter.of(
+                                    context,
+                                  ).push('/home/portfolio_login_popup');
+                                }
+                              },
+                              child: Container(
+                                width: 177.w,
+                                height: 162.h,
+                                margin: EdgeInsets.fromLTRB(6.w, 10.h, 6.w, 0),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Image.asset(
+                                      'assets/characters/portfolio.png',
+                                      width: 99.w,
+                                      height: 99.h,
+                                    ),
+
+                                    PieChart(
+                                      PieChartData(
+                                        borderData: FlBorderData(show: false),
+                                        sectionsSpace: 0,
+                                        centerSpaceRadius: (75 / 2).r,
+                                        startDegreeOffset: -90,
+
+                                        sections: List.generate(
+                                          portfolio.length,
+                                          (i) {
+                                            return PieChartSectionData(
+                                              color: Color(
+                                                _portfolio_colors[i],
+                                              ),
+                                              value:
+                                                  (portfolio[i]['value'] as num)
+                                                      .toDouble(),
+                                              title: '',
+                                              radius: (75 / 2).r,
+                                              badgePositionPercentageOffset:
+                                                  1.0,
+                                              badgeWidget: Container(
+                                                constraints: BoxConstraints(
+                                                  minWidth: 38.w,
+                                                  maxWidth: 50.w,
+                                                  minHeight: 24.h,
+                                                  maxHeight: 24.h,
+                                                ),
+                                                padding: EdgeInsets.fromLTRB(
+                                                  5.w,
+                                                  0,
+                                                  5.w,
+                                                  0,
+                                                ),
+                                                alignment: Alignment.center,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                  color: Color(0xfff5f5f5),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      blurRadius: 2.0,
+                                                      color: Colors.black38,
+                                                      blurStyle:
+                                                          BlurStyle.normal,
+                                                      offset: Offset(0, 1),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Text(
+                                                  portfolio[i]['title'],
+                                                  style: TextStyle(
+                                                    fontSize: 12.sp,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Color(0xff737373),
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 94.w,
+                              margin: EdgeInsets.fromLTRB(6.w, 0.h, 6.w, 0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: List.generate(portfolio.length, (i) {
+                                  return Container(
+                                    margin: EdgeInsetsGeometry.fromLTRB(
+                                      0,
+                                      4.h,
+                                      0,
+                                      4.h,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Container(
+                                          width: 11.r,
+                                          height: 11.r,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Color(_portfolio_colors[i]),
+                                          ),
+                                        ),
+
+                                        Container(
+                                          width: 40.w,
+                                          child: Text(
+                                            portfolio[i]['title'],
+                                            style: TextStyle(
+                                              fontSize: 11.sp,
+                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xff757575),
+                                            ),
+                                          ),
+                                        ),
+
+                                        Text(
+                                          '${authState.user != null ? portfolio[i]['value'].round() : '??'}%',
+                                          style: TextStyle(
+                                            fontSize: 11.sp,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xff757575),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                          ],
+                        );
+                      */
                       },
                     ),
 
