@@ -98,6 +98,8 @@ class ProductViewModel extends _$ProductViewModel {
         );
     final List<OptimalProductModel> products = recommendProductModel.products!;
 
+    print(products.first.depositAmount);
+
     return products;
   }
 }
@@ -188,6 +190,6 @@ class SurveyViewModel extends _$SurveyViewModel {
       targetAmount: targetAmount,
     );
 
-    return data['resikProfile'] != null;
+    return data['riskProfile'] != null;
   }
 }

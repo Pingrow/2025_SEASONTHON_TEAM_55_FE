@@ -167,12 +167,14 @@ class ApiRepository {
     print(token);
 
     final body = {
-      'targetAmount': targetAmount,
+      'targetAmount': 1000000, //targetAmount,
       'targetMonths': targetMonths,
       if (currentAmount != null) 'currentAmount': currentAmount,
       if (riskPreference != null) 'riskPreference': riskPreference,
     };
+
     final url = Uri.http('16.176.134.222:8080', '/api/v1/financial/recommend');
+    print(jsonEncode(body));
 
     final response = await http.post(
       url,
@@ -185,7 +187,7 @@ class ApiRepository {
     );
 
     print(response.statusCode);
-    print(response.body);
+    //print(response.body);
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> decodedJson = jsonDecode(response.body);
@@ -198,7 +200,7 @@ class ApiRepository {
       );
 
       //print("[DEBUG] ${decodedJson}");
-      //print("[DEBUG] ${selectedJson.products?.first.productName}");
+      print("[DEBUG] ${selectedJson.products?.first.productName}");
       return selectedJson;
     } else {
       throw Exception('Failed to load recommendation product list');

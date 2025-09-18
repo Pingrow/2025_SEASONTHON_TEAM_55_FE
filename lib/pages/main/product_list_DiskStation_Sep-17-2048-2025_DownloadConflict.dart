@@ -122,7 +122,8 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                     itemCount: products.length,
                     itemBuilder: (context, index) {
                       return Container(
-                        padding: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+                        height: 80.h,
+                        //padding: EdgeInsets.fromLTRB(12, 0, 12, 0),
                         decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
@@ -154,10 +155,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                   ],
                                 ),
                                 Text(
-                                  products[index].productName!.replaceAll(
-                                    '\n',
-                                    ' ',
-                                  ),
+                                  products[index].productName!,
                                   style: TextStyle(
                                     fontSize: 20.sp,
                                     fontWeight: FontWeight.bold,
@@ -165,7 +163,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                   ),
                                 ),
                                 Text(
-                                  '${products[index].term}개월 · 금리 최대 ${products[index].interestRate}(연)',
+                                  '${products[index].term}개월 · 금리 최대 ${products[index].monthlyAmount}(월)',
                                   style: TextStyle(
                                     fontSize: 11.sp,
                                     fontWeight: FontWeight.w400,
@@ -179,7 +177,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  '투입금액: ${NumberFormat.decimalPattern().format(products[index].productType == '예금' ? products[index].depositAmount ?? 0 : products[index].monthlyAmount ?? 0)}원${products[index].productType == '적금' ? ' * ${products[index].term}개월' : ''}',
+                                  '투입급액: ${NumberFormat.decimalPattern().format(products[index].depositAmount)}원',
                                   style: TextStyle(
                                     fontSize: 11.sp,
                                     fontWeight: FontWeight.w400,
@@ -187,7 +185,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                   ),
                                 ),
                                 Text(
-                                  '만기금액: ${NumberFormat.decimalPattern().format(products[index].productType == '예금' ? products[index].maturityAmount ?? 0 : ((products[index].expectedReturn ?? 0) + (products[index].monthlyAmount ?? 0) * (products[index].term ?? 1)).round())}원',
+                                  '만기급액: ${NumberFormat.decimalPattern().format(products[index].maturityAmount)}원',
                                   style: TextStyle(
                                     fontSize: 11.sp,
                                     fontWeight: FontWeight.bold,
@@ -259,7 +257,8 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                       // 재사용 가능한 메소드 호출
                       return Container(
                         width: 338.w,
-                        padding: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
+                        height: 80.h,
+                        //margin: EdgeInsets.fromLTRB(0, 15.h, 0, 15.h),
                         decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
@@ -288,10 +287,7 @@ class _ProductListPageState extends ConsumerState<ProductListPage> {
                                 Container(
                                   width: 220,
                                   child: Text(
-                                    products[index].productName!.replaceAll(
-                                      '\n',
-                                      ' ',
-                                    ),
+                                    products[index].productName!,
                                     style: TextStyle(
                                       fontSize: 20.sp,
                                       fontWeight: FontWeight.bold,
